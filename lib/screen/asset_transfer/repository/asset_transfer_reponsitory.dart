@@ -4,9 +4,11 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
@@ -375,7 +377,24 @@ class AssetTransferRepository extends ApiBase {
     };
 
     try {
+      final allIds = <String>{};
       for (var item in items) {
+        final id1 = item.idDonViGiao;
+        final id2 = item.idDonViNhan;
+        final id3 = item.idNguoiKyNhay;
+        final id4 = item.idTrinhDuyetGiamDoc;
+
+        if (id1 != null && id1.isNotEmpty) allIds.add(id1);
+        if (id2 != null && id2.isNotEmpty) allIds.add(id2);
+        if (id3 != null && id3.isNotEmpty) allIds.add(id3);
+        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
+        final signatories = item.listSignatory;
+        if (signatories != null) {
+          for (var s in signatories) {
+            final sigId = s.idNguoiKy;
+            if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
+          }
+        }
         LenhDieuDongRequest lenhDieuDongRequest = LenhDieuDongRequest(
           soQuyetDinh: item.soQuyetDinh ?? '',
           tenPhieu: item.tenPhieu ?? '',
@@ -419,6 +438,19 @@ class AssetTransferRepository extends ApiBase {
         } else {
           result['status_code'] = response.statusCode;
         }
+      }
+      if (allIds.isNotEmpty) {
+        final recipients = {
+          ...allIds.where((id) => id.trim().isNotEmpty),
+          'admin',
+        };
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.ASSET_TRANSFER,
+            typeAction: ActionType.CREATE,
+            idNeedToDo: recipients.join(','),
+          );
+        });
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

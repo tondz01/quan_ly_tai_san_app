@@ -675,6 +675,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             context.read<AssetHandoverBloc>().add(
               DeleteAssetHandoverEvent(context, item.id!),
             );
+           widget.provider.onPushMessage(item);
           },
         )
         : item.trangThai == 0
@@ -691,6 +692,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             context.read<AssetHandoverBloc>().add(
               DeleteAssetHandoverEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : AppUtility.showSnackBar(

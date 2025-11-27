@@ -5,11 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/view/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/provider/unit_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 
 class UnitDetail extends StatefulWidget {
   final UnitProvider provider;

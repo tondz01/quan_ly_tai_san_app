@@ -20,9 +20,11 @@ import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.d
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
@@ -692,7 +694,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.additionalSigners
                                 ..clear()
                                 ..addAll(list);
-                                log('message additionalSigners: ${jsonEncode(state.additionalSigners)}');
+                              log(
+                                'message additionalSigners: ${jsonEncode(state.additionalSigners)}',
+                              );
                             });
                           },
                           initialSignerData: state.additionalSignersDetailed,
@@ -1041,7 +1045,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
       // Thêm dòng này - Cập nhật người ký nếu có thay đổi
       if (_signatoriesChanged()) {
-        log('message [additionalSigners] _handleSave syncSignatories: ${jsonEncode(state.additionalSignersDetailed)}');
         await UpdateSignerData().syncSignatories(
           state.item!.id!,
           state.additionalSignersDetailed,
@@ -1054,6 +1057,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         );
       }
     }
+    String newSignatory = state.additionalSignersDetailed
+        .map((e) => e.employee?.id ?? '')
+        .join(',');
+    //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+    String idNeedToDo =
+        "${state.item?.idDonViGiao},${state.item?.idDonViNhan},${state.item?.idNguoiKyNhay},${state.item?.idTrinhDuyetGiamDoc},$newSignatory";
+
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.ASSET_HANDOVER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
+    );
   }
 
   bool editable() {

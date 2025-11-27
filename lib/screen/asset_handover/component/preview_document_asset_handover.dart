@@ -225,6 +225,7 @@ previewDocumentHandover({
               ),
             );
             // Chạy song song tất cả
+            provider.onPushMessage(item);
           },
         ),
   );

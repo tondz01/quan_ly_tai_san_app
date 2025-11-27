@@ -590,6 +590,7 @@ class _ToolAndSuppliesHandoverListState
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : item.trangThai == 0
@@ -606,6 +607,7 @@ class _ToolAndSuppliesHandoverListState
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : AppUtility.showSnackBar(
@@ -658,6 +660,7 @@ class _ToolAndSuppliesHandoverListState
               selectedItems,
               context,
             );
+            widget.provider.onPushMessage(selectedItems.first);
           },
         ),
     ];

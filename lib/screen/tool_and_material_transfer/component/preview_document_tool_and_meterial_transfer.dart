@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:path/path.dart' as path;
 
@@ -127,6 +128,7 @@ previewDocumentToolAndMaterial({
                 userInfo?.tenDangNhap ?? '',
               ),
             );
+            context.read<ToolAndMaterialTransferProvider>().onPushMessage(item);
           },
         ),
   );

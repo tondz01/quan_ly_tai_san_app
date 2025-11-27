@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -17,20 +19,23 @@ import 'bloc/asset_handover_bloc.dart';
 import 'bloc/asset_handover_state.dart';
 import 'provider/asset_handover_provider.dart';
 
-class AssetHandoverView extends StatefulWidget {
+class AssetHandoverView extends riverpod.ConsumerStatefulWidget {
   const AssetHandoverView({super.key});
 
   @override
-  State<AssetHandoverView> createState() => _AssetHandoverViewState();
+  riverpod.ConsumerState<AssetHandoverView> createState() =>
+      _AssetHandoverViewState();
 }
 
-class _AssetHandoverViewState extends State<AssetHandoverView> {
+class _AssetHandoverViewState
+    extends riverpod.ConsumerState<AssetHandoverView> {
   AssetHandoverDto? assetHandoverData;
   Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
   AssetHandoverProvider? _providerRef;
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +151,13 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen][AssetHandoverView]  next $next');
+      if (next == null || next.isEmpty) return;
+      log('message [ref.listen][AssetHandoverView]  next not null');
+      // Gọi update
+      context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
+    });
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {
         if (state is AssetHandoverLoadingState) {

@@ -4,9 +4,11 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -92,6 +94,14 @@ class ToolAndMaterialTransferRepository extends ApiBase {
           return result;
         }
       }
+      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
+      String idNeedToDo =
+          "${request.idDonViGiao},${request.idDonViNhan},${request.idNguoiKyNhay},${request.idTrinhDuyetGiamDoc},$newSignatory, admin";
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       if (respData is Map<String, dynamic>) {
@@ -428,12 +438,27 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     };
 
     try {
+      final allIds = <String>{};
       for (var item in items) {
-        log('item: ${item.toJson()}');
+        final id1 = item.idDonViGiao;
+        final id2 = item.idDonViNhan;
+        final id3 = item.idNguoiKyNhay;
+        final id4 = item.idTrinhDuyetGiamDoc;
+
+        if (id1 != null && id1.isNotEmpty) allIds.add(id1);
+        if (id2 != null && id2.isNotEmpty) allIds.add(id2);
+        if (id3 != null && id3.isNotEmpty) allIds.add(id3);
+        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
+        final signatories = item.listSignatory;
+        if (signatories != null) {
+          for (var s in signatories) {
+            final sigId = s.idNguoiKy;
+            if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
+          }
+        }
         ToolAndMaterialTransferDto toolAndMaterialTransfer = item.copyWith(
           share: true,
         );
-        log('toolAndMaterialTransfer: ${toolAndMaterialTransfer.toJson()}');
         Map<String, dynamic> data = {
           "id": toolAndMaterialTransfer.id,
           "soQuyetDinh": toolAndMaterialTransfer.soQuyetDinh,
@@ -480,6 +505,17 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         } else {
           result['status_code'] = response.statusCode;
         }
+      }
+      if (allIds.isNotEmpty) {
+        final recipients = {
+          ...allIds.where((id) => id.trim().isNotEmpty),
+          'admin',
+        };
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+          typeAction: ActionType.UPDATE,
+          idNeedToDo: recipients.join(','),
+        );
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

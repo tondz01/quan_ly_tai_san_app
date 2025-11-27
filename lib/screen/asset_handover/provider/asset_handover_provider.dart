@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
@@ -304,9 +307,9 @@ class AssetHandoverProvider with ChangeNotifier {
     //   onReloadDataAssetHandover();
     //   print("reload data asset handover");
     // });
-    reloadDataService.reloadData(() async {
-      onReloadDataAssetHandover();
-    });
+    // reloadDataService.reloadData(() async {
+    //   onReloadDataAssetHandover();
+    // });
   }
 
   onLoadDataDropdown() {
@@ -339,6 +342,20 @@ class AssetHandoverProvider with ChangeNotifier {
     }
     _applyFilters();
     notifyListeners();
+  }
+
+  // Hàm xử lý cập nhật realtime từ Firebase
+  void onRealtimeUpdate(dynamic jsonMsg) {
+    if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
+      log("message [ref.listen] [AssetHandoverProvider] update received: $jsonMsg");
+      if (AppUtility.userInList(
+        userInfo?.tenDangNhap ?? '',
+        jsonMsg['id_need_to_do'] ?? '',
+      )) {
+        print("message [ref.listen] [AssetHandoverProvider] involved, reloading data...");
+        onReloadDataAssetHandover();
+      }
+    }
   }
 
   void onDispose() {
@@ -624,5 +641,19 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       return const NhanVien();
     }
+  }
+
+  onPushMessage(AssetHandoverDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+    String idNeedToDo =
+        "${item.idDaiDiendonviBanHanhQD},${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin";
+
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.ASSET_HANDOVER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
+    );
   }
 }

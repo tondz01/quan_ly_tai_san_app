@@ -457,4 +457,15 @@ abstract class AppUtility {
       ),
     );
   }
+
+  static bool userInList(String userId, String idNeedToDo) {
+    final list =
+        idNeedToDo
+            .split(",") // tách
+            .map((e) => e.trim()) // xóa whitespace
+            .where((e) => e.isNotEmpty) // bỏ phần rỗng do dấu phẩy cuối
+            .toList();
+
+    return list.contains(userId);
+  }
 }

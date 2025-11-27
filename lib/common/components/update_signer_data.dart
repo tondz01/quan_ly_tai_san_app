@@ -5,7 +5,6 @@ import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.d
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 
 class UpdateSignerData {
   List<Map<String, dynamic>> normalizeSignatories(
@@ -50,7 +49,6 @@ class UpdateSignerData {
             )
             .toList(),
       );
-      log('message [additionalSigners] syncSignatories result: ${jsonEncode(result)}');
     } catch (e) {
       log('Sync signatories error: $e');
     }

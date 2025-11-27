@@ -5,10 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
@@ -98,8 +99,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
-
-  final reloadDataService = PermissionSignService();
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -228,9 +227,20 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     //   // onReloadDataAssetTransfer();
     //   onReloadDataPage(context, false);
     // });
-    reloadDataService.reloadData(() async {
-      onReloadDataPage(context, false);
-    });
+  }
+
+  // Hàm xử lý cập nhật realtime từ Firebase
+  void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
+    if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
+      log("message [ref.listen] [DieuDongTaiSanProvider] update received:${userInfo?.tenDangNhap} $jsonMsg");
+      if (AppUtility.userInList(
+        userInfo?.tenDangNhap ?? '',
+        jsonMsg['id_need_to_do'] ?? '',
+      )) {
+        log("message [ref.listen] [DieuDongTaiSanProvider] involved, reloading data...");
+        onReloadDataPage(context, false);
+      }
+    }
   }
 
   onGetDataAsset() async {
@@ -238,10 +248,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       final args = await AssetManagementRepository().getListAssetManagement(
         'ct001',
       );
-      log('message result _dataAsset args: ${args['data'].length}');
       AccountHelper.instance.setListAsset(args['data'] ?? []);
       _dataAsset = args['data'];
-      log('message result _dataAsset: ${_dataAsset?.length}');
     } else {
       _dataAsset = AccountHelper.instance.getAllAssets();
     }
@@ -285,7 +293,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     container.read(tableAssetTransferProvider.notifier).fillterByStatus(status);
     onReloadDataPage(context);
   }
-
 
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
@@ -694,5 +701,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _loadingMessage = 'Đang tải dữ liệu...';
     }
     notifyListeners();
+  }
+
+  void onPushMessage(DieuDongTaiSanDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    String idNeedToDo =
+        "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin";
+    Future.delayed(const Duration(milliseconds: 200)).then((_) {
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.ASSET_TRANSFER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
+    });
   }
 }

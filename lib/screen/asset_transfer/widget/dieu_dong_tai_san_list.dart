@@ -890,6 +890,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             context.read<DieuDongTaiSanBloc>().add(
               DeleteDieuDongEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : item.trangThai == 0
@@ -906,6 +907,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             context.read<DieuDongTaiSanBloc>().add(
               DeleteDieuDongEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : AppUtility.showSnackBar(

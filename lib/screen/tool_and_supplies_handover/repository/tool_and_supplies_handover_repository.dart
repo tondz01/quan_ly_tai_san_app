@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
@@ -307,6 +309,14 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         return result;
       }
 
+      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
+      String idNeedToDo =
+          "${request['idDonViGiao']},${request['idDonViNhan']},$newSignatory, admin";
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data.toString();
     } catch (e) {
@@ -577,6 +587,14 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       } else {
         result['status_code'] = response.statusCode;
       }
+      String newSignatory = request.map((e) => e['idNguoiKy']).join(',');
+      String idNeedToDo =
+          "${request.map((e) => e['idDonViGiao']).join(',')},${request.map((e) => e['idDonViNhan']).join(',')},${request.map((e) => e['idGiamDoc']).join(',')},$newSignatory, admin";
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+        typeAction: ActionType.UPDATE,
+        idNeedToDo: idNeedToDo,
+      );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");

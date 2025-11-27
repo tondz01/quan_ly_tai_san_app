@@ -90,7 +90,6 @@ class AuthRepository extends ApiBase {
       AccountHelper.instance.setUserInfo(user);
 
       // Gọi các API phụ trợ
-      await loadData(user.idCongTy);
 
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
@@ -136,16 +135,18 @@ class AuthRepository extends ApiBase {
 
   //------LOAD DATA------------------------------------------------------------------------------------///
   Future<void> loadData(String idCongTy) async {
-    await loadUserDepartments(idCongTy);
-    await loadUserEmployee(idCongTy);
-    await loadAssetGroup(idCongTy);
-    await _loadCCDCGroup(idCongTy);
-    await loadReasonIncrease();
-    await _loadChucVu(idCongTy);
-    await _loadTypeAsset(idCongTy);
-    await _loadTypeCcdc(idCongTy);
-    await _loadAssetCategory(idCongTy);
-    await loadUnit(idCongTy);
+    await Future.wait([
+      loadUserDepartments(idCongTy),
+      loadUserEmployee(idCongTy),
+      loadAssetGroup(idCongTy),
+      _loadCCDCGroup(idCongTy),
+      loadReasonIncrease(),
+      _loadChucVu(idCongTy),
+      _loadTypeAsset(idCongTy),
+      _loadTypeCcdc(idCongTy),
+      _loadAssetCategory(idCongTy),
+      loadUnit(idCongTy),
+    ]);
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper

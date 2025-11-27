@@ -2,11 +2,13 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
@@ -15,16 +17,16 @@ import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 
-class ToolAndMaterialTransferView extends StatefulWidget {
+class ToolAndMaterialTransferView extends riverpod.ConsumerStatefulWidget {
   const ToolAndMaterialTransferView({super.key});
 
   @override
-  State<ToolAndMaterialTransferView> createState() =>
+  riverpod.ConsumerState<ToolAndMaterialTransferView> createState() =>
       _ToolAndMaterialTransferViewState();
 }
 
 class _ToolAndMaterialTransferViewState
-    extends State<ToolAndMaterialTransferView>
+    extends riverpod.ConsumerState<ToolAndMaterialTransferView>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
@@ -75,7 +77,10 @@ class _ToolAndMaterialTransferViewState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _providerRef ??= Provider.of<ToolAndMaterialTransferProvider>(context, listen: false);
+    _providerRef ??= Provider.of<ToolAndMaterialTransferProvider>(
+      context,
+      listen: false,
+    );
     final state = GoRouterState.of(context);
     final String? typeParam = state.uri.queryParameters['type'];
     final int newType = int.tryParse(typeParam ?? '') ?? 0;
@@ -136,7 +141,13 @@ class _ToolAndMaterialTransferViewState
   @override
   Widget build(BuildContext context) {
     super.build(context); // Cần thiết cho AutomaticKeepAliveClientMixin
-
+    ref.listen(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen][AssetHandoverView]  next $next');
+      if (next == null || next.isEmpty) return;
+      log('message [ref.listen][AssetHandoverView]  next not null');
+      // Gọi update
+      context.read<ToolAndMaterialTransferProvider>().onRealtimeUpdate(next, context);
+    });
     return BlocConsumer<
       ToolAndMaterialTransferBloc,
       ToolAndMaterialTransferState
