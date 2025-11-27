@@ -181,61 +181,51 @@ previewDocumentHandover({
     context: context,
     barrierDismissible: true,
     builder:
-        (context) => Padding(
-          padding: const EdgeInsets.only(
-            left: 24.0,
-            right: 24.0,
-            top: 16.0,
-            bottom: 16.0,
-          ),
-          child: CommonContract(
-            contractPages: [
-              A4Canvas(
-                marginsMm: const EdgeInsets.all(20),
-                scale: 1.2,
-                maxWidth: 800,
-                maxHeight: 800 * (297 / 210),
-                child: ContractPage.assetHandoverPageV2(
-                  item,
-                  itemsDetail,
-                  listSigneInfo,
-                ),
+        (context) => CommonContract(
+          contractPages: [
+            A4Canvas(
+              marginsMm: const EdgeInsets.all(20),
+              scale: 1.2,
+              maxWidth: 900,
+              maxHeight: 900 * (297 / 210),
+              child: ContractPage.assetHandoverPageV2(
+                item,
+                itemsDetail,
+                listSigneInfo,
               ),
-            ],
-            signatureList: [urlChuKyNhay, urlChuKyThuong],
-            idTaiLieu: item.id.toString(),
-            idNguoiKy: userInfo.tenDangNhap,
-            tenNguoiKy: userInfo.hoTen,
-            nhanVien: nhanVien,
-            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
-            isSavePin: nhanVien.savePin ?? false,
-            isShowKy: isShowKy,
-            isKyNhay: nhanVien.kyNhay ?? false,
-            isKyThuong: nhanVien.kyThuong ?? false,
-            isKySo: nhanVien.kySo ?? false,
-            eventSignature: () {
-              final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
-                context,
-              );
-              final request =
-                  itemsDetail
-                      .map(
-                        (e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan},
-                      )
-                      .toList();
+            ),
+          ],
+          signatureList: [urlChuKyNhay, urlChuKyThuong],
+          idTaiLieu: item.id.toString(),
+          idNguoiKy: userInfo.tenDangNhap,
+          tenNguoiKy: userInfo.hoTen,
+          nhanVien: nhanVien,
+          pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+          isSavePin: nhanVien.savePin ?? false,
+          isShowKy: isShowKy,
+          isKyNhay: nhanVien.kyNhay ?? false,
+          isKyThuong: nhanVien.kyThuong ?? false,
+          isKySo: nhanVien.kySo ?? false,
+          eventSignature: () {
+            final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
+              context,
+            );
+            final request =
+                itemsDetail
+                    .map((e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan})
+                    .toList();
 
-              assetHandoverBloc.add(
-                UpdateSigningStatusEvent(
-                  context,
-                  item.id.toString(),
-                  userInfo.tenDangNhap,
-                  request,
-                  item.lenhDieuDong.toString(),
-                ),
-              );
-              // Chạy song song tất cả
-            },
-          ),
+            assetHandoverBloc.add(
+              UpdateSigningStatusEvent(
+                context,
+                item.id.toString(),
+                userInfo.tenDangNhap,
+                request,
+                item.lenhDieuDong.toString(),
+              ),
+            );
+            // Chạy song song tất cả
+          },
         ),
   );
 }
@@ -249,25 +239,17 @@ previewDocumentDecisionHandover({
     barrierDismissible: true,
 
     builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.only(
-          left: 24.0,
-          right: 24.0,
-          top: 16.0,
-          bottom: 16.0,
-        ),
-        child: CommonContract(
-          contractPages: [
-            if (document != null)
-              for (var index = 0; index < document.pages.length; index++)
-                PdfPageView(
-                  document: document,
-                  pageNumber: index + 1,
-                  alignment: Alignment.center,
-                ),
-          ],
-          signatureList: [],
-        ),
+      return CommonContract(
+        contractPages: [
+          if (document != null)
+            for (var index = 0; index < document.pages.length; index++)
+              PdfPageView(
+                document: document,
+                pageNumber: index + 1,
+                alignment: Alignment.center,
+              ),
+        ],
+        signatureList: [],
       );
     },
   );

@@ -70,6 +70,27 @@ class _CommonContractState extends State<CommonContract> {
   int _selectedSigningType =
       2; // 1: Ký nháy, 2: Ký thường, 3: Ký số ký hiệu, 4: Ký số hình ảnh
 
+  // Reference dimensions for coordinate normalization (A4 size)
+  static const double REFERENCE_WIDTH = 800.0;
+  static const double REFERENCE_HEIGHT = 1131.0; // A4 ratio (297/210 * 800)
+
+  // Coordinate conversion helpers
+  double _toNormalizedX(double absoluteX) {
+    return absoluteX / REFERENCE_WIDTH;
+  }
+
+  double _toNormalizedY(double absoluteY) {
+    return absoluteY / REFERENCE_HEIGHT;
+  }
+
+  double _toAbsoluteX(double normalizedX) {
+    return normalizedX * REFERENCE_WIDTH;
+  }
+
+  double _toAbsoluteY(double normalizedY) {
+    return normalizedY * REFERENCE_HEIGHT;
+  }
+
   // ===== Helpers UI =====
 
   // ===== Add signatures =====
@@ -235,8 +256,11 @@ class _CommonContractState extends State<CommonContract> {
     );
 
     for (var sig in signatures) {
-      final double x = sig["x"]?.toDouble() ?? 0;
-      final double y = sig["y"]?.toDouble() ?? 0;
+      // Load normalized coordinates (0-1 range) and convert to absolute
+      final double normalizedX = sig["x"]?.toDouble() ?? 0;
+      final double normalizedY = sig["y"]?.toDouble() ?? 0;
+      final double x = _toAbsoluteX(normalizedX);
+      final double y = _toAbsoluteY(normalizedY);
       final int loaiKy = sig["loaiKy"] ?? 1;
       final String? idNguoiKy = sig["idNguoiKy"]?.toString();
       final String? tenNguoiKy = sig["tenNguoiKy"]?.toString();
@@ -492,12 +516,16 @@ class _CommonContractState extends State<CommonContract> {
       final state =
           (img.key as GlobalKey).currentState as _DraggableImageState?;
       if (state != null) {
+        // Convert absolute positions to normalized coordinates (0-1 range)
+        final normalizedX = _toNormalizedX(state.left);
+        final normalizedY = _toNormalizedY(state.top);
+
         data.add({
           "id": UniqueKey().toString(),
           "idTaiLieu": widget.idTaiLieu,
           "loaiKy": img.loaiKy, // 1/2/3
-          "x": state.left,
-          "y": state.top,
+          "x": normalizedX,
+          "y": normalizedY,
           "idNguoiKy": widget.idNguoiKy,
           "chuKySo":
               img.loaiKy == 3 || img.loaiKy == 4 || img.loaiKy == 5

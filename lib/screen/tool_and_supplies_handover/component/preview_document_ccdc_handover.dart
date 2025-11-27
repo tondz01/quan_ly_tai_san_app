@@ -178,93 +178,83 @@ prevDocumentCcdcHandover({
     context: context,
     barrierDismissible: true,
     builder:
-        (context) => Padding(
-          padding: const EdgeInsets.only(
-            left: 24.0,
-            right: 24.0,
-            top: 16.0,
-            bottom: 16.0,
-          ),
-          child: CommonContract(
-            contractPages: [
-              A4Canvas(
-                marginsMm: const EdgeInsets.all(20),
-                scale: 1.2,
-                maxWidth: 800,
-                maxHeight: 800 * (297 / 210),
-                child: ContractPage.toolAndSuppliesHandoverPageV2(
-                  dieuDongCcdc!,
-                  dieuDongCcdc.listDetailSubppliesHandover,
-                  listSigneInfo,
-                ),
+        (context) => CommonContract(
+          contractPages: [
+            A4Canvas(
+              marginsMm: const EdgeInsets.all(20),
+              scale: 1.2,
+              maxWidth: 900,
+              maxHeight: 900 * (297 / 210),
+              child: ContractPage.toolAndSuppliesHandoverPageV2(
+                dieuDongCcdc!,
+                dieuDongCcdc.listDetailSubppliesHandover,
+                listSigneInfo,
               ),
-            ],
+            ),
+          ],
 
-            signatureList: [urlChuKyNhay, urlChuKyThuong],
-            idTaiLieu: dieuDongCcdc.id.toString(),
-            idNguoiKy: userInfo.tenDangNhap,
-            tenNguoiKy: userInfo.hoTen,
-            nhanVien: nhanVien,
-            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
-            isSavePin: nhanVien.savePin ?? false,
-            isShowKy: isShowKy,
-            isKyNhay: nhanVien.kyNhay ?? false,
-            isKyThuong: nhanVien.kyThuong ?? false,
-            isKySo: nhanVien.kySo ?? false,
-            eventSignature: () {
-              final bloc = BlocProvider.of<ToolAndSuppliesHandoverBloc>(
+          signatureList: [urlChuKyNhay, urlChuKyThuong],
+          idTaiLieu: dieuDongCcdc.id.toString(),
+          idNguoiKy: userInfo.tenDangNhap,
+          tenNguoiKy: userInfo.hoTen,
+          nhanVien: nhanVien,
+          pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+          isSavePin: nhanVien.savePin ?? false,
+          isShowKy: isShowKy,
+          isKyNhay: nhanVien.kyNhay ?? false,
+          isKyThuong: nhanVien.kyThuong ?? false,
+          isKySo: nhanVien.kySo ?? false,
+          eventSignature: () {
+            final bloc = BlocProvider.of<ToolAndSuppliesHandoverBloc>(context);
+            List<Map<String, dynamic>> request =
+                item.detailToolAndMaterialTransfers
+                    ?.map(
+                      (e) => {
+                        'id': e.id,
+                        'idCCDCVT': e.idCCDCVatTu,
+                        'idDonViSoHuu': item.idDonViNhan,
+                        'soLuong': e.soLuongXuat,
+                        'thoiGianBanGiao': DateTime.now().toIso8601String(),
+                        'ngayTao': item.ngayTao,
+                        'nguoiTao': userInfo.tenDangNhap,
+                        'idTsCon': e.idChiTietCCDCVatTu,
+                      },
+                    )
+                    .toList() ??
+                [];
+            List<Map<String, dynamic>> requestQuantity =
+                item.detailToolAndMaterialTransfers
+                    ?.map(
+                      (e) => {
+                        'idCCDCVT': e.idCCDCVatTu,
+                        'idDonViGui': item.idDonViGiao,
+                        'idDonViNhan': item.idDonViNhan,
+                        'soLuongBanGiao': e.soLuongXuat,
+                        'thoiGianBanGiao': DateTime.now().toIso8601String(),
+                        'idTsCon': e.idChiTietCCDCVatTu,
+                      },
+                    )
+                    .toList() ??
+                [];
+            // if (dieuDongCcdc?.share == false) {
+            //   bloc.add(
+            //     SendToSignerAsetHandoverEvent(context, [
+            //       dieuDongCcdc!.copyWith(share: true),
+            //     ]),
+            //   );
+            // }
+
+            bloc.add(
+              UpdateSigningStatusCcdcEvent(
                 context,
-              );
-              List<Map<String, dynamic>> request =
-                  item.detailToolAndMaterialTransfers
-                      ?.map(
-                        (e) => {
-                          'id': e.id,
-                          'idCCDCVT': e.idCCDCVatTu,
-                          'idDonViSoHuu': item.idDonViNhan,
-                          'soLuong': e.soLuongXuat,
-                          'thoiGianBanGiao': DateTime.now().toIso8601String(),
-                          'ngayTao': item.ngayTao,
-                          'nguoiTao': userInfo.tenDangNhap,
-                          'idTsCon': e.idChiTietCCDCVatTu,
-                        },
-                      )
-                      .toList() ??
-                  [];
-              List<Map<String, dynamic>> requestQuantity =
-                  item.detailToolAndMaterialTransfers
-                      ?.map(
-                        (e) => {
-                          'idCCDCVT': e.idCCDCVatTu,
-                          'idDonViGui': item.idDonViGiao,
-                          'idDonViNhan': item.idDonViNhan,
-                          'soLuongBanGiao': e.soLuongXuat,
-                          'thoiGianBanGiao': DateTime.now().toIso8601String(),
-                          'idTsCon': e.idChiTietCCDCVatTu,
-                        },
-                      )
-                      .toList() ??
-                  [];
-              // if (dieuDongCcdc?.share == false) {
-              //   bloc.add(
-              //     SendToSignerAsetHandoverEvent(context, [
-              //       dieuDongCcdc!.copyWith(share: true),
-              //     ]),
-              //   );
-              // }
-
-              bloc.add(
-                UpdateSigningStatusCcdcEvent(
-                  context,
-                  dieuDongCcdc.id.toString(),
-                  userInfo.tenDangNhap,
-                  request,
-                  requestQuantity,
-                  dieuDongCcdc.lenhDieuDong.toString(),
-                ),
-              );
-            },
-          ),
+                dieuDongCcdc.id.toString(),
+                userInfo.tenDangNhap,
+                request,
+                requestQuantity,
+                dieuDongCcdc.lenhDieuDong.toString(),
+              ),
+            );
+          },
         ),
   );
 }
@@ -277,25 +267,17 @@ prevDocumentCcdcDecisionHandover({
     context: context,
     barrierDismissible: true,
     builder:
-        (context) => Padding(
-          padding: const EdgeInsets.only(
-            left: 24.0,
-            right: 24.0,
-            top: 16.0,
-            bottom: 16.0,
-          ),
-          child: CommonContract(
-            contractPages: [
-              if (document != null)
-                for (var index = 0; index < document.pages.length; index++)
-                  PdfPageView(
-                    document: document,
-                    pageNumber: index + 1,
-                    alignment: Alignment.center,
-                  ),
-            ],
-            signatureList: [],
-          ),
+        (context) => CommonContract(
+          contractPages: [
+            if (document != null)
+              for (var index = 0; index < document.pages.length; index++)
+                PdfPageView(
+                  document: document,
+                  pageNumber: index + 1,
+                  alignment: Alignment.center,
+                ),
+          ],
+          signatureList: [],
         ),
   );
 }
