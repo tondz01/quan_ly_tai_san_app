@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -154,22 +153,12 @@ class _AssetHandoverViewState
   @override
   Widget build(BuildContext context) {
     ref.listen(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen]  next $next');
       if (next == null || next.isEmpty) return;
-      try {
-        // Tìm message có timestamp lớn nhất
-        final latestMessage = next.values.reduce((a, b) {
-          return (a['time'] as int) > (b['time'] as int) ? a : b;
-        });
+      log('message [ref.listen]  next not null');
 
-        final currentTimestamp = latestMessage['time'] as int;
-
-        // Chỉ cập nhật nếu message thực sự mới hơn lần trước
-        if (_lastTimestamp == null || currentTimestamp > _lastTimestamp!) {
-          _lastTimestamp = currentTimestamp;
-          // Gọi update
-          context.read<AssetHandoverProvider>().onRealtimeUpdate(latestMessage);
-        }
-      } catch (_) {}
+      // Gọi update
+      context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
     });
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {

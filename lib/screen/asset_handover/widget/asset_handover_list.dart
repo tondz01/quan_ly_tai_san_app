@@ -5,9 +5,11 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
@@ -675,6 +677,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             context.read<AssetHandoverBloc>().add(
               DeleteAssetHandoverEvent(context, item.id!),
             );
+           onPushMessage(item);
           },
         )
         : item.trangThai == 0
@@ -691,6 +694,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             context.read<AssetHandoverBloc>().add(
               DeleteAssetHandoverEvent(context, item.id!),
             );
+            onPushMessage(item);
           },
         )
         : AppUtility.showSnackBar(
@@ -804,5 +808,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         isError: true,
       );
     }
+  }
+
+  onPushMessage(AssetHandoverDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+    String idNeedToDo =
+        "${item.idDaiDiendonviBanHanhQD},${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin";
+
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.ASSET_HANDOVER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
+    );
   }
 }

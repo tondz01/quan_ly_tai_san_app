@@ -351,6 +351,7 @@ class AssetHandoverProvider with ChangeNotifier {
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
+        print("User involved, reloading data...");
         onReloadDataAssetHandover();
       }
     }

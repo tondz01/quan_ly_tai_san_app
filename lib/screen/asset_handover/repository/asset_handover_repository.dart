@@ -177,7 +177,7 @@ class AssetHandoverRepository extends ApiBase {
       );
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
-        data: jsonEncode(listDetailAssetHandover),
+        data: listDetailAssetHandover.map((e) => e.toJson()).toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
@@ -404,7 +404,27 @@ class AssetHandoverRepository extends ApiBase {
     };
     UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
     try {
+      // Tối ưu: sử dụng Set để tự động loại bỏ duplicate IDs
+      final allIds = <String>{};
+
       for (var item in items) {
+        final id1 = item.idDaiDiendonviBanHanhQD;
+        final id2 = item.idDaiDienBenGiao;
+        final id3 = item.idDaiDienBenNhan;
+        final id4 = item.idGiamDoc;
+
+        if (id1 != null && id1.isNotEmpty) allIds.add(id1);
+        if (id2 != null && id2.isNotEmpty) allIds.add(id2);
+        if (id3 != null && id3.isNotEmpty) allIds.add(id3);
+        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
+
+        final signatories = item.listSignatory;
+        if (signatories != null) {
+          for (var s in signatories) {
+            final sigId = s.idNguoiKy;
+            if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
+          }
+        }
         final Map<String, dynamic> request = {
           "id": item.id,
           "idCongTy": item.idCongTy ?? '',
@@ -443,6 +463,17 @@ class AssetHandoverRepository extends ApiBase {
         } else {
           result['status_code'] = response.statusCode;
         }
+      }
+      // Gửi message realtime nếu có IDs
+      if (allIds.isNotEmpty) {
+        // Thêm admin mặc định vào danh sách nhận thông báo
+        allIds.add('admin');
+        
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ASSET_HANDOVER,
+          typeAction: ActionType.UPDATE,
+          idNeedToDo: allIds.join(','),
+        );
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
@@ -500,7 +531,7 @@ class AssetHandoverRepository extends ApiBase {
     try {
       final response = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
-        data: jsonEncode(request),
+        data: request.map((e) => e.toJson()).toList(),
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
           response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
