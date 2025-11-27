@@ -9,7 +9,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -131,8 +134,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   final List<SgTableColumn<ToolAndSuppliesHandoverDto>> _columns = [];
 
   ToolAndSuppliesHandoverDto? _item;
-
-  final reloadDataService = PermissionSignService();
 
   // Chi tiết CCDC theo lệnh điều động
 
@@ -302,9 +303,20 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     //   onReloadDataToolAndMaterialHandover();
     //   print("reload data tool and supplies handover");
     // });
-    reloadDataService.reloadData(() async {
-      onReloadDataToolAndMaterialHandover();
-    });
+  }
+
+  void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
+    if (jsonMsg['type_func'] == FunctionType.TOOL_AND_SUPPLIES_HANDOVER) {
+      log(
+        'message [ref.listen] [ToolAndSuppliesHandoverProvider] update received: $jsonMsg',
+      );
+      if (AppUtility.userInList(
+        userInfo?.tenDangNhap ?? '',
+        jsonMsg['id_need_to_do'] ?? '',
+      )) {
+        onReloadDataToolAndMaterialHandover();
+      }
+    }
   }
 
   onLoadDataDropdown() {
@@ -568,5 +580,17 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     } else {
       return [];
     }
+  }
+
+  onPushMessage(ToolAndSuppliesHandoverDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    String idNeedToDo =
+        "${item.idDonViGiao},${item.idDonViNhan},${item.idGiamDoc},$newSignatory, admin";
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
+    );
   }
 }

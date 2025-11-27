@@ -19,9 +19,11 @@ import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.d
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -1421,6 +1423,16 @@ class _ToolAndMaterialTransferDetailState
       if (mounted) {
         context.read<ToolAndMaterialTransferBloc>().add(
           UpdateToolAndMaterialTransferEvent(context, newRequest, item!.id!),
+        );
+        String newSignatory = additionalSignersDetailed
+            .map((e) => e.employee?.id ?? '')
+            .join(',');
+        String idNeedToDo =
+            "${item!.idDonViGiao},${item!.idDonViNhan},${item!.idNguoiKyNhay},${item!.idTrinhDuyetGiamDoc},$newSignatory, admin";
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+          typeAction: ActionType.UPDATE,
+          idNeedToDo: idNeedToDo,
         );
       }
     }

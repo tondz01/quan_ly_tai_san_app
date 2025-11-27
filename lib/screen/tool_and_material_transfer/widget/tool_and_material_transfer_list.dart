@@ -782,6 +782,7 @@ class _ToolAndMaterialTransferListState
             context.read<ToolAndMaterialTransferBloc>().add(
               DeleteToolAndMaterialTransferEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : item.trangThai == 0
@@ -798,6 +799,7 @@ class _ToolAndMaterialTransferListState
             context.read<ToolAndMaterialTransferBloc>().add(
               DeleteToolAndMaterialTransferEvent(context, item.id!),
             );
+            widget.provider.onPushMessage(item);
           },
         )
         : AppUtility.showSnackBar(

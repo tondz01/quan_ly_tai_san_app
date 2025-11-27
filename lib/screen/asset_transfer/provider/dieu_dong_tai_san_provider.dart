@@ -232,12 +232,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
-      log("Realtime update received: $jsonMsg");
+      log("message [ref.listen] [DieuDongTaiSanProvider] update received:${userInfo?.tenDangNhap} $jsonMsg");
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        print("User involved, reloading data...");
+        log("message [ref.listen] [DieuDongTaiSanProvider] involved, reloading data...");
         onReloadDataPage(context, false);
       }
     }
@@ -248,10 +248,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       final args = await AssetManagementRepository().getListAssetManagement(
         'ct001',
       );
-      log('message result _dataAsset args: ${args['data'].length}');
       AccountHelper.instance.setListAsset(args['data'] ?? []);
       _dataAsset = args['data'];
-      log('message result _dataAsset: ${_dataAsset?.length}');
     } else {
       _dataAsset = AccountHelper.instance.getAllAssets();
     }
@@ -705,15 +703,17 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  onPushMessage(DieuDongTaiSanDto item) {
+  void onPushMessage(DieuDongTaiSanDto item) {
     String newSignatory =
         item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
     String idNeedToDo =
         "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin";
-    MessageServiceRealtime().pushJsonMessage(
-      typeFunc: FunctionType.ASSET_TRANSFER,
-      typeAction: ActionType.CREATE,
-      idNeedToDo: idNeedToDo,
-    );
+    Future.delayed(const Duration(milliseconds: 200)).then((_) {
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.ASSET_TRANSFER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
+    });
   }
 }

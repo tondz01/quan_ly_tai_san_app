@@ -1,8 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
@@ -16,16 +20,16 @@ import 'bloc/tool_and_supplies_handover_bloc.dart';
 import 'bloc/tool_and_supplies_handover_state.dart';
 import 'provider/tool_and_supplies_handover_provider.dart';
 
-class ToolAndSuppliesHandoverView extends StatefulWidget {
+class ToolAndSuppliesHandoverView extends riverpod.ConsumerStatefulWidget {
   const ToolAndSuppliesHandoverView({super.key});
 
   @override
-  State<ToolAndSuppliesHandoverView> createState() =>
+  riverpod.ConsumerState<ToolAndSuppliesHandoverView> createState() =>
       _ToolAndSuppliesHandoverViewState();
 }
 
 class _ToolAndSuppliesHandoverViewState
-    extends State<ToolAndSuppliesHandoverView> {
+    extends riverpod.ConsumerState<ToolAndSuppliesHandoverView> {
   ToolAndSuppliesHandoverDto? toolAndSuppliesHandoverData;
   Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
@@ -132,6 +136,13 @@ class _ToolAndSuppliesHandoverViewState
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen][ToolAndSuppliesHandoverView]  next $next');
+      if (next == null || next.isEmpty) return;
+      log('message [ref.listen][ToolAndSuppliesHandoverView]  next not null');
+      // Gọi update
+      context.read<ToolAndSuppliesHandoverProvider>().onRealtimeUpdate(next, context);
+    });
     return BlocConsumer<
       ToolAndSuppliesHandoverBloc,
       ToolAndSuppliesHandoverState

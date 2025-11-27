@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/app.dart';
@@ -62,5 +63,5 @@ void main() async {
   // Inicializar GetX
   Get.put(MyLocale());
 
-  runApp(App());
+  runApp(const ProviderScope(child: App()));
 }

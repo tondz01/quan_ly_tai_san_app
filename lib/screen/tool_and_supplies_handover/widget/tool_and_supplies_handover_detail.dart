@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/components/convert_pdf.dart';
 import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
@@ -15,9 +14,11 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
@@ -68,8 +69,8 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerTransferDate = TextEditingController();
   late TextEditingController controllerDocumentCreationDate =
       TextEditingController();
-  late TextEditingController controllerIssuingUnitRepresentative =
-      TextEditingController();
+  // late TextEditingController controllerIssuingUnitRepresentative =
+  //     TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
   late TextEditingController controllerGiamDocKy = TextEditingController();
@@ -379,63 +380,67 @@ class _ToolAndSuppliesHandoverDetailState
   Map<String, bool> _validationErrors = {};
 
   bool _validateForm() {
+    if (!mounted) return false;
     Map<String, bool> newValidationErrors = {};
-    if (controllerHandoverNumber.text.isEmpty) {
-      newValidationErrors['handoverNumber'] = true;
-    }
-    if (controllerDocumentName.text.isEmpty) {
-      newValidationErrors['documentName'] = true;
-    }
-    if (dieuDongCcdc == null || controllerOrder.text.isEmpty) {
-      newValidationErrors['order'] = true;
-    }
-    if (donViGiao == null || controllerSenderUnit.text.isEmpty) {
-      newValidationErrors['senderUnit'] = true;
-    }
-    if (donViNhan == null || controllerReceiverUnit.text.isEmpty) {
-      newValidationErrors['receiverUnit'] = true;
-    }
-    if (controllerTransferDate.text.isEmpty) {
-      newValidationErrors['transferDate'] = true;
-    }
-    if (controllerDocumentCreationDate.text.isEmpty) {
-      newValidationErrors['documentCreationDate'] = true;
-    }
-    // if (controllerLeader.text.isEmpty) {
-    //   newValidationErrors['leader'] = true;
-    // }
-    if (controllerIssuingUnitRepresentative.text.isEmpty) {
-      newValidationErrors['issuingUnitRepresentative'] = true;
-    }
-    if (controllerDelivererRepresentative.text.isEmpty) {
-      newValidationErrors['delivererRepresentative'] = true;
-    }
-    if (controllerReceiverRepresentative.text.isEmpty) {
-      newValidationErrors['receiverRepresentative'] = true;
-    }
-    if (nguoiDaiDienBanHanhQD == null ||
-        controllerIssuingUnitRepresentative.text.isEmpty) {
-      newValidationErrors['issuingUnitRepresentative'] = true;
-    }
-    if (nguoiDaiDienBenGiao == null ||
-        controllerDelivererRepresentative.text.isEmpty) {
-      newValidationErrors['delivererRepresentative'] = true;
-    }
-    if (nguoiDaiDienBenNhan == null ||
-        controllerReceiverRepresentative.text.isEmpty) {
-      newValidationErrors['receiverRepresentative'] = true;
-    }
-    if (item == null && _selectedFileName == null) {
-      newValidationErrors['document'] = true;
-    }
-    bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
-    if (hasChanges) {
-      setState(() {
-        _validationErrors = newValidationErrors;
-      });
-    }
+    try {
+      if (controllerHandoverNumber.text.isEmpty) {
+        newValidationErrors['handoverNumber'] = true;
+      }
+      if (controllerDocumentName.text.isEmpty) {
+        newValidationErrors['documentName'] = true;
+      }
+      if (dieuDongCcdc == null || controllerOrder.text.isEmpty) {
+        newValidationErrors['order'] = true;
+      }
+      if (donViGiao == null || controllerSenderUnit.text.isEmpty) {
+        newValidationErrors['senderUnit'] = true;
+      }
+      if (donViNhan == null || controllerReceiverUnit.text.isEmpty) {
+        newValidationErrors['receiverUnit'] = true;
+      }
+      if (controllerTransferDate.text.isEmpty) {
+        newValidationErrors['transferDate'] = true;
+      }
+      if (controllerDocumentCreationDate.text.isEmpty) {
+        newValidationErrors['documentCreationDate'] = true;
+      }
+      // if (controllerLeader.text.isEmpty) {
+      //   newValidationErrors['leader'] = true;
+      // }
+     
+      if (controllerDelivererRepresentative.text.isEmpty) {
+        newValidationErrors['delivererRepresentative'] = true;
+      }
+      if (controllerReceiverRepresentative.text.isEmpty) {
+        newValidationErrors['receiverRepresentative'] = true;
+      }
+      // if (nguoiDaiDienBanHanhQD == null ||
+      //     controllerIssuingUnitRepresentative.text.isEmpty) {
+      //   newValidationErrors['issuingUnitRepresentative'] = true;
+      // }
+      if (nguoiDaiDienBenGiao == null ||
+          controllerDelivererRepresentative.text.isEmpty) {
+        newValidationErrors['delivererRepresentative'] = true;
+      }
+      if (nguoiDaiDienBenNhan == null ||
+          controllerReceiverRepresentative.text.isEmpty) {
+        newValidationErrors['receiverRepresentative'] = true;
+      }
+      if (item == null && _selectedFileName == null) {
+        newValidationErrors['document'] = true;
+      }
+      bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
+      if (hasChanges) {
+        setState(() {
+          _validationErrors = newValidationErrors;
+        });
+      }
 
-    return newValidationErrors.isEmpty;
+      return newValidationErrors.isEmpty;
+    } catch (e) {
+      // Nếu có lỗi khi truy cập controller, trả về false
+      return false;
+    }
   }
 
   void _updateControllers() {
@@ -455,8 +460,7 @@ class _ToolAndSuppliesHandoverDetailState
       // );
 
       // controllerLeader.text = item?.tenLanhDao ?? '';
-      controllerIssuingUnitRepresentative.text =
-          item?.tenDaiDienBanHanhQD ?? '';
+
       controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
       controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
       // controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
@@ -594,6 +598,16 @@ class _ToolAndSuppliesHandoverDetailState
         );
       }
       bloc.add(UpdateToolAndSuppliesHandoverEvent(request));
+      String newSignatory = _additionalSignersDetailed
+          .map((e) => e.employee?.id ?? '')
+          .join(',');
+      String idNeedToDo =
+          "${request['idDonViGiao']},${request['idDonViNhan']},${request['idGiamDoc']},$newSignatory, admin";
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+        typeAction: ActionType.UPDATE,
+        idNeedToDo: idNeedToDo,
+      );
     }
 
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
@@ -673,7 +687,6 @@ class _ToolAndSuppliesHandoverDetailState
     controllerTransferDate.dispose();
     controllerDocumentCreationDate.dispose();
     // controllerLeader.dispose();
-    controllerIssuingUnitRepresentative.dispose();
     controllerDelivererRepresentative.dispose();
     controllerReceiverRepresentative.dispose();
     // controllerRepresentativeUnit.dispose();
@@ -1077,37 +1090,37 @@ class _ToolAndSuppliesHandoverDetailState
     return Column(
       spacing: 10,
       children: [
-        CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện đơn vị đề nghị',
-          controller: controllerIssuingUnitRepresentative,
-          isEditing: isEditing,
-          defaultValue:
-              item?.idDaiDiendonviBanHanhQD != null
-                  ? widget.provider.getNhanVien(
-                    idNhanVien: item!.idDaiDiendonviBanHanhQD!,
-                  )
-                  : null,
-          fieldName: 'issuingUnitRepresentative',
-          items: itemsNhanVien,
-          onChanged: (value) {
-            nguoiDaiDienBanHanhQD = value;
-          },
-          validationErrors: _validationErrors,
-          isRequired: true,
-        ),
-        SizedBox(height: 1),
-        CommonCheckboxInput(
-          label: 'Đã xác nhận',
-          value: isUnitConfirm,
-          isEditing: false,
-          isDisabled: true,
-          onChanged: (newValue) {
-            setState(() {
-              isUnitConfirm = newValue;
-            });
-          },
-        ),
-        SizedBox(height: 1),
+        // CmFormDropdownObject<NhanVien>(
+        //   label: 'Đại diện đơn vị đề nghị',
+        //   controller: controllerIssuingUnitRepresentative,
+        //   isEditing: isEditing,
+        //   defaultValue:
+        //       item?.idDaiDiendonviBanHanhQD != null
+        //           ? widget.provider.getNhanVien(
+        //             idNhanVien: item!.idDaiDiendonviBanHanhQD!,
+        //           )
+        //           : null,
+        //   fieldName: 'issuingUnitRepresentative',
+        //   items: itemsNhanVien,
+        //   onChanged: (value) {
+        //     nguoiDaiDienBanHanhQD = value;
+        //   },
+        //   validationErrors: _validationErrors,
+        //   isRequired: true,
+        // ),
+        // SizedBox(height: 1),
+        // CommonCheckboxInput(
+        //   label: 'Đã xác nhận',
+        //   value: isUnitConfirm,
+        //   isEditing: false,
+        //   isDisabled: true,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isUnitConfirm = newValue;
+        //     });
+        //   },
+        // ),
+        // SizedBox(height: 1),
         CmFormDropdownObject<NhanVien>(
           label: 'Đại diện đơn vị giao',
           controller: controllerDelivererRepresentative,
@@ -1133,17 +1146,17 @@ class _ToolAndSuppliesHandoverDetailState
           validationErrors: _validationErrors,
           isRequired: true,
         ),
-        CommonCheckboxInput(
-          label: 'Đại diện bên giao đã xác nhận',
-          value: isDelivererConfirm,
-          isEditing: isEditing,
-          isDisabled: true,
-          onChanged: (newValue) {
-            setState(() {
-              isDelivererConfirm = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Đại diện bên giao đã xác nhận',
+        //   value: isDelivererConfirm,
+        //   isEditing: isEditing,
+        //   isDisabled: true,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isDelivererConfirm = newValue;
+        //     });
+        //   },
+        // ),
         CmFormDropdownObject<NhanVien>(
           label: 'Đại diện đơn vị bên nhận',
           controller: controllerReceiverRepresentative,
@@ -1169,17 +1182,17 @@ class _ToolAndSuppliesHandoverDetailState
           validationErrors: _validationErrors,
           isRequired: true,
         ),
-        CommonCheckboxInput(
-          label: 'Đại diện bên nhận đã xác nhận',
-          value: isReceiverConfirm,
-          isEditing: isEditing,
-          isDisabled: true,
-          onChanged: (newValue) {
-            setState(() {
-              isReceiverConfirm = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Đại diện bên nhận đã xác nhận',
+        //   value: isReceiverConfirm,
+        //   isEditing: isEditing,
+        //   isDisabled: true,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isReceiverConfirm = newValue;
+        //     });
+        //   },
+        // ),
         AdditionalSignersSelector(
           addButtonText: "Thêm người đại diện",
           labelDepartment: "Người đại diện",
@@ -1229,17 +1242,17 @@ class _ToolAndSuppliesHandoverDetailState
           validationErrors: _validationErrors,
           isRequired: true,
         ),
-        CommonCheckboxInput(
-          label: 'Giám đốc xác nhận',
-          value: isGiamDocConfirm,
-          isEditing: isEditing,
-          isDisabled: true,
-          onChanged: (newValue) {
-            setState(() {
-              isGiamDocConfirm = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Giám đốc xác nhận',
+        //   value: isGiamDocConfirm,
+        //   isEditing: isEditing,
+        //   isDisabled: true,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isGiamDocConfirm = newValue;
+        //     });
+        //   },
+        // ),
         // CommonCheckboxInput(
         //   label: 'Ký theo lượt',
         //   value: isByStep,
@@ -1269,8 +1282,8 @@ class _ToolAndSuppliesHandoverDetailState
       ngayTaoChungTu: controllerDocumentCreationDate.text,
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
-      idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
-      tenDaiDienBanHanhQD: nguoiDaiDienBanHanhQD?.hoTen ?? '',
+      // idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
+      // tenDaiDienBanHanhQD: nguoiDaiDienBanHanhQD?.hoTen ?? '',
       daXacNhan: isUnitConfirm,
       idDaiDienBenGiao: nguoiDaiDienBenGiao?.id ?? '',
       tenDaiDienBenGiao: nguoiDaiDienBenGiao?.hoTen ?? '',

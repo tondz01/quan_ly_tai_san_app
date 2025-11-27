@@ -263,6 +263,7 @@ prevDocumentCcdcHandover({
                   dieuDongCcdc.lenhDieuDong.toString(),
                 ),
               );
+              context.read<ToolAndSuppliesHandoverProvider>().onPushMessage(dieuDongCcdc);
             },
           ),
         ),

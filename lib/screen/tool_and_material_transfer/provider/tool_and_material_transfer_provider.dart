@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
-import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -58,7 +59,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get dataNhanVien => _dataNhanVien;
   get listOwnershipUnit => _listOwnershipUnit;
   get listDetailTransferCCDC => _listDetailTransferCCDC;
-  get loadingMessage => _loadingMessage;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDPhongBanKho => _itemsDDPhongBanKho;
@@ -84,7 +84,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
     _searchTerm = value;
-    _applyFilters();
     notifyListeners();
   }
 
@@ -112,20 +111,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   late int endIndex;
   int rowsPerPage = 10;
   int currentPage = 1;
-  TextEditingController? controllerDropdownPage;
-
-  final List<DropdownMenuItem<int>> items = [
-    const DropdownMenuItem(value: 5, child: Text('5')),
-    const DropdownMenuItem(value: 10, child: Text('10')),
-    const DropdownMenuItem(value: 20, child: Text('20')),
-    const DropdownMenuItem(value: 50, child: Text('50')),
-  ];
 
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBanKho = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
-
-  final reloadDataService = PermissionSignService();
 
   // List status
   // late List<ListStatus> _listStatus;
@@ -133,7 +122,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   String? _error;
   String? _subScreen;
   String mainScreen = '';
-  String _loadingMessage = '';
 
   bool _isShowInput = false;
   bool _isShowCollapse = true;
@@ -214,72 +202,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void _applyFilters() {
-    if (_data == null) return;
-
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
-
-    List<ToolAndMaterialTransferDto> statusFiltered;
-    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
-      statusFiltered = List.from(_data!);
-    } else {
-      statusFiltered =
-          _data!.where((item) {
-            int itemStatus = item.trangThai ?? 0;
-            if (_filterStatus[FilterStatus.draft] == true &&
-                (itemStatus == 0)) {
-              return true;
-            }
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 1)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
-
-            return false;
-          }).toList();
-    }
-
-    if (_searchTerm.isNotEmpty) {
-      String searchLower = _searchTerm.toLowerCase();
-      _filteredData =
-          statusFiltered.where((item) {
-            return (item.tenPhieu?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.soQuyetDinh?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.detailToolAndMaterialTransfers?.any(
-                      (detail) =>
-                          detail.tenCCDCVatTu?.toLowerCase().contains(
-                            searchLower,
-                          ) ??
-                          false,
-                    ) ??
-                    false) ||
-                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
-                    false);
-          }).toList();
-    } else {
-      _filteredData = statusFiltered;
-    }
-  }
-
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
@@ -293,14 +215,18 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _initData(context);
     // _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
-    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-    //   // onReloadDataToolAndMaterialTransfer();
-    //   onReloadData(context);
-    // });
 
-    reloadDataService.reloadData(() async {
-      onReloadData(context);
-    });
+  }
+
+  void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
+    if (jsonMsg['type_func'] == FunctionType.TOOL_AND_MATERIAL_TRANSFER) {
+      if (AppUtility.userInList(
+        userInfo?.tenDangNhap ?? '',
+        jsonMsg['id_need_to_do'] ?? '',
+      )) {
+        onReloadData(context);
+      }
+    }
   }
 
   void refreshData(BuildContext context, int type) {
@@ -318,7 +244,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     onCloseDetail(context);
     getDataDropdown();
 
-    controllerDropdownPage = TextEditingController(text: '10');
     onReloadData(context);
     // getDataAll(context);
   }
@@ -374,7 +299,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     // if (_data != null) {
     //   // refreshCountSign(_data!);
     // }
-    _applyFilters();
     notifyListeners();
   }
 
@@ -387,10 +311,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
     _listOwnershipUnit = [];
-    if (controllerDropdownPage != null) {
-      controllerDropdownPage!.dispose();
-      controllerDropdownPage = null;
-    }
 
     // _autoReloadTimer?.cancel();
     // _autoReloadTimer = null;
@@ -470,7 +390,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
       _filteredData = List.from(_data!);
-      _applyFilters();
     }
     notifyListeners();
   }
@@ -955,6 +874,18 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
           ),
         ],
       ),
+    );
+  }
+
+  onPushMessage(ToolAndMaterialTransferDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    String idNeedToDo =
+        "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin";
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
     );
   }
 

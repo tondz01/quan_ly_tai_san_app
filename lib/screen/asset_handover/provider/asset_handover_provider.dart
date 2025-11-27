@@ -307,9 +307,9 @@ class AssetHandoverProvider with ChangeNotifier {
     //   onReloadDataAssetHandover();
     //   print("reload data asset handover");
     // });
-    reloadDataService.reloadData(() async {
-      onReloadDataAssetHandover();
-    });
+    // reloadDataService.reloadData(() async {
+    //   onReloadDataAssetHandover();
+    // });
   }
 
   onLoadDataDropdown() {
@@ -347,12 +347,12 @@ class AssetHandoverProvider with ChangeNotifier {
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg) {
     if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
-      log("Realtime update received: $jsonMsg");
+      log("message [ref.listen] [AssetHandoverProvider] update received: $jsonMsg");
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        print("User involved, reloading data...");
+        print("message [ref.listen] [AssetHandoverProvider] involved, reloading data...");
         onReloadDataAssetHandover();
       }
     }

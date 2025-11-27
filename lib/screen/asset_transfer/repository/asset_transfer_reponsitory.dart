@@ -439,15 +439,18 @@ class AssetTransferRepository extends ApiBase {
           result['status_code'] = response.statusCode;
         }
       }
-        if (allIds.isNotEmpty) {
-        // Thêm admin mặc định vào danh sách nhận thông báo
-        allIds.add('admin');
-        
-        MessageServiceRealtime().pushJsonMessage(
-          typeFunc: FunctionType.ASSET_HANDOVER,
-          typeAction: ActionType.UPDATE,
-          idNeedToDo: allIds.join(','),
-        );
+      if (allIds.isNotEmpty) {
+        final recipients = {
+          ...allIds.where((id) => id.trim().isNotEmpty),
+          'admin',
+        };
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.ASSET_TRANSFER,
+            typeAction: ActionType.CREATE,
+            idNeedToDo: recipients.join(','),
+          );
+        });
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

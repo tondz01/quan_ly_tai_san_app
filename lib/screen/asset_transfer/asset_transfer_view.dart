@@ -127,7 +127,7 @@ class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> 
       if (next == null || next.isEmpty) return;
       log('message [ref.listen][AssetHandoverView]  next not null');
       // Gọi update
-      context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
+      context.read<DieuDongTaiSanProvider>().onRealtimeUpdate(next, context);
     });
     return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
       builder: (context, state) {

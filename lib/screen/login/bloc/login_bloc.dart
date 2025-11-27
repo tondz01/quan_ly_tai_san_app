@@ -33,31 +33,31 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Map<String, dynamic> result = await AuthRepository().login(event.params);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       // Chạy lần lượt các request liên quan sau đăng nhập
-      final reponse = await AssetTransferRepository().getListDieuDongTaiSan();
-      if (reponse['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final data = reponse['data'];
-        AccountHelper.instance.setAssetTransfer(data);
-      }
-      final reponseToolsHandover =
-          await ToolAndSuppliesHandoverRepository()
-              .getListToolAndSuppliesHandover();
-      if (reponseToolsHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final data = reponseToolsHandover['data'];
-        AccountHelper.instance.setToolAndMaterialHandover(data);
-      }
-      final reponseAssetHandover =
-          await AssetHandoverRepository().getListAssetHandover();
-      if (reponseAssetHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final data = reponseAssetHandover['data'];
-        AccountHelper.instance.setAssetHandover(data);
-      }
-      final reponseToolAndMaterialTransfer =
-          await ToolAndMaterialTransferRepository()
-              .getAllToolAndMeterialTransferByCT();
-      if (reponseToolAndMaterialTransfer.isNotEmpty) {
-        final data = reponseToolAndMaterialTransfer;
-        AccountHelper.instance.setToolAndMaterialHandover(data);
-      }
+      // final reponse = await AssetTransferRepository().getListDieuDongTaiSan();
+      // if (reponse['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      //   final data = reponse['data'];
+      //   AccountHelper.instance.setAssetTransfer(data);
+      // }
+      // final reponseToolsHandover =
+      //     await ToolAndSuppliesHandoverRepository()
+      //         .getListToolAndSuppliesHandover();
+      // if (reponseToolsHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      //   final data = reponseToolsHandover['data'];
+      //   AccountHelper.instance.setToolAndMaterialHandover(data);
+      // }
+      // final reponseAssetHandover =
+      //     await AssetHandoverRepository().getListAssetHandover();
+      // if (reponseAssetHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      //   final data = reponseAssetHandover['data'];
+      //   AccountHelper.instance.setAssetHandover(data);
+      // }
+      // final reponseToolAndMaterialTransfer =
+      //     await ToolAndMaterialTransferRepository()
+      //         .getAllToolAndMeterialTransferByCT();
+      // if (reponseToolAndMaterialTransfer.isNotEmpty) {
+      //   final data = reponseToolAndMaterialTransfer;
+      //   AccountHelper.instance.setToolAndMaterialHandover(data);
+      // }
       if (result['data'] != null) {
         emit(LoginLoadingDismissState());
         emit(PostLoginSuccessState(data: result['data']));
