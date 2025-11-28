@@ -643,6 +643,7 @@ class _ToolAndSuppliesHandoverListState
               UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
               ToolAndSuppliesHandoverDto? item =
                   selectedItems.isNotEmpty ? selectedItems.first : null;
+              log("Selected item for signing: ${item?.tenFile}");
               _handleSignDocument(item!, userInfo!, widget.provider);
             }
           },
@@ -770,17 +771,17 @@ class _ToolAndSuppliesHandoverListState
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      ThreadNode(
-        header: 'Đại diện đơn vị để nghị:',
-        depth: 1,
-        child: viewSignatoryStatus(
-          item.daXacNhan == true,
-          widget.provider
-              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-              .hoTen
-              .toString(),
-        ),
-      ),
+      // ThreadNode(
+      //   header: 'Đại diện đơn vị để nghị:',
+      //   depth: 1,
+      //   child: viewSignatoryStatus(
+      //     item.daXacNhan == true,
+      //     widget.provider
+      //         .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+      //         .hoTen
+      //         .toString(),
+      //   ),
+      // ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,
@@ -811,7 +812,7 @@ class _ToolAndSuppliesHandoverListState
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
-        ThreadNode(
+      ThreadNode(
         header: 'Giám đốc ký xác nhận:',
         depth: 1,
         child: viewSignatoryStatus(

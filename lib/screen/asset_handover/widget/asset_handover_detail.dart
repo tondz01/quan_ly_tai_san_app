@@ -13,9 +13,11 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -558,6 +560,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
       assetHandoverBloc.add(UpdateAssetHandoverEvent(request, item!.id!));
+
+      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
+      //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+      String idNeedToDo =
+          "${nguoiDaiDienBenGiao?.id},${nguoiDaiDienBenNhan?.id},${nguoiKyGiamDoc?.id},$newSignatory, admin";
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ASSET_HANDOVER,
+          typeAction: ActionType.CREATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
     }
 
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
@@ -1257,26 +1271,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   void _updateDetailAssetHandover(List<ChiTietDieuDongTaiSan> newData) {
-    log('_updateDetailAssetHandover: Starting CRUD operations...');
     final currentList = item?.chiTietBanGiaoTaiSan ?? [];
     final repository = AssetHandoverRepository();
-
-    log(
-      '_updateDetailAssetHandover: currentList length: ${currentList.length}',
-    );
-    log('_updateDetailAssetHandover: newData length: ${newData.length}');
-
     final newList =
         newData.map((newItem) {
           final existing = currentList.firstWhere(
             (h) => h.tenTaiSan == newItem.tenTaiSan,
             orElse: () => DetailAssetHandoverDto(),
           );
-
-          log(
-            '_updateDetailAssetHandover: Processing ${newItem.tenTaiSan} - existing.id: ${existing.id}',
-          );
-
           return DetailAssetHandoverDto(
             id:
                 existing.id ??
@@ -1301,14 +1303,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           );
         }).toList();
 
-    log('_updateDetailAssetHandover: newList length: ${newList.length}');
     _performCRUDOperations(repository, currentList, newList);
 
     listDetailAssetHandover = newList;
     if (item != null) {
       item!.chiTietBanGiaoTaiSan = newList;
     }
-    log('_updateDetailAssetHandover: CRUD operations completed');
   }
 
   void _performCRUDOperations(

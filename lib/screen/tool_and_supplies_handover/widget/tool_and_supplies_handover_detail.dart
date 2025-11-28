@@ -407,7 +407,7 @@ class _ToolAndSuppliesHandoverDetailState
       // if (controllerLeader.text.isEmpty) {
       //   newValidationErrors['leader'] = true;
       // }
-     
+
       if (controllerDelivererRepresentative.text.isEmpty) {
         newValidationErrors['delivererRepresentative'] = true;
       }
@@ -598,11 +598,9 @@ class _ToolAndSuppliesHandoverDetailState
         );
       }
       bloc.add(UpdateToolAndSuppliesHandoverEvent(request));
-      String newSignatory = _additionalSignersDetailed
-          .map((e) => e.employee?.id ?? '')
-          .join(',');
+      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       String idNeedToDo =
-          "${request['idDonViGiao']},${request['idDonViNhan']},${request['idGiamDoc']},$newSignatory, admin";
+          "${nguoiDaiDienBenGiao?.id},${nguoiDaiDienBenNhan?.id},${nguoiKyGiamDoc?.id},$newSignatory, admin";
       MessageServiceRealtime().pushJsonMessage(
         typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
         typeAction: ActionType.UPDATE,

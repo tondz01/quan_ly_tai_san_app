@@ -347,12 +347,16 @@ class AssetHandoverProvider with ChangeNotifier {
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg) {
     if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
-      log("message [ref.listen] [AssetHandoverProvider] update received: $jsonMsg");
+      log(
+        "message [ref.listen] [AssetHandoverProvider] update received: $jsonMsg",
+      );
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        print("message [ref.listen] [AssetHandoverProvider] involved, reloading data...");
+        print(
+          "message [ref.listen] [AssetHandoverProvider] involved, reloading data...",
+        );
         onReloadDataAssetHandover();
       }
     }
@@ -649,11 +653,12 @@ class AssetHandoverProvider with ChangeNotifier {
     //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
     String idNeedToDo =
         "${item.idDaiDiendonviBanHanhQD},${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin";
-
-    MessageServiceRealtime().pushJsonMessage(
-      typeFunc: FunctionType.ASSET_HANDOVER,
-      typeAction: ActionType.CREATE,
-      idNeedToDo: idNeedToDo,
-    );
+    Future.delayed(const Duration(milliseconds: 200)).then((_) {
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.ASSET_HANDOVER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
+    });
   }
 }

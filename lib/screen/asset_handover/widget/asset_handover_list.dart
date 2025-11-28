@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -219,17 +221,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      ThreadNode(
-        header: 'Đại diện đơn vị để nghị:',
-        depth: 1,
-        child: viewSignatoryStatus(
-          item.daXacNhan == true,
-          widget.provider
-              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-              .hoTen
-              .toString(),
-        ),
-      ),
+      // ThreadNode(
+      //   header: 'Đại diện đơn vị để nghị:',
+      //   depth: 1,
+      //   child: viewSignatoryStatus(
+      //     item.daXacNhan == true,
+      //     widget.provider
+      //         .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+      //         .hoTen
+      //         .toString(),
+      //   ),
+      // ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,
@@ -779,7 +781,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       _selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-      final tenFile = _selectedAssetTransfer?.tenFile;
+      final tenFile = item.tenFile;
+      log("Selected item for signing: ${item.tenFile} -- $tenFile");
       if (tenFile == null || tenFile.isEmpty) {
         AppUtility.showSnackBar(
           context,

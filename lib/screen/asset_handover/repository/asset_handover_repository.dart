@@ -170,11 +170,13 @@ class AssetHandoverRepository extends ApiBase {
           "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory";
 
       log('idNeedToDo: $idNeedToDo');
-      MessageServiceRealtime().pushJsonMessage(
-        typeFunc: FunctionType.ASSET_HANDOVER,
-        typeAction: ActionType.CREATE,
-        idNeedToDo: idNeedToDo,
-      );
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ASSET_HANDOVER,
+          typeAction: ActionType.CREATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
         data: listDetailAssetHandover.map((e) => e.toJson()).toList(),
@@ -468,12 +470,13 @@ class AssetHandoverRepository extends ApiBase {
       if (allIds.isNotEmpty) {
         // Thêm admin mặc định vào danh sách nhận thông báo
         allIds.add('admin');
-        
-        MessageServiceRealtime().pushJsonMessage(
-          typeFunc: FunctionType.ASSET_HANDOVER,
-          typeAction: ActionType.UPDATE,
-          idNeedToDo: allIds.join(','),
-        );
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.ASSET_HANDOVER,
+            typeAction: ActionType.UPDATE,
+            idNeedToDo: allIds.join(','),
+          );
+        });
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
