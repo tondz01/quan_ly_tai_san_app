@@ -52,7 +52,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Container(
       height: MediaQuery.of(context).size.height + 250,
       decoration: BoxDecoration(
@@ -92,11 +92,15 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
                     tabs: [
                       Tab(
                         icon: Icon(Icons.book_outlined, size: 18),
+                        text: 'Kho thu hồi',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.book_outlined, size: 18),
                         text: 'Tài sản đã bàn giao',
                       ),
                       Tab(
                         icon: Icon(Icons.book_outlined, size: 18),
-                        text: 'Tài sản chưa bàn giao',
+                        text: 'Kho công ty',
                       ),
                     ],
                   ),
@@ -111,6 +115,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
                 // Tab 1: Bàn giao tài sản
                 AssetManagementList(provider: widget.provider, typeTab: 0),
                 AssetManagementList(provider: widget.provider, typeTab: 1),
+                AssetManagementList(provider: widget.provider, typeTab: 2),
               ],
             ),
           ),
