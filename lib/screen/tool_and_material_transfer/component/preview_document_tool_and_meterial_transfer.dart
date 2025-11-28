@@ -97,8 +97,8 @@ previewDocumentToolAndMaterial({
             A4Canvas(
               marginsMm: const EdgeInsets.all(20),
               scale: 1.2,
-              maxWidth: 900,
-              maxHeight: 900 * (297 / 210),
+              maxWidth: 800,
+              maxHeight: 800 * (297 / 210),
               child: ContractPage.toolAndMaterialTransferPage(item),
             ),
           ],
