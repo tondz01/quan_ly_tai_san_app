@@ -374,7 +374,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       children: [
         Expanded(
           child: Container(
-            height: MediaQuery.of(context).size.height + 250,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -613,7 +612,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                               ],
                               actionsColumnWidth: 120,
                               maxHeight:
-                                  MediaQuery.of(context).size.height * 0.8,
+                                  MediaQuery.of(context).size.height * 0.75,
                             );
                           },
                         ),
