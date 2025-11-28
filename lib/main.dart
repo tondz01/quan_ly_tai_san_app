@@ -53,9 +53,7 @@ void main() async {
   await initializeDateFormatting('vi_VN');
   await di.init();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseDatabase.instance;
   Bloc.transformer = bloc_concurrency.sequential();
   Bloc.observer = const AppBlocObserver();
