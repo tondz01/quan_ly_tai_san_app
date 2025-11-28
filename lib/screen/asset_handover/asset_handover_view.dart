@@ -8,7 +8,6 @@ import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/tab_bar_table_asset.dart';
@@ -35,6 +34,8 @@ class _AssetHandoverViewState
   String searchTerm = "";
   late HomeScrollController _scrollController;
   AssetHandoverProvider? _providerRef;
+  bool _isInitialized = false;
+  riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
 
   @override
   void initState() {
@@ -43,6 +44,16 @@ class _AssetHandoverViewState
     _scrollController.addListener((_onScrollStateChanged));
     // _initWebSocket();
     _initData();
+    
+    // Di chuyển ref.listen ra initState để tránh tạo listener mới mỗi lần build
+    _messageSub = ref.listenManual(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen][AssetHandoverView]  next $next');
+      if (next == null || next.isEmpty) return;
+      if (!mounted) return;
+      log('message [ref.listen][AssetHandoverView]  next not null');
+      // Gọi update
+      _providerRef?.onRealtimeUpdate(next, context);
+    });
   }
 
   // Future<void> _initWebSocket() async {
@@ -123,18 +134,23 @@ class _AssetHandoverViewState
   @override
   void didUpdateWidget(AssetHandoverView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _initData();
+    // Không gọi _initData() trong didUpdateWidget để tránh gọi API nhiều lần
+    // Chỉ gọi khi thực sự cần thiết (ví dụ: khi route thay đổi)
   }
 
   void _initData() {
+    if (_isInitialized) return; // Tránh gọi nhiều lần
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final provider = Provider.of<AssetHandoverProvider>(
         context,
         listen: false,
       );
 
       // Chỉ khởi tạo nếu không có data từ router
-      if (assetHandoverData == null) {
+      if (assetHandoverData == null && !_isInitialized) {
+        _isInitialized = true;
         provider.onInit(context);
       }
     });
@@ -146,18 +162,13 @@ class _AssetHandoverViewState
     _providerRef?.onDispose();
     _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
+    _messageSub?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(messageLatestJsonProvider, (previous, next) {
-      log('message [ref.listen][AssetHandoverView]  next $next');
-      if (next == null || next.isEmpty) return;
-      log('message [ref.listen][AssetHandoverView]  next not null');
-      // Gọi update
-      context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
-    });
+    // Đã di chuyển ref.listen ra initState để tránh tạo listener mới mỗi lần build
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {
         if (state is AssetHandoverLoadingState) {
@@ -174,9 +185,7 @@ class _AssetHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<AssetHandoverBloc>().add(
-            GetListAssetHandoverEvent(context),
-          );
+          context.read<AssetHandoverProvider>().onReloadDataPage(context);
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is UpdateAssetHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -185,9 +194,7 @@ class _AssetHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<AssetHandoverBloc>().add(
-            GetListAssetHandoverEvent(context),
-          );
+          context.read<AssetHandoverProvider>().onReloadDataPage(context);
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is DeleteAssetHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -197,9 +204,7 @@ class _AssetHandoverViewState
             ),
           );
 
-          context.read<AssetHandoverBloc>().add(
-            GetListAssetHandoverEvent(context),
-          );
+          context.read<AssetHandoverProvider>().onReloadDataPage(context);
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is ErrorState) {
           context.read<AssetHandoverProvider>().isLoading = false;
@@ -217,9 +222,7 @@ class _AssetHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<AssetHandoverBloc>().add(
-            GetListAssetHandoverEvent(context),
-          );
+          context.read<AssetHandoverProvider>().onReloadDataPage(context);
           // AccountHelper.refreshAllCounts();
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is CancelAssetHandoverSuccessState) {
@@ -229,9 +232,7 @@ class _AssetHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<AssetHandoverBloc>().add(
-            GetListAssetHandoverEvent(context),
-          );
+          context.read<AssetHandoverProvider>().onReloadDataPage(context);
           context.read<AssetHandoverProvider>().isShowInput = false;
         }
       },
@@ -240,9 +241,9 @@ class _AssetHandoverViewState
           value: context.read<AssetHandoverProvider>(),
           child: Consumer<AssetHandoverProvider>(
             builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+              // if (provider.isLoading) {
+              //   return const Center(child: CircularProgressIndicator());
+              // }
               // Ensure pagination controller is initialized before use
               provider.controllerDropdownPage ??= TextEditingController(
                 text: provider.rowsPerPage.toString(),

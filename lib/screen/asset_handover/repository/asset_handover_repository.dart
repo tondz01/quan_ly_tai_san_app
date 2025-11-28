@@ -36,7 +36,7 @@ class AssetHandoverRepository extends ApiBase {
     };
     try {
       final response = await get(
-        "${EndPointAPI.ASSET_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}",
+        "${EndPointAPI.ASSET_HANDOVER}/getbyuserid/${userInfo.tenDangNhap}",
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -84,7 +84,7 @@ class AssetHandoverRepository extends ApiBase {
     };
     try {
       final response = await get(
-        "${EndPointAPI.ASSET_TRANSFER}/getbystatus?trangthai=3",
+        "${EndPointAPI.ASSET_HANDOVER}/getbystatus?trangthai=3",
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -152,7 +152,7 @@ class AssetHandoverRepository extends ApiBase {
 
     try {
       log('createAssetHandover request: ${jsonEncode(request)}');
-      final response = await post(EndPointAPI.ASSET_TRANSFER, data: request);
+      final response = await post(EndPointAPI.ASSET_HANDOVER, data: request);
 
       final int? status = response.statusCode;
       final bool isOk =
@@ -167,7 +167,7 @@ class AssetHandoverRepository extends ApiBase {
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
       String idNeedToDo =
-          "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory";
+          "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory, admin";
 
       log('idNeedToDo: $idNeedToDo');
       Future.delayed(const Duration(milliseconds: 200)).then((_) {
@@ -233,7 +233,7 @@ class AssetHandoverRepository extends ApiBase {
 
     try {
       final response = await put(
-        "${EndPointAPI.ASSET_TRANSFER}/$id",
+        "${EndPointAPI.ASSET_HANDOVER}/$id",
         data: request,
       );
       final int? status = response.statusCode;
@@ -265,7 +265,7 @@ class AssetHandoverRepository extends ApiBase {
     };
 
     try {
-      final response = await delete("${EndPointAPI.ASSET_TRANSFER}/$id");
+      final response = await delete("${EndPointAPI.ASSET_HANDOVER}/$id");
       final int? status = response.statusCode;
       final bool isOk =
           status == Numeral.STATUS_CODE_SUCCESS ||
@@ -302,7 +302,7 @@ class AssetHandoverRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/capnhattrangthai?id=$id&userId=$idNhanVien',
+        '${EndPointAPI.ASSET_HANDOVER}/capnhattrangthai?id=$id&userId=$idNhanVien',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -373,7 +373,7 @@ class AssetHandoverRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/huytrangthai?id=$id',
+        '${EndPointAPI.ASSET_HANDOVER}/huytrangthai?id=$id',
       );
       unawaited(delete('/api/chuky/$id'));
 
@@ -383,7 +383,13 @@ class AssetHandoverRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ALL_FUNCTION,
+          typeAction: ActionType.DELETE,
+          idNeedToDo: 'admin',
+        );
+      });
       // Parse response data using the common ResponseParser utility
       result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
         response.data,
@@ -457,7 +463,7 @@ class AssetHandoverRepository extends ApiBase {
           "duongDanFile": item.duongDanFile ?? '',
         };
         final response = await put(
-          '${EndPointAPI.ASSET_TRANSFER}/${item.id}',
+          '${EndPointAPI.ASSET_HANDOVER}/${item.id}',
           data: request,
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
@@ -614,9 +620,84 @@ class AssetHandoverRepository extends ApiBase {
     }
     return result;
   }
+
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+    int trangThai,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <AssetHandoverDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+      'totalAll': 0,
+      'totalDraft': 0,
+      'totalApprove': 0,
+      'totalCancel': 0,
+      'totalComplete': 0,
+    };
+    final userInfo = AccountHelper.instance.getUserInfo();
+
+    try {
+      String userid =
+          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
+          itemsData,
+          AssetHandoverDto.fromJson,
+        );
+      } else {
+        result['data'] = <AssetHandoverDto>[];
+      }
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['groupCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalDraft'] = parseGroupCount('0', 'draft');
+        result['totalApprove'] = parseGroupCount('1', 'approve');
+        result['totalCancel'] = parseGroupCount('2', 'cancel');
+        result['totalComplete'] = parseGroupCount('3', 'complete');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalDraft'] = 0;
+        result['totalApprove'] = 0;
+        result['totalCancel'] = 0;
+        result['totalComplete'] = 0;
+      }
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
 }
-// curl bàn giao ccdc-vt
-// curl -X POST "http://localhost:8080/api/bangiaoccdcvattu/capnhatky/" \
-//      -H "Content-Type: application/x-www-form-urlencoded" \
-//      -d "userId=12345" \
-//      -d "docId=67890"

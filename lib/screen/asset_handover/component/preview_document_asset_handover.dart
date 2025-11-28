@@ -139,13 +139,6 @@ previewDocumentHandover({
 
   List<SigneInfo> listSigneInfo = [
     SigneInfo(
-      idNhanVien: item.idDaiDiendonviBanHanhQD ?? '',
-      title: 'Đại diện đơn vị đề nghị',
-      hoTen: item.tenDaiDienBanHanhQD ?? '',
-      chucVu: getChucVu(item.idDaiDiendonviBanHanhQD ?? ''),
-      donVi: getDonVi(item.idDaiDiendonviBanHanhQD ?? ''),
-    ),
-    SigneInfo(
       idNhanVien: item.idDaiDienBenGiao ?? '',
       title: 'Đại diện đơn vị bên giao',
       hoTen: item.tenDaiDienBenGiao ?? '',

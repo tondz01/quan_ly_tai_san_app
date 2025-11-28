@@ -240,10 +240,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     )
                     .toList()
                 : <DetailAssetHandoverDto>[]);
-        log('listDetailAssetHandover: $listDetailAssetHandover');
+        log('message [AssetHandoverDetail] listDetailAssetHandover: $listDetailAssetHandover');
       } else {
         listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
+        log('message [AssetHandoverDetail] onInit  listDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}');
       }
+
       isByStep = item?.byStep ?? false;
       nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
         item?.idGiamDoc ?? '',
@@ -413,7 +415,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         orElse: () => DieuDongTaiSanDto(),
       );
       controllerOrder.text = dieuDongTaiSan?.id ?? '';
-      widget.provider.getListDetailAssetMobilization(controllerOrder.text);
+      widget.provider.getListDetailAssetMobilization(dieuDongTaiSan?.id ?? '');
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
       // controllerTransferDate.text = item?.ngayBanGiao ?? '';
@@ -505,6 +507,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         'message: ${jsonEncode(listDetailAssetHandover)}',
       );
       // return;
+      log(
+        'message [AssetHandoverDetail] onInit  _saveAssetHandover newRequest ${jsonEncode(listDetailAssetHandover)}',
+      );
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(
           newRequest,

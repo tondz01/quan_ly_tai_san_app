@@ -171,6 +171,13 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         ToolAndMaterialTransferDto.fromJson,
       );
       log('response.data điều động: ${result['data']}');
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ALL_FUNCTION,
+          typeAction: ActionType.DELETE,
+          idNeedToDo: 'admin',
+        );
+      });
     } catch (e) {
       log(
         "Error at cancelToolAndMaterialTransfer - ToolAndMaterialTransferRepository: $e",

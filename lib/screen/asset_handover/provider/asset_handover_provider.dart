@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
@@ -18,12 +20,14 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_hand
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/table_asset_handover_provider.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
@@ -91,7 +95,6 @@ class AssetHandoverProvider with ChangeNotifier {
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
     _searchTerm = value;
-    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
     notifyListeners();
   }
 
@@ -194,93 +197,52 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
     log('message setFilterStatus: $status, $value');
 
-    _filterStatus[status] = value ?? false;
-
-    if (status == FilterStatus.all && value == true) {
+    // Cập nhật map filter: chỉ cho phép một trạng thái (hoặc all) được chọn
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    // Map FilterStatus sang mã trạng thái backend và apply cho table provider
+    int statusCode;
+    switch (status) {
+      case FilterStatus.draft:
+        statusCode = 0;
+        break;
+      case FilterStatus.browser:
+        statusCode = 1;
+        break;
+      case FilterStatus.cancel:
+        statusCode = 2;
+        break;
+      case FilterStatus.complete:
+        statusCode = 3;
+        break;
+      case FilterStatus.all:
+        statusCode = -1;
+        break;
+    }
 
+    _onFilterByStatus(context, statusCode);
     notifyListeners();
   }
 
-  void _applyFilters() {
-    if (_data == null) return;
+  void onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableAssetHandoverProvider.notifier).refreshData(isRefresh);
+  }
 
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
-
-    // Lọc theo trạng thái
-    List<AssetHandoverDto> statusFiltered;
-    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
-      statusFiltered = List.from(_data!);
-    } else {
-      statusFiltered =
-          _data!.where((item) {
-            int itemStatus = item.trangThai ?? -1;
-
-            if (_filterStatus[FilterStatus.draft] == true &&
-                (itemStatus == 0)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.browser] == true &&
-                (itemStatus == 1)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
-
-            return false;
-          }).toList();
-    }
-
-    // Lọc tiếp theo nội dung tìm kiếm
-    if (_searchTerm.isNotEmpty) {
-      String searchLower = _searchTerm.toLowerCase();
-      _filteredData =
-          statusFiltered.where((item) {
-            return (item.banGiaoTaiSan?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.quyetDinhDieuDongSo?.toLowerCase().contains(
-                      searchLower,
-                    ) ??
-                    false) ||
-                (item.tenDonViDaiDien?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.tenLanhDao?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
-                    false);
-          }).toList();
-    } else {
-      _filteredData = statusFiltered;
-    }
-
-    // Sau khi lọc, cập nhật lại phân trang
-    _updatePagination();
+  void _onFilterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableAssetHandoverProvider.notifier).filterByStatus(status);
+    onReloadDataPage(context);
   }
 
   // Lưu trữ trạng thái filter trong Map
@@ -294,14 +256,24 @@ class AssetHandoverProvider with ChangeNotifier {
 
   // Nội dung tìm kiếm
 
-  void onInit(BuildContext context) {
+  bool _isOnInitCalled = false;
+
+  Future<void> onInit(BuildContext context) async {
+    // Tránh gọi onInit nhiều lần
+    if (_isOnInitCalled) {
+      log('AssetHandoverProvider: onInit already called, skipping');
+      return;
+    }
+    _isOnInitCalled = true;
+    
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
+    await onLoadDataAssetTransfer();
 
     _body = Container();
     onLoadDataDropdown();
-    getListAssetHandover(context);
+    // getListAssetHandover(context);
     // _autoReloadTimer?.cancel();
     // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
     //   onReloadDataAssetHandover();
@@ -312,11 +284,17 @@ class AssetHandoverProvider with ChangeNotifier {
     // });
   }
 
+  Future<void> onLoadDataAssetTransfer() async {
+    final result = await AssetTransferRepository().getListDieuDongTaiSan();
+    _dataAssetTransfer = result['data'];
+    notifyListeners();
+  }
+
   onLoadDataDropdown() {
     _dataDepartment = AccountHelper.instance.getDepartment();
     _dataStaff = AccountHelper.instance.getNhanVien();
     if (_dataStaff == null) {
-      AuthRepository().loadUserEmployee('ct001');
+       AuthRepository().loadUserEmployee('ct001');
       _dataStaff = AccountHelper.instance.getNhanVien();
     }
     if (_dataDepartment == null) {
@@ -324,6 +302,18 @@ class AssetHandoverProvider with ChangeNotifier {
       _dataDepartment = AccountHelper.instance.getDepartment();
     }
   }
+
+  // onGetDataAsset() async {
+  //   if (AccountHelper.instance.getAllAssets().isEmpty) {
+  //     final args = await AssetManagementRepository().getListAssetManagement(
+  //       'ct001',
+  //     );
+  //     await AccountHelper.instance.setListAsset(args['data'] ?? []);
+  //     _dataAsset = args['data'];
+  //   } else {
+  //     _dataAsset = AccountHelper.instance.getAllAssets();
+  //   }
+  // }
 
   void onReloadDataAssetHandover() async {
     Map<String, dynamic> result =
@@ -340,25 +330,24 @@ class AssetHandoverProvider with ChangeNotifier {
     if (_data != null) {
       // refreshCountSign(_data!);
     }
-    _applyFilters();
     notifyListeners();
   }
 
   // Hàm xử lý cập nhật realtime từ Firebase
-  void onRealtimeUpdate(dynamic jsonMsg) {
+  void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
+    log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] jsonMsg: $jsonMsg');
     if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
-      log(
-        "message [ref.listen] [AssetHandoverProvider] update received: $jsonMsg",
-      );
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        print(
-          "message [ref.listen] [AssetHandoverProvider] involved, reloading data...",
-        );
-        onReloadDataAssetHandover();
+        onReloadDataPage(context);
       }
+    } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
+      log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] update received: $jsonMsg');
+      onReloadDataPage(context);
+    } else if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
+      onLoadDataAssetTransfer();
     }
   }
 
@@ -369,6 +358,7 @@ class AssetHandoverProvider with ChangeNotifier {
     _error = null;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
+    _isOnInitCalled = false; // Reset flag để có thể gọi lại onInit khi cần
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -396,41 +386,6 @@ class AssetHandoverProvider with ChangeNotifier {
     });
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
-  void onPageChanged(int page) {
-    currentPage = page;
-    _updatePagination();
-    notifyListeners();
-  }
-
-  void onRowsPerPageChanged(int? value) {
-    if (value == null) return;
-    rowsPerPage = value;
-    currentPage = 1;
-    _updatePagination();
-    notifyListeners();
-  }
-
   void onChangeDetail(
     BuildContext context,
     AssetHandoverDto? item, {
@@ -451,7 +406,6 @@ class AssetHandoverProvider with ChangeNotifier {
     if (index != -1) {
       _data![index] = updatedItem;
 
-      _updatePagination();
       notifyListeners();
     } else {}
   }
@@ -464,7 +418,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
     // _dataDepartment = state.dataDepartment;
     // _dataStaff = state.dataStaff;
-    _dataAssetTransfer = state.dataAssetTransfer;
+    // _dataAssetTransfer = state.dataAssetTransfer;
 
     if (state.data.isEmpty) {
       _data = [];
@@ -482,9 +436,6 @@ class AssetHandoverProvider with ChangeNotifier {
                     item.nguoiTao == userInfo?.tenDangNhap,
               )
               .toList();
-
-      _filteredData = List.from(_data!);
-      _updatePagination();
     }
     _isLoading = false;
     notifyListeners();
@@ -570,6 +521,7 @@ class AssetHandoverProvider with ChangeNotifier {
               ),
             )
             .toList();
+    log('message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}');
     notifyListeners();
   }
 

@@ -55,7 +55,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   bool isShowPreview = false;
   AssetHandoverDto? selected;
   UserInfoDTO? userInfo;
-  DieuDongTaiSanDto? _selectedAssetTransfer;
+  DieuDongTaiSanDto? selectedAssetTransfer;
 
   List<ThreadNode> listSignatoryDetail = [];
   List<AssetHandoverDto> selectedItems = [];
@@ -67,7 +67,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   late final Map<String, TableCellBuilder> _buildersByKey;
 
   // Track previous filtered data for comparison
-  List<AssetHandoverDto> _previousFilteredData = [];
 
   final bool _showCheckboxColumn = true;
   final bool _showActionsColumn = true;
@@ -434,7 +433,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 ),
                               ],
                             ),
-                            FindByStateAssetHandover(provider: widget.provider),
+                            riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                final tableProvider = ref.watch(
+                                  tableAssetHandoverProvider.notifier,
+                                );
+                                final totals = tableProvider.getTotals();
+                                return FindByStateAssetHandover(
+                                  provider: widget.provider,
+                                  totalAll: totals['totalAll'] ?? 0,
+                                  totalDraft: totals['totalDraft'] ?? 0,
+                                  totalBrowser: totals['totalApprove'] ?? 0,
+                                  totalCancel: totals['totalCancel'] ?? 0,
+                                  totalComplete: totals['totalComplete'] ?? 0,
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -546,16 +560,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         ),
                         child: riverpod.Consumer(
                           builder: (context, ref, child) {
-                            final data = widget.provider.filteredData ?? [];
+                            // final data = widget.provider.filteredData ?? [];
                             // Defer provider mutation until after the current frame
-                            if (!_areListsEqual(_previousFilteredData, data)) {
-                              _previousFilteredData = List.from(data);
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ref
-                                    .read(tableAssetHandoverProvider.notifier)
-                                    .setData(data);
-                              });
-                            }
+                            // if (!_areListsEqual(_previousFilteredData, data)) {
+                            //   _previousFilteredData = List.from(data);
+                            //   WidgetsBinding.instance.addPostFrameCallback((_) {
+                            //     ref
+                            //         .read(tableAssetHandoverProvider.notifier)
+                            //         .setData(data);
+                            //   });
+                            // }
                             return RiverpodTable<AssetHandoverDto>(
                               tableProvider: tableAssetHandoverProvider,
                               columns: _columns,
@@ -646,7 +660,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
     );
 
-    _selectedAssetTransfer =
+    selectedAssetTransfer =
         matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
     _loadPdfNetwork(item.tenFile!).then((_) {
@@ -778,7 +792,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
       );
 
-      _selectedAssetTransfer =
+      selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
       final tenFile = item.tenFile;

@@ -981,14 +981,33 @@ class AccountHelper {
     }
   }
 
-  setListAsset(List<AssetManagementDto> assets) {
+  Future<void> setListAsset(List<AssetManagementDto> assets) async {
     if (assets.isNotEmpty) {
       log('Setting list of assets with length: ${assets.length}');
-      // Convert to List<Map> before saving to ensure GetStorage handles it correctly
-      // and StorageService.write can check size properly.
-      StorageService.write(StorageKey.ASSETS, assets);
-      final raw = StorageService.read(StorageKey.ASSETS);
-      log('message result setListAsset: ${raw?.length}');
+      try {
+        // Convert to List<Map> before saving to ensure GetStorage handles it correctly
+        // This also helps reduce storage size and improve compatibility
+        final List<Map<String, dynamic>> assetsAsMap = assets
+            .map((asset) => asset.toJson())
+            .toList();
+        
+        log('Converted ${assetsAsMap.length} assets to Map format');
+        
+        // Await write to ensure data is saved before reading
+        await StorageService.write(StorageKey.ASSETS, assetsAsMap);
+        
+        // Wait a bit to ensure write is complete
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        final raw = StorageService.read(StorageKey.ASSETS);
+        if (raw != null) {
+          log('message result setListAsset: ${raw is List ? raw.length : "not a list"}');
+        } else {
+          log('WARNING: setListAsset: StorageService.read returned null after write');
+        }
+      } catch (e) {
+        log('ERROR in setListAsset: $e');
+      }
     }
   }
 

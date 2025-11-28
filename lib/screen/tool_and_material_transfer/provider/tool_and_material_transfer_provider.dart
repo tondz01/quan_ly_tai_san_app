@@ -226,6 +226,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       )) {
         onReloadData(context);
       }
+    } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
+      onReloadData(context);
     }
   }
 

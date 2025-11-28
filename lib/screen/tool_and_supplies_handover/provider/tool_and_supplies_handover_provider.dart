@@ -6,6 +6,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
@@ -24,6 +25,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/table_tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
@@ -190,12 +192,11 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
     // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
     if (value == false) {
       _filterStatus[status] = false;
     } else {
-      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
       // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
         _filterStatus[key] = false;
@@ -203,9 +204,37 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    switch (status) {
+      case FilterStatus.draft:
+        onFillterByStatus(context, 0);
+        break;
+      case FilterStatus.browser:
+        onFillterByStatus(context, 1);
+        break;
 
+      case FilterStatus.cancel:
+        onFillterByStatus(context, 2);
+        break;
+      case FilterStatus.complete:
+        onFillterByStatus(context, 3);
+        break;
+      case FilterStatus.all:
+        onFillterByStatus(context, -1);
+        break;
+    }
     notifyListeners();
+  }
+  onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableToolAndSuppliesHandoverProvider.notifier)
+        .refreshData(isRefresh);
+  }
+
+   onFillterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableToolAndSuppliesHandoverProvider.notifier).filterByStatus(status);
+    onReloadDataPage(context);
   }
 
   void _applyFilters() {
@@ -293,7 +322,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
     _body = Container();
     onLoadDataDropdown();
-    getListToolAndSuppliesHandover(context);
+    // getListToolAndSuppliesHandover(context);
     _dataAssetTransfer =
         await ToolAndMaterialTransferRepository()
             .getAllToolAndMeterialTransferByCT();
@@ -304,6 +333,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     // });
   }
 
+
+
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.TOOL_AND_SUPPLIES_HANDOVER) {
       log(
@@ -313,8 +344,10 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        onReloadDataToolAndMaterialHandover();
+        onReloadDataPage(context);
       }
+    } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
+      onReloadDataPage(context);
     }
   }
 

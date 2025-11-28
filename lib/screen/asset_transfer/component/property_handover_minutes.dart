@@ -105,13 +105,25 @@ class _PropertyHandoverMinutesContent extends StatefulWidget {
 class _PropertyHandoverMinutesContentState
     extends State<_PropertyHandoverMinutesContent> {
   late List<ColumnDisplayOption> columnOptions;
-
+  late int totalAll;
+  late int totalDraft;
+  late int totalBrowser;
+  late int totalCancel;
+  late int totalComplete;
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+    _initializeTotal();
   }
 
+  void _initializeTotal() {
+    totalAll = widget.data.length;
+    totalDraft = widget.data.where((item) => item.trangThai == 0).length;
+    totalBrowser = widget.data.where((item) => item.trangThai == 1).length;
+    totalCancel = widget.data.where((item) => item.trangThai == 2).length;
+    totalComplete = widget.data.where((item) => item.trangThai == 3).length;
+  }
   List<String> visibleColumnIds = [
     'name',
     'decision_number',
@@ -242,6 +254,11 @@ class _PropertyHandoverMinutesContentState
                       ),
                       FindByStateAssetHandover(
                         provider: context.read<AssetHandoverProvider>(),
+                        totalAll: totalAll,
+                        totalDraft: totalDraft,
+                        totalBrowser: totalBrowser,
+                        totalCancel: totalCancel,
+                        totalComplete: totalComplete,
                       ),
                     ],
                   ),
