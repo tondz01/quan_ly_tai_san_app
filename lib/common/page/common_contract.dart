@@ -107,6 +107,7 @@ class _CommonContractState extends State<CommonContract> {
     setState(() {
       images.add(
         DraggableImage(
+          key: GlobalKey(), // Thêm GlobalKey để có thể truy cập state
           bytes: bytes,
           loaiKy: loaiKy,
           normalizedTop: normalizedTop,
@@ -557,6 +558,8 @@ class _CommonContractState extends State<CommonContract> {
 
   // ===== Confirm (call API) =====
   Future<void> _confirmSignatures() async {
+    print('confirm chu ky');
+
     final signatures = getSignaturesData();
     if (signatures.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1026,7 +1029,47 @@ class _CommonContractState extends State<CommonContract> {
     }
   }
 
+  // ===== Kiểm tra xem user hiện tại có được phép ký không =====
+  bool _canUserSign(int newSigningType) {
+    // Chữ ký loại 1 (ký nháy) luôn được phép ký
+    if (newSigningType == 1) {
+      return true;
+    }
+
+    // Lấy tất cả chữ ký mới của user hiện tại trong phiên này
+    final userNewSignatures = images.where((img) => img.isNew).toList();
+
+    // Nếu chưa có chữ ký mới nào, được phép ký
+    if (userNewSignatures.isEmpty) {
+      return true;
+    }
+
+    // Kiểm tra xem đã có chữ ký loại khác 1 chưa
+    final hasNonType1Signature = userNewSignatures.any(
+      (img) => img.loaiKy != 1,
+    );
+
+    // Nếu đã có chữ ký loại khác 1 (2, 3, 4, 5), không được ký thêm
+    if (hasNonType1Signature) {
+      return false;
+    }
+
+    // Nếu chỉ có chữ ký loại 1, được phép ký thêm
+    return true;
+  }
+
   Future<void> _handleSigning(double top, double left) async {
+    // Kiểm tra quyền ký
+    if (!_canUserSign(_selectedSigningType)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn đã ký tài liệu này rồi, không thể ký thêm!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     if (_selectedSigningType == 1) {
       // Ký nháy
       _addFirstSignatureFromList(1, top: top, left: left);
