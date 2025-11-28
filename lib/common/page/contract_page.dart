@@ -979,6 +979,12 @@ class ContractPage {
                       fontSize: 11 * SettingPage.scale,
                     ),
                   ),
+                  SGText(
+                    text: e.hoTen,
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 11 * SettingPage.scale,
+                    ),
+                  ),
                 ],
               ),
             ),

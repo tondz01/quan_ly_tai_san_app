@@ -135,13 +135,13 @@ prevDocumentCcdcHandover({
   }
 
   List<SigneInfo> listSigneInfo = [
-    SigneInfo(
-      idNhanVien: dieuDongCcdc?.idDaiDienBenGiao ?? '',
-      title: 'Đại diện đơn vị đề nghị',
-      hoTen: dieuDongCcdc?.tenDaiDienBenGiao ?? '',
-      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
-      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
-    ),
+    // SigneInfo(
+    //   idNhanVien: dieuDongCcdc?.idDaiDienBenGiao ?? '',
+    //   title: 'Đại diện đơn vị đề nghị',
+    //   hoTen: dieuDongCcdc?.tenDaiDienBenGiao ?? '',
+    //   chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+    //   donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+    // ),
     SigneInfo(
       idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
       title: 'Đại diện đơn vị bên giao',

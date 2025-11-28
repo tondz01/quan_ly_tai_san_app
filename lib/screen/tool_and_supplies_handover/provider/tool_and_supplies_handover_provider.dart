@@ -224,6 +224,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     }
     notifyListeners();
   }
+
   onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
     final container = ProviderScope.containerOf(context);
     container
@@ -231,9 +232,11 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
         .refreshData(isRefresh);
   }
 
-   onFillterByStatus(BuildContext context, int status) {
+  onFillterByStatus(BuildContext context, int status) {
     final container = ProviderScope.containerOf(context);
-    container.read(tableToolAndSuppliesHandoverProvider.notifier).filterByStatus(status);
+    container
+        .read(tableToolAndSuppliesHandoverProvider.notifier)
+        .filterByStatus(status);
     onReloadDataPage(context);
   }
 
@@ -323,9 +326,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _body = Container();
     onLoadDataDropdown();
     // getListToolAndSuppliesHandover(context);
-    _dataAssetTransfer =
-        await ToolAndMaterialTransferRepository()
-            .getAllToolAndMeterialTransferByCT();
+    onLoadDataAssetTransfer();
     // _autoReloadTimer?.cancel();
     // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
     //   onReloadDataToolAndMaterialHandover();
@@ -333,7 +334,15 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     // });
   }
 
-
+  onLoadDataAssetTransfer() async {
+    _dataAssetTransfer =
+        await ToolAndMaterialTransferRepository()
+            .getAllToolAndMeterialTransferByCT();
+    log(
+      'message [onLoadDataAssetTransfer] dataAssetTransfer: ${jsonEncode(_dataAssetTransfer)}',
+    );
+    notifyListeners();
+  }
 
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.TOOL_AND_SUPPLIES_HANDOVER) {
