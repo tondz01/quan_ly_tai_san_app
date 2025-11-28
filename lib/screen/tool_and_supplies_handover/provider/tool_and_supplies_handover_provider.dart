@@ -338,9 +338,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _dataAssetTransfer =
         await ToolAndMaterialTransferRepository()
             .getAllToolAndMeterialTransferByCT();
-    log(
-      'message [onLoadDataAssetTransfer] dataAssetTransfer: ${jsonEncode(_dataAssetTransfer)}',
-    );
     notifyListeners();
   }
 

@@ -867,7 +867,7 @@ class _ToolAndSuppliesHandoverDetailState
                     initialDetailsSuppliesHandover:
                         item?.listDetailSubppliesHandover ?? [],
                     listOwnershipUnit: widget.provider.listOwnershipUnit,
-                    allAssets: widget.provider.dataCcdc,
+                    allAssets: widget.provider.dataCcdc ?? [],
                     onDataChanged: (data) {
                       setState(() {
                         listDetailSubppliesHandover =
