@@ -8,6 +8,20 @@ class AccountTableConfig {
     return [
       ColumnDefinition(
         config: TableColumnData.select(
+          name: 'Mã danh bộ',
+          key: 'id',
+          width: 170,
+          flex: 1,
+          isFixed: false,
+        ),
+        builder: (item) {
+          return TableCellData(
+            widget: Text(item.tenDangNhap ?? ''),
+          );
+        },
+      ),
+      ColumnDefinition(
+        config: TableColumnData.select(
           name: 'Tên đăng nhập',
           key: 'tenDangNhap',
           width: 150,

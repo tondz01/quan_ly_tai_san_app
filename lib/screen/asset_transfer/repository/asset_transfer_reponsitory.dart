@@ -243,7 +243,13 @@ class AssetTransferRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ALL_FUNCTION,
+          typeAction: ActionType.DELETE,
+          idNeedToDo: 'admin',
+        );
+      });
       // Parse response data using the common ResponseParser utility
       result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
         response.data,

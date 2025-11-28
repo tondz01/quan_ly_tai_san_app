@@ -4,23 +4,57 @@ import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 
 class FindByStateToolHandover extends StatelessWidget {
-  const FindByStateToolHandover({super.key, required this.provider});
+  const FindByStateToolHandover({
+    super.key,
+    required this.provider,
+    required this.totalAll,
+    required this.totalDraft,
+    required this.totalBrowser,
+    required this.totalCancel,
+    required this.totalComplete,
+  });
+
   final ToolAndSuppliesHandoverProvider provider;
+  final int totalAll;
+  final int totalDraft;
+  final int totalBrowser;
+  final int totalCancel;
+  final int totalComplete;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: provider,
-      child: _FilterCheckboxes(),
+      child: _FilterCheckboxes(
+        totalAll: totalAll,
+        totalDraft: totalDraft,
+        totalBrowser: totalBrowser,
+        totalCancel: totalCancel,
+        totalComplete: totalComplete,
+      ),
     );
   }
 }
 
 class _FilterCheckboxes extends StatelessWidget {
+  const _FilterCheckboxes({
+    required this.totalAll,
+    required this.totalDraft,
+    required this.totalBrowser,
+    required this.totalCancel,
+    required this.totalComplete,
+  });
+
+  final int totalAll;
+  final int totalDraft;
+  final int totalBrowser;
+  final int totalCancel;
+  final int totalComplete;
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ToolAndSuppliesHandoverProvider>(context);
-    
+
     // Tạo map filter states từ provider
     final filterStates = {
       'all': provider.isShowAll,
@@ -30,13 +64,13 @@ class _FilterCheckboxes extends StatelessWidget {
       'cancel': provider.isShowCancel,
     };
 
-    // Tạo map filter counts từ provider
+    // Tạo map filter counts từ tham số truyền vào
     final filterCounts = {
-      'all': provider.allCount,
-      'draft': provider.draftCount,
-      'browser': provider.browserCount,
-      'cancel': provider.cancelCount,
-      'complete': provider.completeCount,
+      'all': totalAll,
+      'draft': totalDraft,
+      'browser': totalBrowser,
+      'cancel': totalCancel,
+      'complete': totalComplete,
     };
 
     // Tạo map filter colors từ FilterStatus enum
@@ -81,7 +115,7 @@ class _FilterCheckboxes extends StatelessWidget {
             break;
         }
         if (status != null) {
-          provider.setFilterStatus(status, value);
+          provider.setFilterStatus(context, status, value);
         }
       },
     );

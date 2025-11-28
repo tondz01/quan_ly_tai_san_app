@@ -73,7 +73,7 @@ class _DepartmentViewState extends State<DepartmentView> {
                   onNew: () {
                     provider.onChangeDetail(context, null);
                   },
-                  mainScreen: 'Quản lý chức vụ',
+                  mainScreen: 'Quản lý phòng ban',
                   subScreen: provider.subScreen,
                   onFileSelected: (fileName, filePath, fileBytes) async {
                   final departmentBloc = context.read<DepartmentBloc>();
@@ -136,7 +136,7 @@ class _DepartmentViewState extends State<DepartmentView> {
                                 : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
-                          title: 'Chi tiết chức vụ',
+                          title: 'Chi tiết phòng ban',
                           childInput: DepartmentFormPage(provider: provider),
                           childTableView: DepartmentList(provider: provider),
                           isShowInput: provider.isShowInput,

@@ -430,7 +430,7 @@ class _ToolAndMaterialTransferDetailState
         isNguoiLapPhieuKyNhay = false;
         isByStep = false;
         donViGiao = null;
-        donViNhan = null;
+        donViNhan = widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
         NhanVien nhanVienLogin = widget.provider.getNhanVienByID(
           widget.provider.userInfo?.tenDangNhap ?? '',
         );
@@ -855,10 +855,10 @@ class _ToolAndMaterialTransferDetailState
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
                           controller: controllerReceivingUnit,
-                          isEditing: isEditing,
+                          isEditing: widget.type == 3 ? false : isEditing,
                           value: donViNhan,
                           items: widget.provider.itemsDDPhongBan,
-                          defaultValue:
+                          defaultValue: 
                               controllerReceivingUnit.text.isNotEmpty
                                   ? widget.provider.getPhongBanByID(
                                     controllerReceivingUnit.text,

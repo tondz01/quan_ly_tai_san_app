@@ -758,6 +758,12 @@ class ContractPage {
                       fontSize: 11 * SettingPage.scale,
                     ),
                   ),
+                  SGText(
+                    text: e.hoTen,
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 11 * SettingPage.scale,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -969,6 +975,12 @@ class ContractPage {
                   ),
                   SGText(
                     text: "(Ký, họ tên)",
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 11 * SettingPage.scale,
+                    ),
+                  ),
+                  SGText(
+                    text: e.hoTen,
                     style: SettingPage.textStyle.copyWith(
                       fontSize: 11 * SettingPage.scale,
                     ),

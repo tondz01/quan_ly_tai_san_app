@@ -71,7 +71,6 @@ class _ToolAndSuppliesHandoverListState
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
 
   // Track previous filtered data for comparison
-  List<ToolAndSuppliesHandoverDto> _previousFilteredData = [];
 
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
@@ -263,7 +262,7 @@ class _ToolAndSuppliesHandoverListState
         // if (url.isNotEmpty && isShowPreview) displayPreview(),
         Expanded(
           child: Container(
-            height: MediaQuery.of(context).size.height,
+            // height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -323,7 +322,14 @@ class _ToolAndSuppliesHandoverListState
                               ],
                             ),
 
-                            FindByStateToolHandover(provider: widget.provider),
+                            FindByStateToolHandover(
+                              provider: widget.provider,
+                              totalAll: widget.provider.allCount,
+                              totalDraft: widget.provider.draftCount,
+                              totalBrowser: widget.provider.browserCount,
+                              totalCancel: widget.provider.cancelCount,
+                              totalComplete: widget.provider.completeCount,
+                            ),
                           ],
                         ),
                       ),
@@ -450,23 +456,23 @@ class _ToolAndSuppliesHandoverListState
                         ),
                         child: riverpod.Consumer(
                           builder: (context, ref, child) {
-                            final data = widget.provider.filteredData ?? [];
+                            // final data = widget.provider.filteredData ?? [];
 
-                            // Check if data changed since last build
-                            if (!_areListsEqual(_previousFilteredData, data)) {
-                              log(
-                                'Filtered data changed in build: ${_previousFilteredData.length} -> ${data.length}',
-                              );
-                              _previousFilteredData = List.from(data);
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ref
-                                    .read(
-                                      tableToolAndSuppliesHandoverProvider
-                                          .notifier,
-                                    )
-                                    .setData(data);
-                              });
-                            }
+                            // // Check if data changed since last build
+                            // if (!_areListsEqual(_previousFilteredData, data)) {
+                            //   log(
+                            //     'Filtered data changed in build: ${_previousFilteredData.length} -> ${data.length}',
+                            //   );
+                            //   _previousFilteredData = List.from(data);
+                            //   WidgetsBinding.instance.addPostFrameCallback((_) {
+                            //     ref
+                            //         .read(
+                            //           tableToolAndSuppliesHandoverProvider
+                            //               .notifier,
+                            //         )
+                            //         .setData(data);
+                            //   });
+                            // }
 
                             return RiverpodTable<ToolAndSuppliesHandoverDto>(
                               tableProvider:
@@ -643,6 +649,7 @@ class _ToolAndSuppliesHandoverListState
               UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
               ToolAndSuppliesHandoverDto? item =
                   selectedItems.isNotEmpty ? selectedItems.first : null;
+              log("Selected item for signing: ${item?.tenFile}");
               _handleSignDocument(item!, userInfo!, widget.provider);
             }
           },
@@ -770,17 +777,17 @@ class _ToolAndSuppliesHandoverListState
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      ThreadNode(
-        header: 'Đại diện đơn vị để nghị:',
-        depth: 1,
-        child: viewSignatoryStatus(
-          item.daXacNhan == true,
-          widget.provider
-              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-              .hoTen
-              .toString(),
-        ),
-      ),
+      // ThreadNode(
+      //   header: 'Đại diện đơn vị để nghị:',
+      //   depth: 1,
+      //   child: viewSignatoryStatus(
+      //     item.daXacNhan == true,
+      //     widget.provider
+      //         .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+      //         .hoTen
+      //         .toString(),
+      //   ),
+      // ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,
@@ -811,7 +818,7 @@ class _ToolAndSuppliesHandoverListState
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
-        ThreadNode(
+      ThreadNode(
         header: 'Giám đốc ký xác nhận:',
         depth: 1,
         child: viewSignatoryStatus(

@@ -578,7 +578,10 @@ class AssetManagementRepository extends ApiBase {
       String url = '';
       if (typeAsset == 0) {
         url = 'paged-da-ban-giao';
-      } else if (typeAsset == 1) {
+      }
+      if (typeAsset == 1) {
+        url = 'paged-da-ban-giao';
+      } else if (typeAsset == 2) {
         url = 'paged-chua-ban-giao';
       }
       log('API URL: $url -- tab: $typeAsset');

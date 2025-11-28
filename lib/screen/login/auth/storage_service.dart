@@ -26,22 +26,29 @@ class StorageService {
         // Guard against exceeding localStorage quota (~5MB on many browsers)
         try {
           final encoded = jsonEncode(value);
+          final encodedBytes = encoded.length;
           // Leave some headroom under the typical 5MB limit
           const maxBytes = 4 * 1024 * 1024; // 4MB
-          if (encoded.length > maxBytes) {
+          if (encodedBytes > maxBytes) {
             // Skip caching oversized payloads on web to avoid quota errors
             // Consider server-side pagination or lighter caches for these keys
+            print('WARNING: StorageService.write skipped for key "$key" - data too large: ${(encodedBytes / 1024 / 1024).toStringAsFixed(2)}MB (max: ${(maxBytes / 1024 / 1024).toStringAsFixed(2)}MB)');
             return;
+          } else {
+            print('StorageService.write: key "$key" - size: ${(encodedBytes / 1024 / 1024).toStringAsFixed(2)}MB');
           }
-        } catch (_) {
+        } catch (e) {
           // If value isn't JSON encodable, proceed and let storage handle it
+          print('StorageService.write: JSON encode error for key "$key": $e');
         }
       }
       await storage.write(key, value);
+      print('StorageService.write: Successfully wrote key "$key"');
     } catch (e) {
       // Best-effort fallback: ignore quota errors to keep app running
       // Optionally, you can erase specific heavy keys before retrying
       // For stability, just swallow here
+      print('ERROR: StorageService.write failed for key "$key": $e');
     }
   }
 

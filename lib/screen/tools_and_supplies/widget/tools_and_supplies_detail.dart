@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -193,8 +194,23 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail>
       newValidationErrors['donViTinh'] = true;
     }
 
+    log('message [ToolsAndSuppliesDetail] controllerValue.text: ${controllerValue.text}');
     // Validate giá trị
-    double? value = double.tryParse(controllerValue.text.trim());
+    String valueText = controllerValue.text.trim();
+    
+    final commaParts = valueText.split(',');
+    String integerPart = commaParts[0];
+    String? decimalPart = commaParts.length > 1 ? commaParts[1] : null;
+
+    integerPart = integerPart.replaceAll('.', '');
+    
+    if (decimalPart != null && decimalPart.isNotEmpty) {
+      valueText = '$integerPart.$decimalPart';
+    } else {
+      valueText = integerPart;
+    }
+    
+    double? value = double.tryParse(valueText);
     if (value == null || value <= 0) {
       newValidationErrors['giaTri'] = true;
     }

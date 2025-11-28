@@ -142,9 +142,9 @@ class _ToolAndMaterialTransferViewState
   Widget build(BuildContext context) {
     super.build(context); // Cần thiết cho AutomaticKeepAliveClientMixin
     ref.listen(messageLatestJsonProvider, (previous, next) {
-      log('message [ref.listen][AssetHandoverView]  next $next');
+      log('message [ref.listen][ToolAndMaterialTransferView]  next $next');
       if (next == null || next.isEmpty) return;
-      log('message [ref.listen][AssetHandoverView]  next not null');
+      log('message [ref.listen][ToolAndMaterialTransferView]  next not null');
       // Gọi update
       context.read<ToolAndMaterialTransferProvider>().onRealtimeUpdate(next, context);
     });
@@ -291,7 +291,7 @@ class _ToolAndMaterialTransferViewState
             context,
           );
           AppUtility.showSnackBar(context, 'Đã hủy phiếu thành cồng!');
-          // context.read<ToolAndMaterialTransferProvider>().getDataAll(context);
+          context.read<ToolAndMaterialTransferProvider>().onReloadData(context);
         }
         if (state is UpdateSigningTAMTStatusFailedState) {
           log('UpdateSigningTAMTStatusFailedState');

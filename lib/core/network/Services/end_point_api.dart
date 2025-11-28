@@ -3,7 +3,7 @@
 class EndPointAPI {
   static String TOOLS_AND_SUPPLIES = "/api/ccdcvattu";
   static String TOOLS_AND_SUPPLIES_PAGED = "/api/ccdcvattu/paged";
-  static String ASSET_TRANSFER = "/api/bangiaotaisan";
+  static String ASSET_HANDOVER = "/api/bangiaotaisan";
   static String DETAIL_ASSET_HANDOVER = "/api/chitietbangiaotaisan";
   static String TOOL_AND_SUPPLIES_HANDOVER = "/api/bangiaoccdcvattu";
   static String DU_AN = "/api/duan";

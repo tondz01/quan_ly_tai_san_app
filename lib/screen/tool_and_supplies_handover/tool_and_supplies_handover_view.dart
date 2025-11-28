@@ -9,7 +9,6 @@ import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab_bar_table_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_detail.dart';
@@ -160,9 +159,7 @@ class _ToolAndSuppliesHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<ToolAndSuppliesHandoverBloc>().add(
-            GetListToolAndSuppliesHandoverEvent(context),
-          );
+          context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is UpdateToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -171,9 +168,7 @@ class _ToolAndSuppliesHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<ToolAndSuppliesHandoverBloc>().add(
-            GetListToolAndSuppliesHandoverEvent(context),
-          );
+          context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is DeleteToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -183,9 +178,7 @@ class _ToolAndSuppliesHandoverViewState
             ),
           );
 
-          context.read<ToolAndSuppliesHandoverBloc>().add(
-            GetListToolAndSuppliesHandoverEvent(context),
-          );
+          context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is ErrorState) {
           context.read<ToolAndSuppliesHandoverProvider>().isLoading = false;
@@ -203,9 +196,7 @@ class _ToolAndSuppliesHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<ToolAndSuppliesHandoverBloc>().add(
-            GetListToolAndSuppliesHandoverEvent(context),
-          );
+          context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is CancelToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -214,9 +205,7 @@ class _ToolAndSuppliesHandoverViewState
               backgroundColor: Colors.green,
             ),
           );
-          context.read<ToolAndSuppliesHandoverBloc>().add(
-            GetListToolAndSuppliesHandoverEvent(context),
-          );
+          context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         }
       },
@@ -225,9 +214,9 @@ class _ToolAndSuppliesHandoverViewState
           value: context.read<ToolAndSuppliesHandoverProvider>(),
           child: Consumer<ToolAndSuppliesHandoverProvider>(
             builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+              // if (provider.isLoading) {
+              //   return const Center(child: CircularProgressIndicator());
+              // }
               // Ensure pagination controller is initialized before use
               return Scaffold(
                 appBar: AppBar(

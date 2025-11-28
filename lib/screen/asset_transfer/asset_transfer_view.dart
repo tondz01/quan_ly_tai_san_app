@@ -122,9 +122,9 @@ class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> 
   @override
   Widget build(BuildContext context) {
     ref.listen(messageLatestJsonProvider, (previous, next) {
-      log('message [ref.listen][AssetHandoverView]  next $next');
+      log('message [ref.listen][AssetTransferView]  next $next');
       if (next == null || next.isEmpty) return;
-      log('message [ref.listen][AssetHandoverView]  next not null');
+      log('message [ref.listen][AssetTransferView]  next not null');
       // Gọi update
       context.read<DieuDongTaiSanProvider>().onRealtimeUpdate(next, context);
     });
@@ -289,7 +289,7 @@ class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> 
         if (state is CancelDieuDongTaiSanSuccessState) {
           context.read<DieuDongTaiSanProvider>().onCloseDetail(context);
           AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
-          // context.read<DieuDongTaiSanProvider>().getDataAll(context);
+          context.read<DieuDongTaiSanProvider>().onReloadDataPage(context);
         }
         if (state is UpdateSigningStatusFailedState) {
           AppUtility.showSnackBar(context, state.message, isError: true);

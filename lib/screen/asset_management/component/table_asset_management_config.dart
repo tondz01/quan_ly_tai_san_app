@@ -105,7 +105,7 @@ class TableAssetManagementConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Đơn vị sử dụng',
+          name: 'Đơn vị hiện thời',
           key: 'using_unit',
           width: 150,
           flex: 1,

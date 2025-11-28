@@ -240,6 +240,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         log("message [ref.listen] [DieuDongTaiSanProvider] involved, reloading data...");
         onReloadDataPage(context, false);
       }
+    } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
+      onReloadDataPage(context, false);
     }
   }
 
@@ -248,7 +250,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       final args = await AssetManagementRepository().getListAssetManagement(
         'ct001',
       );
-      AccountHelper.instance.setListAsset(args['data'] ?? []);
+      await AccountHelper.instance.setListAsset(args['data'] ?? []);
       _dataAsset = args['data'];
     } else {
       _dataAsset = AccountHelper.instance.getAllAssets();
