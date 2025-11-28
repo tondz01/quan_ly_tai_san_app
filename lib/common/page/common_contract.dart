@@ -69,8 +69,8 @@ class _CommonContractState extends State<CommonContract> {
       2; // 1: Ký nháy, 2: Ký thường, 3: Ký số ký hiệu, 4: Ký số hình ảnh
 
   // Reference dimensions for coordinate normalization (A4 size)
-  static const double REFERENCE_WIDTH = 900.0;
-  static const double REFERENCE_HEIGHT = 900 * (294 / 210);
+  static const double REFERENCE_WIDTH = 800;
+  static const double REFERENCE_HEIGHT = 800 * (294 / 210);
 
   // Coordinate conversion helpers
   double _toNormalizedX(double absoluteX) {
@@ -1139,338 +1139,342 @@ class _CommonContractState extends State<CommonContract> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Tab công cụ bên trái
-                    Container(
-                      width: 350,
-                      color: Colors.white,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Công cụ ký",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (widget.isKyThuong)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RadioListTile<int>(
-                                    title: const Text("Ký thường"),
-                                    value: 2,
-                                    groupValue: _selectedSigningType,
-                                    contentPadding: EdgeInsets.zero,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _selectedSigningType = val!;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                if (_getSignatureUrlByType(2) != null)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 8),
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Image.network(
-                                      _getSignatureUrlByType(2)!,
-                                      width: 60,
-                                      height: 40,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (
-                                        context,
-                                        error,
-                                        stackTrace,
-                                      ) {
-                                        return const SizedBox(
-                                          width: 60,
-                                          height: 40,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          if (widget.isKyNhay)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: RadioListTile<int>(
-                                    title: const Text("Ký nháy"),
-                                    value: 1,
-                                    groupValue: _selectedSigningType,
-                                    contentPadding: EdgeInsets.zero,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _selectedSigningType = val!;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                if (_getSignatureUrlByType(1) != null)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 8),
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Image.network(
-                                      _getSignatureUrlByType(1)!,
-                                      width: 60,
-                                      height: 40,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (
-                                        context,
-                                        error,
-                                        stackTrace,
-                                      ) {
-                                        return const SizedBox(
-                                          width: 60,
-                                          height: 40,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          if (widget.isKySo)
-                            Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(8),
+                    if (widget.isShowKy)
+                      Container(
+                        width: 350,
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Công cụ ký",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                            const SizedBox(height: 16),
+                            if (widget.isKyThuong)
+                              Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      8,
-                                      12,
-                                      0,
-                                    ),
-                                    child: Text(
-                                      "Chữ ký số",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
-                                      ),
+                                  Expanded(
+                                    child: RadioListTile<int>(
+                                      title: const Text("Ký thường"),
+                                      value: 2,
+                                      groupValue: _selectedSigningType,
+                                      contentPadding: EdgeInsets.zero,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _selectedSigningType = val!;
+                                        });
+                                      },
                                     ),
                                   ),
-
-                                  RadioListTile<int>(
-                                    title: const Text("Hiển thị mặc định"),
-                                    value: 3,
-                                    groupValue: _selectedSigningType,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _selectedSigningType = val!;
-                                      });
-                                    },
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: RadioListTile<int>(
-                                          title: const Text(
-                                            "Hiển thị chữ ký thường",
-                                          ),
-                                          value: 4,
-                                          groupValue: _selectedSigningType,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 4,
-                                              ),
-                                          onChanged: (val) {
-                                            setState(() {
-                                              _selectedSigningType = val!;
-                                            });
-                                          },
+                                  if (_getSignatureUrlByType(2) != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
                                         ),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
-                                      if (_getSignatureUrlByType(4) != null)
-                                        Container(
-                                          margin: const EdgeInsets.only(
-                                            right: 8,
-                                          ),
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Image.network(
-                                            _getSignatureUrlByType(4)!,
+                                      child: Image.network(
+                                        _getSignatureUrlByType(2)!,
+                                        width: 60,
+                                        height: 40,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return const SizedBox(
                                             width: 60,
                                             height: 40,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) {
-                                              return const SizedBox(
-                                                width: 60,
-                                                height: 40,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: RadioListTile<int>(
-                                          title: const Text(
-                                            "Hiển thị chữ ký nháy",
-                                          ),
-                                          value: 5,
-                                          groupValue: _selectedSigningType,
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 4,
-                                              ),
-                                          onChanged: (val) {
-                                            setState(() {
-                                              _selectedSigningType = val!;
-                                            });
-                                          },
-                                        ),
+                                          );
+                                        },
                                       ),
-                                      if (_getSignatureUrlByType(5) != null)
-                                        Container(
-                                          margin: const EdgeInsets.only(
-                                            right: 8,
-                                          ),
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Image.network(
-                                            _getSignatureUrlByType(5)!,
-                                            width: 60,
-                                            height: 40,
-                                            fit: BoxFit.contain,
-                                            errorBuilder: (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) {
-                                              return const SizedBox(
-                                                width: 60,
-                                                height: 40,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                    ),
                                 ],
                               ),
-                            ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                // Tính toán vị trí center của phần content
-                                final contentWidth = screenWidth - 250;
-                                final centerX = contentWidth / 2;
-                                final centerY = screenHeight / 2;
-                                _handleSigning(centerY, centerX);
-                              },
-                              icon: const Icon(Icons.edit),
-                              label: const Text("Ký"),
-                            ),
-                          ),
-                          const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed:
-                                  _submitting ? null : _confirmSignatures,
-                              icon:
-                                  _submitting
-                                      ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
+                            if (widget.isKyNhay)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: RadioListTile<int>(
+                                      title: const Text("Ký nháy"),
+                                      value: 1,
+                                      groupValue: _selectedSigningType,
+                                      contentPadding: EdgeInsets.zero,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _selectedSigningType = val!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  if (_getSignatureUrlByType(1) != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
                                         ),
-                                      )
-                                      : const Icon(Icons.check_circle),
-                              label: Text(
-                                _submitting ? 'Đang lưu...' : 'Xác nhận',
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Image.network(
+                                        _getSignatureUrlByType(1)!,
+                                        width: 60,
+                                        height: 40,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return const SizedBox(
+                                            width: 60,
+                                            height: 40,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                ],
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.redAccent,
-                                side: const BorderSide(color: Colors.redAccent),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
+                            if (widget.isKySo)
+                              Container(
+                                margin: const EdgeInsets.only(top: 8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        8,
+                                        12,
+                                        0,
+                                      ),
+                                      child: Text(
+                                        "Chữ ký số",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey[800],
+                                        ),
+                                      ),
+                                    ),
+
+                                    RadioListTile<int>(
+                                      title: const Text("Hiển thị mặc định"),
+                                      value: 3,
+                                      groupValue: _selectedSigningType,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _selectedSigningType = val!;
+                                        });
+                                      },
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: RadioListTile<int>(
+                                            title: const Text(
+                                              "Hiển thị chữ ký thường",
+                                            ),
+                                            value: 4,
+                                            groupValue: _selectedSigningType,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 4,
+                                                ),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _selectedSigningType = val!;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        if (_getSignatureUrlByType(4) != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Image.network(
+                                              _getSignatureUrlByType(4)!,
+                                              width: 60,
+                                              height: 40,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) {
+                                                return const SizedBox(
+                                                  width: 60,
+                                                  height: 40,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: RadioListTile<int>(
+                                            title: const Text(
+                                              "Hiển thị chữ ký nháy",
+                                            ),
+                                            value: 5,
+                                            groupValue: _selectedSigningType,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 4,
+                                                ),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _selectedSigningType = val!;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        if (_getSignatureUrlByType(5) != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Image.network(
+                                              _getSignatureUrlByType(5)!,
+                                              width: 60,
+                                              height: 40,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) {
+                                                return const SizedBox(
+                                                  width: 60,
+                                                  height: 40,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                              onPressed: () => Navigator.of(context).pop(),
-                              icon: const Icon(Icons.close),
-                              label: const Text("Hủy"),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  // Tính toán vị trí center của phần content
+                                  final contentWidth = screenWidth - 250;
+                                  final centerX = contentWidth / 2;
+                                  final centerY = screenHeight / 2;
+                                  _handleSigning(centerY, centerX);
+                                },
+                                icon: const Icon(Icons.edit),
+                                label: const Text("Ký"),
+                              ),
                             ),
-                          ),
-                        ],
+                            const Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed:
+                                    _submitting ? null : _confirmSignatures,
+                                icon:
+                                    _submitting
+                                        ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                        : const Icon(Icons.check_circle),
+                                label: Text(
+                                  _submitting ? 'Đang lưu...' : 'Xác nhận',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.redAccent,
+                                  side: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () => Navigator.of(context).pop(),
+                                icon: const Icon(Icons.close),
+                                label: const Text("Hủy"),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
                     // Nội dung tài liệu
                     Expanded(
