@@ -299,10 +299,12 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       for (var e in requestDetailSubppliesHandover) {
         e['idBanGiaoCCDCVatTu'] = request['id'].toString();
       }
+      log('message [AssetHandoverDetail] [createToolAndSuppliesHandover] requestDetailSubppliesHandover: ${jsonEncode(requestDetailSubppliesHandover)}');
       final responseDetail = await post(
         "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
         data: requestDetailSubppliesHandover,
       );
+      log('message [AssetHandoverDetail] [createToolAndSuppliesHandover] responseDetail: ${jsonEncode(responseDetail)}');
       final int? statusDetail = responseDetail.statusCode;
       if (checkStatusCodeFailed(statusDetail ?? 0)) {
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
