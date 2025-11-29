@@ -1062,13 +1062,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         .join(',');
     //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
     String idNeedToDo =
-        "${state.item?.idDonViGiao},${state.item?.idDonViNhan},${state.item?.idNguoiKyNhay},${state.item?.idTrinhDuyetGiamDoc},$newSignatory";
+        "${state.item?.idDonViGiao},${state.item?.idDonViNhan},${state.item?.idNguoiKyNhay},${state.item?.idTrinhDuyetGiamDoc},$newSignatory, admin,${state.item?.nguoiTao}";
 
-    MessageServiceRealtime().pushJsonMessage(
-      typeFunc: FunctionType.ASSET_HANDOVER,
-      typeAction: ActionType.CREATE,
-      idNeedToDo: idNeedToDo,
-    );
+    Future.delayed(const Duration(milliseconds: 200)).then((_) {
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.ASSET_TRANSFER,
+        typeAction: ActionType.UPDATE,
+        idNeedToDo: idNeedToDo,
+      );
+    });
   }
 
   bool editable() {
@@ -1229,7 +1231,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.selectedFileName = null;
         state.selectedFilePath = null;
         state.donViGiao = null;
-        state.donViNhan = widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
+        state.donViNhan =
+            widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
         NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
           (e) => e.id == widget.provider.userInfo?.tenDangNhap,
           orElse: () => NhanVien(),

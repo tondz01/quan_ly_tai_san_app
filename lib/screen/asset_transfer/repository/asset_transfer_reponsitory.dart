@@ -448,7 +448,7 @@ class AssetTransferRepository extends ApiBase {
       if (allIds.isNotEmpty) {
         final recipients = {
           ...allIds.where((id) => id.trim().isNotEmpty),
-          'admin',
+          'admin,${items.map((e) => e.nguoiTao).join(',')}',
         };
         Future.delayed(const Duration(milliseconds: 200)).then((_) {
           MessageServiceRealtime().pushJsonMessage(
