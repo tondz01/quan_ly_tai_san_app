@@ -96,12 +96,14 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       String idNeedToDo =
-          "${request.idDonViGiao},${request.idDonViNhan},${request.idNguoiKyNhay},${request.idTrinhDuyetGiamDoc},$newSignatory, admin";
-      MessageServiceRealtime().pushJsonMessage(
-        typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
-        typeAction: ActionType.CREATE,
-        idNeedToDo: idNeedToDo,
-      );
+          "${request.idDonViGiao},${request.idDonViNhan},${request.idNguoiKyNhay},${request.idTrinhDuyetGiamDoc},$newSignatory, admin,${request.nguoiTao}";
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+          typeAction: ActionType.CREATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       if (respData is Map<String, dynamic>) {
@@ -466,46 +468,9 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         ToolAndMaterialTransferDto toolAndMaterialTransfer = item.copyWith(
           share: true,
         );
-        Map<String, dynamic> data = {
-          "id": toolAndMaterialTransfer.id,
-          "soQuyetDinh": toolAndMaterialTransfer.soQuyetDinh,
-          "tenPhieu": toolAndMaterialTransfer.tenPhieu,
-          "idDonViGiao": toolAndMaterialTransfer.idDonViGiao,
-          "idDonViNhan": toolAndMaterialTransfer.idDonViNhan,
-          "idNguoiKyNhay": toolAndMaterialTransfer.idNguoiKyNhay,
-          "trangThaiKyNhay": toolAndMaterialTransfer.trangThaiKyNhay,
-          "nguoiLapPhieuKyNhay": toolAndMaterialTransfer.nguoiLapPhieuKyNhay,
-          "idDonViDeNghi": toolAndMaterialTransfer.idDonViDeNghi,
-          "tgGnTuNgay": toolAndMaterialTransfer.tggnTuNgay,
-          "tgGnDenNgay": toolAndMaterialTransfer.tggnDenNgay,
-          "idTrinhDuyetCapPhong": toolAndMaterialTransfer.idTrinhDuyetCapPhong,
-          "trinhDuyetCapPhongXacNhan":
-              toolAndMaterialTransfer.trinhDuyetCapPhongXacNhan,
-          "idTrinhDuyetGiamDoc": toolAndMaterialTransfer.idTrinhDuyetGiamDoc,
-          "trinhDuyetGiamDocXacNhan":
-              toolAndMaterialTransfer.trinhDuyetGiamDocXacNhan,
-          "diaDiemGiaoNhan": toolAndMaterialTransfer.diaDiemGiaoNhan,
-          "idPhongBanXemPhieu": toolAndMaterialTransfer.idPhongBanXemPhieu,
-          "noiNhan": toolAndMaterialTransfer.noiNhan,
-          "trangThai": toolAndMaterialTransfer.trangThai,
-          "idCongTy": toolAndMaterialTransfer.idCongTy,
-          "ngayTao": toolAndMaterialTransfer.ngayTao,
-          "ngayCapNhat": toolAndMaterialTransfer.ngayCapNhat,
-          "nguoiTao": toolAndMaterialTransfer.nguoiTao,
-          "nguoiCapNhat": toolAndMaterialTransfer.nguoiCapNhat,
-          "coHieuLuc": toolAndMaterialTransfer.coHieuLuc,
-          "loai": toolAndMaterialTransfer.loai,
-          "share": true,
-          "trichYeu": toolAndMaterialTransfer.trichYeu,
-          "duongDanFile": toolAndMaterialTransfer.duongDanFile,
-          "tenFile": toolAndMaterialTransfer.tenFile,
-          "ngayKy": toolAndMaterialTransfer.ngayKy,
-          "daBanGiao": toolAndMaterialTransfer.daBanGiao,
-          "byStep": toolAndMaterialTransfer.byStep,
-        };
         final response = await put(
           '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/${item.id}',
-          data: data,
+          data: jsonEncode(toolAndMaterialTransfer),
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           result['data'] = response.data;
@@ -516,13 +481,15 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       if (allIds.isNotEmpty) {
         final recipients = {
           ...allIds.where((id) => id.trim().isNotEmpty),
-          'admin',
+          'admin,${items.map((e) => e.nguoiTao).join(',')}',
         };
-        MessageServiceRealtime().pushJsonMessage(
-          typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
-          typeAction: ActionType.UPDATE,
-          idNeedToDo: recipients.join(','),
-        );
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+            typeAction: ActionType.UPDATE,
+            idNeedToDo: recipients.join(','),
+          );
+        });
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

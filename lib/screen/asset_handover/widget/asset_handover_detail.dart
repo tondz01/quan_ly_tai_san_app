@@ -215,6 +215,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
         isDetail = false;
+        dieuDongTaiSan = listAssetTransfer.firstWhere(
+          (element) => element.id == item?.lenhDieuDong,
+          orElse: () => DieuDongTaiSanDto(),
+        );
+        controllerOrder.text = dieuDongTaiSan?.id ?? '';
         listDetailAssetHandover =
             (widget.provider.dataDetailAssetMobilization != null
                 ? widget.provider.dataDetailAssetMobilization!
@@ -223,7 +228,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                         id: UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
                         idBanGiaoTaiSan: item?.id ?? '',
                         banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
-                        quyetDinhDieuDongSo: item?.quyetDinhDieuDongSo ?? '',
+                        quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',
                         idTaiSan: e.idTaiSan,
                         tenTaiSan: e.tenTaiSan,
                         donViTinh: e.donViTinh,
@@ -240,10 +245,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     )
                     .toList()
                 : <DetailAssetHandoverDto>[]);
-        log('message [AssetHandoverDetail] listDetailAssetHandover: $listDetailAssetHandover');
+        log(
+          'message [AssetHandoverDetail] listDetailAssetHandover: $listDetailAssetHandover',
+        );
       } else {
         listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
-        log('message [AssetHandoverDetail] onInit  listDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}');
+        log(
+          'message [AssetHandoverDetail] onInit  listDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}',
+        );
       }
 
       isByStep = item?.byStep ?? false;
@@ -349,7 +358,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   bool _validateForm() {
     Map<String, bool> newValidationErrors = {};
-
+    if (nguoiKyGiamDoc == null || controllerGiamDocKy.text.isEmpty) {
+      newValidationErrors['giamDocXacNhan'] = true;
+    }
     if (controllerHandoverNumber.text.isEmpty) {
       newValidationErrors['handoverNumber'] = true;
     }
@@ -383,14 +394,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
+    if (controllerReceiverRepresentative.text.isEmpty) {
+      newValidationErrors['receiverRepresentative'] = true;
+    }
+
     // if (controllerRepresentativeUnit.text.isEmpty) {
     //   newValidationErrors['representativeUnit'] = true;
     // }
-    log('selectedFileName: $_selectedFileName');
-    log('selectedFilePath: $_selectedFilePath');
     if ((_selectedFileName ?? '').isEmpty ||
         (_selectedFilePath ?? '').isEmpty) {
-      log('document is null');
       newValidationErrors['document'] = true;
     }
 
@@ -398,7 +410,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (hasChanges) {
       setState(() {
         _validationErrors = newValidationErrors;
-        log('newValidationErrors: $_validationErrors');
       });
     }
 
@@ -433,6 +444,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   Future<void> _saveAssetHandover() async {
+    log(
+      'message [AssetHandoverDetail] _saveAssetHandover ${nguoiKyGiamDoc?.hoTen}',
+    );
+
     if (!mounted) return;
     final assetHandoverProvider = context.read<AssetHandoverProvider>();
     final dieuDongProvider = context.read<DieuDongTaiSanProvider>();
@@ -474,6 +489,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "byStep": isByStep,
     };
 
+    if (listDetailAssetHandover.isEmpty) {
+      onInitListDetailAssetHandover(request);
+    }
+
     final List<SignatoryDto> listSignatory =
         _additionalSignersDetailed
             .map(
@@ -505,10 +524,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       SGLog.error(
         'tag check listDetailAssetHandover',
         'message: ${jsonEncode(listDetailAssetHandover)}',
-      );
-      // return;
-      log(
-        'message [AssetHandoverDetail] onInit  _saveAssetHandover newRequest ${jsonEncode(listDetailAssetHandover)}',
       );
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(
@@ -569,7 +584,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
       String idNeedToDo =
-          "${nguoiDaiDienBenGiao?.id},${nguoiDaiDienBenNhan?.id},${nguoiKyGiamDoc?.id},$newSignatory, admin";
+          "${nguoiDaiDienBenGiao?.id},${nguoiDaiDienBenNhan?.id},${nguoiKyGiamDoc?.id},$newSignatory, admin,${currentUser?.tenDangNhap}";
       Future.delayed(const Duration(milliseconds: 200)).then((_) {
         MessageServiceRealtime().pushJsonMessage(
           typeFunc: FunctionType.ASSET_HANDOVER,
@@ -1375,5 +1390,38 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     }
 
     log('_performCRUDOperations: CRUD operations completed');
+  }
+
+  onInitListDetailAssetHandover(Map<String, dynamic> request) {
+    if (item != null) {
+      listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
+    } else {
+      listDetailAssetHandover =
+          (widget.provider.dataDetailAssetMobilization != null
+              ? widget.provider.dataDetailAssetMobilization!
+                  .map(
+                    (e) => DetailAssetHandoverDto(
+                      id: UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
+                      idBanGiaoTaiSan: request['id'] ?? '',
+                      banGiaoTaiSan: request['banGiaoTaiSan'] ?? '',
+                      quyetDinhDieuDongSo: request['quyetDinhDieuDongSo'] ?? '',
+                      idTaiSan: e.idTaiSan,
+                      tenTaiSan: e.tenTaiSan,
+                      donViTinh: e.donViTinh,
+                      hienTrang: e.hienTrang,
+                      soLuong: e.soLuong,
+                      ngayTao: AppUtility.formatDateString(DateTime.now()),
+                      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+                      nguoiTao: currentUser?.tenDangNhap ?? '',
+                      nguoiCapNhat: '',
+                      isActive: true,
+                    ),
+                  )
+                  .toList()
+              : <DetailAssetHandoverDto>[]);
+      log(
+        'message [AssetHandoverDetail] onInitListDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}',
+      );
+    }
   }
 }

@@ -1428,12 +1428,14 @@ class _ToolAndMaterialTransferDetailState
             .map((e) => e.employee?.id ?? '')
             .join(',');
         String idNeedToDo =
-            "${item!.idDonViGiao},${item!.idDonViNhan},${item!.idNguoiKyNhay},${item!.idTrinhDuyetGiamDoc},$newSignatory, admin";
-        MessageServiceRealtime().pushJsonMessage(
-          typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
-          typeAction: ActionType.UPDATE,
-          idNeedToDo: idNeedToDo,
-        );
+            "${item!.idDonViGiao},${item!.idDonViNhan},${item!.idNguoiKyNhay},${item!.idTrinhDuyetGiamDoc},$newSignatory, admin,${item!.nguoiTao}";
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
+            typeAction: ActionType.UPDATE,
+            idNeedToDo: idNeedToDo,
+          );
+        });
       }
     }
   }
