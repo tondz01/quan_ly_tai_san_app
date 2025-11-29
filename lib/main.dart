@@ -21,11 +21,11 @@ class Config {
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.0.14_29/11/2025',
+    defaultValue: '${environment}_0.0.14_30/11/2025',
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
-    defaultValue: '3',
+    defaultValue: '1',
   );
 
   static String get baseUrl {
