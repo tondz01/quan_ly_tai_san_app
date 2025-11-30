@@ -228,7 +228,7 @@ class ToolAndMaterialTransferDto {
       share: json['share'],
       isActive: json['isActive'],
       detailToolAndMaterialTransfers: parseDetails(
-        json['chiTietToolAndMaterialTransfers'],
+        json['chiTietDieuDongCCDCVatTuDTOS'],
       ),
       listSignatory: parseSignatory(json['nguoiKyList']),
       daBanGiao: json['daBanGiao'],

@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
+// import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
@@ -193,6 +193,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   void onCloseDetail(BuildContext context) {
     _isShowInput = false;
     _isShowCollapse = true;
+    onSetLoading(false);
     notifyListeners();
   }
 
@@ -261,6 +262,11 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     log('Calling notifyListeners() to update UI');
     notifyListeners();
     log('notifyListeners() completed');
+  }
+
+  onSetLoading(bool value) {
+    _isLoadingImport = value;
+    notifyListeners();
   }
 
   getListPhongBanSuccess(
@@ -335,39 +341,50 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
-    _confirmBeforeLeaving(context, item);
+    // _confirmBeforeLeaving(context, item);
+    if (item != null) {
+      _dataDetail = item;
+      _isShowInput = true;
+      _isShowCollapse = true;
+      _isUpdateDetail = true;
+    } else {
+      _dataDetail = null;
+      _isShowInput = true;
+      _isShowCollapse = true;
+      _isUpdateDetail = false;
+    }
     notifyListeners();
   }
 
-  Future<bool> _showUnsavedChangesDialog(
-    BuildContext context,
-    ToolsAndSuppliesDto? item,
-  ) async {
-    return showUnsavedChangesDialog(context, item, () {
-      _dataDetail = item;
-      _isShowInput = true;
-      _isShowCollapse = true;
-      _isUpdateDetail = true;
-      hasUnsavedChanges = false;
-      Navigator.of(context).pop();
-    });
-  }
+  // Future<bool> _showUnsavedChangesDialog(
+  //   BuildContext context,
+  //   ToolsAndSuppliesDto? item,
+  // ) async {
+  //   return showUnsavedChangesDialog(context, item, () {
+  //     _dataDetail = item;
+  //     _isShowInput = true;
+  //     _isShowCollapse = true;
+  //     _isUpdateDetail = true;
+  //     hasUnsavedChanges = false;
+  //     Navigator.of(context).pop();
+  //   });
+  // }
 
   // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(
-    BuildContext context,
-    ToolsAndSuppliesDto? item,
-  ) async {
-    if (hasUnsavedChanges) {
-      return await _showUnsavedChangesDialog(context, item);
-    } else {
-      _dataDetail = item;
-      _isShowInput = true;
-      _isShowCollapse = true;
-      _isUpdateDetail = true;
-    }
-    return true;
-  }
+  // Future<bool> _confirmBeforeLeaving(
+  //   BuildContext context,
+  //   ToolsAndSuppliesDto? item,
+  // ) async {
+  //   if (hasUnsavedChanges) {
+  //     return await _showUnsavedChangesDialog(context, item);
+  //   } else {
+  //     _dataDetail = item;
+  //     _isShowInput = true;
+  //     _isShowCollapse = true;
+  //     _isUpdateDetail = true;
+  //   }
+  //   return true;
+  // }
 
   PhongBan getPhongBanByID(String idPhongBan) {
     if (_dataPhongBan != null && _dataPhongBan!.isNotEmpty) {
