@@ -139,7 +139,7 @@ class AuthRepository extends ApiBase {
       loadUserDepartments(idCongTy),
       loadUserEmployee(idCongTy),
       loadAssetGroup(idCongTy),
-      _loadCCDCGroup(idCongTy),
+      loadCCDCGroup(idCongTy),
       loadReasonIncrease(),
       _loadChucVu(idCongTy),
       _loadTypeAsset(idCongTy),
@@ -204,7 +204,7 @@ class AuthRepository extends ApiBase {
   }
 
   /// Load thông tin nhóm CCDC của user và lưu vào AccountHelper
-  Future<void> _loadCCDCGroup(String idCongTy) async {
+  Future<void> loadCCDCGroup(String idCongTy) async {
     try {
       final response = await get(
         EndPointAPI.CCDC_GROUP,

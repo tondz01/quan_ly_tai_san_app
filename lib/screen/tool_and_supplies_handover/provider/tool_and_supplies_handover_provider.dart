@@ -325,6 +325,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
     _body = Container();
     onLoadDataDropdown();
+    onLoadDataCcdc(context);
     // getListToolAndSuppliesHandover(context);
     onLoadDataAssetTransfer();
     // _autoReloadTimer?.cancel();
@@ -419,6 +420,25 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     });
   }
 
+  onLoadDataCcdc(BuildContext context) {
+    _dataCcdc = AccountHelper.instance.getAllCCDC();
+    log('dataCcdc0: ${jsonEncode(_dataCcdc)}');
+    if (_dataCcdc == null) {
+      if (AccountHelper.instance.getAllCCDC().isEmpty) {
+        AuthRepository().loadCCDCGroup('ct001').then((value) {
+          _dataCcdc = AccountHelper.instance.getAllCCDC();
+          notifyListeners();
+          log('dataCcdc1: ${jsonEncode(_dataCcdc)}');
+        });
+      } else {
+        _dataCcdc = AccountHelper.instance.getAllCCDC();
+        notifyListeners();
+        log('dataCcdc2: ${jsonEncode(_dataCcdc)}');
+      }
+    }
+    log('dataCcdc: ${jsonEncode(_dataCcdc)}');
+  }
+
   void onChangeDetail(
     BuildContext context,
     ToolAndSuppliesHandoverDto? item, {
@@ -450,7 +470,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
     // _dataDepartment = state.dataDepartment;
     // _dataStaff = state.dataStaff;
-    _dataCcdc = state.dataCcdc;
     _filteredData.clear();
     _data?.clear();
     if (state.data.isEmpty) {

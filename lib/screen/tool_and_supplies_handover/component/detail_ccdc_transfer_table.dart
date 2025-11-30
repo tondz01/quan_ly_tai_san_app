@@ -320,9 +320,10 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             isEditing: widget.isEditing,
             omittedSize: 130,
             onDataChanged: (data) {
-              setState(() {
-                listAsset = List.from(data);
-              });
+              // Update local state
+              listAsset = List.from(data);
+              // Notify parent without setState to avoid rebuild loop
+              // The table will rebuild itself when needed
               widget.onDataChanged?.call(data);
             },
             columns: [
