@@ -1,22 +1,21 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
-import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/data_map.dart';
 
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 import '../../../common/page/contract_page.dart' show SettingPage;
 import '../../../common/components/loading_overlay.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 
 void main() {
   runApp(
@@ -44,10 +43,6 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
   final TextEditingController _donViController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
-  // Data cache for mapping
-  List<AssetManagementDto> _listAssetManagement = [];
-  List<ToolsAndSuppliesDto> _listCCDC = [];
-
   @override
   void initState() {
     super.initState();
@@ -56,8 +51,6 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
 
   void _initData() async {
     _listPhongBan = AccountHelper.instance.getDepartment() ?? [];
-    _listAssetManagement = await ReportProvider().getListAsset();
-    _listCCDC = await ReportProvider().getListCCDC('ct001');
     setState(() {});
   }
 
@@ -184,68 +177,67 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
                             ),
                           ),
                           const Divider(height: 32),
-                          Row(
+                          Column(
                             children: [
-                              Expanded(
-                                child: CmFormDropdownObject<PhongBan>(
-                                  label: 'Chọn đơn vị',
-                                  value: _selectedDonVi,
-                                  controller: _donViController,
-                                  isEditing: true,
-                                  items: [
-                                    ..._listPhongBan.map(
-                                      (e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text(e.tenPhongBan ?? ''),
-                                      ),
+                              CmFormDropdownObject<PhongBan>(
+                                label: 'Chọn đơn vị',
+                                value: _selectedDonVi,
+                                controller: _donViController,
+                                isEditing: true,
+                                items: [
+                                  ..._listPhongBan.map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e.tenPhongBan ?? ''),
                                     ),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedDonVi = value;
-                                    });
-                                  },
-                                ),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedDonVi = value;
+                                  });
+                                },
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: CmFormDate(
-                                  label: 'Năm',
-                                  controller: _dateController,
-                                  isEditing: true,
-                                  value: _selectedDate,
-                                  dateTimeMode: SGDateTimeMode.year,
-                                  showTimeSection: false,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedDate = value ?? DateTime.now();
-                                    });
-                                  },
-                                ),
+                              const SizedBox(height: 16),
+                              CmFormDate(
+                                label: 'Năm',
+                                controller: _dateController,
+                                isEditing: true,
+                                value: _selectedDate,
+                                dateTimeMode: SGDateTimeMode.year,
+                                showTimeSection: false,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedDate = value ?? DateTime.now();
+                                  });
+                                },
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const Divider(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              ElevatedButton.icon(
-                                onPressed: _handleGetData,
-                                icon: const Icon(Icons.refresh, size: 20),
-                                label: const Text('Lấy dữ liệu'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
+                              GestureDetector(
+                                onTap: () {
+                                  _handleGetData();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Lấy dữ liệu',
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  if (_isExporting) return;
+                              Expanded(child: SizedBox.shrink()),
+                              GestureDetector(
+                              onTap: () {
+                                 if (_isExporting) return;
                                   setState(() {
                                     _isExporting = true;
                                   });
@@ -265,21 +257,20 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
                                       },
                                     );
                                   });
-                                },
-                                icon: const Icon(
-                                  Icons.picture_as_pdf,
-                                  size: 20,
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                label: const Text('Xuất PDF'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
+                                child: const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: Colors.white,
                                 ),
                               ),
+                            ),
+                            const SizedBox(width: 8),
                               const SizedBox(width: 16),
                               GestureDetector(
                                 onTap: () {
