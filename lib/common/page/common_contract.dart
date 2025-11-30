@@ -1031,7 +1031,19 @@ class _CommonContractState extends State<CommonContract> {
 
   // ===== Kiểm tra xem user hiện tại có được phép ký không =====
   bool _canUserSign(int newSigningType) {
-    // Chữ ký loại 1 (ký nháy) luôn được phép ký
+    // Kiểm tra xem tài liệu đã có chữ ký số (loaiKy = 3, 4, 5) chưa
+    final hasDigitalSignature = images.any(
+      (img) => img.loaiKy == 3 || img.loaiKy == 4 || img.loaiKy == 5,
+    );
+
+    // Nếu tài liệu đã có chữ ký số, chỉ cho phép ký số (loaiKy = 3, 4, 5)
+    if (hasDigitalSignature) {
+      if (newSigningType != 3 && newSigningType != 4 && newSigningType != 5) {
+        return false;
+      }
+    }
+
+    // Chữ ký loại 1 (ký nháy) luôn được phép ký (nếu chưa có chữ ký số)
     if (newSigningType == 1) {
       return true;
     }
@@ -1059,13 +1071,26 @@ class _CommonContractState extends State<CommonContract> {
   }
 
   Future<void> _handleSigning(double top, double left) async {
+    // Kiểm tra xem tài liệu đã có chữ ký số chưa
+    final hasDigitalSignature = images.any(
+      (img) => img.loaiKy == 3 || img.loaiKy == 4 || img.loaiKy == 5,
+    );
+
     // Kiểm tra quyền ký
     if (!_canUserSign(_selectedSigningType)) {
+      String errorMessage;
+      if (hasDigitalSignature &&
+          _selectedSigningType != 3 &&
+          _selectedSigningType != 4 &&
+          _selectedSigningType != 5) {
+        errorMessage =
+            'Tài liệu đã có chữ ký số, bạn chỉ có thể ký bằng chữ ký số!';
+      } else {
+        errorMessage = 'Bạn đã ký tài liệu này rồi, không thể ký thêm!';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bạn đã ký tài liệu này rồi, không thể ký thêm!'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
       return;
     }
@@ -1452,10 +1477,10 @@ class _CommonContractState extends State<CommonContract> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  // Tính toán vị trí center của phần content
-                                  final contentWidth = screenWidth - 250;
-                                  final centerX = contentWidth / 2;
-                                  final centerY = screenHeight / 2;
+                                  // Tính toán vị trí center của tài liệu A4
+                                  // Sử dụng kích thước reference của A4 canvas
+                                  final centerX = REFERENCE_WIDTH / 2;
+                                  final centerY = REFERENCE_HEIGHT / 2;
                                   _handleSigning(centerY, centerX);
                                 },
                                 icon: const Icon(Icons.edit),
