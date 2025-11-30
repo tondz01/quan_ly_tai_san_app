@@ -58,14 +58,13 @@ class TaiSanCoDinhRepository extends ApiBase {
       final response = await get(
         EndPointAPI.KHAU_HAO_TAI_SAN_BY_NHOM,
         queryParameters: {
-          'idconty': idCongTy,
+          'idcongty': idCongTy,
           'ngay': ngay,
           'thang': thang,
           'nam': nam,
           'idNhomTaiSan': idNhomTaiSan,
         },
       );
-      log('getKhauHaoTaiSan response: ${response.data}');
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

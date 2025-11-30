@@ -2,23 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
+
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/data_map.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
+
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 import '../../../common/page/contract_page.dart' show SettingPage;
 import '../../../common/components/loading_overlay.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 
 void main() {
   runApp(
@@ -38,138 +36,359 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
   List<DataMap> _ccdcData = [];
   bool _isExporting = false;
   final GlobalKey _repaintKey = GlobalKey();
+
+  // State cho phần chọn đơn vị và năm
+  PhongBan? _selectedDonVi;
+  DateTime _selectedDate = DateTime.now();
+  List<PhongBan> _listPhongBan = [];
+  final TextEditingController _donViController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+
+  // Data cache for mapping
+  List<AssetManagementDto> _listAssetManagement = [];
+  List<ToolsAndSuppliesDto> _listCCDC = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  void _initData() async {
+    _listPhongBan = AccountHelper.instance.getDepartment() ?? [];
+    _listAssetManagement = await ReportProvider().getListAsset();
+    _listCCDC = await ReportProvider().getListCCDC('ct001');
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    _donViController.dispose();
+    _dateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleGetData() async {
+    if (_selectedDonVi == null) {
+      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
+      return;
+    }
+
+    setState(() => _isExporting = true);
+
+    try {
+      // Fetch Asset Report from new API
+      final resultAsset = await ReportProvider().getS22DnReport(
+        _selectedDonVi!.id ?? '',
+        _selectedDate,
+      );
+
+      // Fetch CCDC Report from new API
+      final resultCCDC = await ReportProvider().getS22DnReportCCDC(
+        _selectedDonVi!.id ?? '',
+        _selectedDate,
+      );
+
+      // Helper function to map API response to DataMap
+      List<DataMap> mapToDataMap(List<dynamic> list, DataMapType type) {
+        return list.map((item) {
+          return DataMap(
+            tenTaiSan: item['tenTaiSan'] ?? '',
+            soHieu: item['idTaiSan'] ?? '',
+            ngayThang: item['ngayThang'] ?? '',
+            donViTinh: item['donViTinh'] ?? '',
+            soLuong: (item['soLuong'] as num?)?.toInt(),
+            donGia: (item['donGia'] as num?)?.toDouble(),
+            soTien: (item['tongTien'] as num?)?.toDouble(),
+            type: type,
+          );
+        }).toList();
+      }
+
+      List<DataMap> assetData = [];
+      if (resultAsset['data'] != null) {
+        final data = resultAsset['data'];
+        final increase = mapToDataMap(
+          data['data_increase'] ?? [],
+          DataMapType.INCREASE,
+        );
+        final reduce = mapToDataMap(
+          data['data_reduce'] ?? [],
+          DataMapType.REDUCE,
+        );
+        assetData = [...increase, ...reduce];
+      }
+
+      List<DataMap> ccdcData = [];
+      if (resultCCDC['data'] != null) {
+        final data = resultCCDC['data'];
+        final increase = mapToDataMap(
+          data['data_increase'] ?? [],
+          DataMapType.INCREASE,
+        );
+        final reduce = mapToDataMap(
+          data['data_reduce'] ?? [],
+          DataMapType.REDUCE,
+        );
+        ccdcData = [...increase, ...reduce];
+      }
+
+      setState(() {
+        _assetData = assetData;
+        _ccdcData = ccdcData;
+        _isExporting = false;
+      });
+      AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+    } catch (e) {
+      setState(() => _isExporting = false);
+      AppUtility.showSnackBar(context, 'Lỗi lấy dữ liệu: $e', isError: true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       body: LoadingOverlay(
         isLoading: _isExporting,
-        message: 'Đang xuất PDF...',
-        child: Scrollbar(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (_isExporting) return;
-                        setState(() {
-                          _isExporting = true;
-                        });
-                        WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          await ReportProvider().exportToPdf(
-                            [_repaintKey],
-                            context,
-                            () {
-                              setState(() => _isExporting = false);
-                              AppUtility.showSnackBar(
-                                context,
-                                'Xuất PDF thành công!',
-                                isError: false,
-                              );
-                            },
-                          );
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(8),
+        message: 'Đang xử lý...',
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
+              width: 1400,
+              child: Column(
+                children: [
+                  // Control Panel
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                        child: const Text(
-                          'Xuất PDF',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () {
-                        if (_isExporting) return;
-                        setState(() {
-                          _isExporting = true;
-                        });
-                        WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          await ReportProvider().exportToPdfAndPrint(
-                            [_repaintKey],
-                            context,
-                            () {
-                              setState(() => _isExporting = false);
-                            },
-                          );
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'In',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Divider(color: Colors.black, thickness: 1),
-                const SizedBox(height: 16),
-                RepaintBoundary(
-                  key: _repaintKey,
-                  child: Column(
-                    children: [
-                      HeaderBienBanKiemKe(
-                        onAssetDataChanged:
-                            (data) => setState(() => _assetData = data),
-                        onCcdcDataChanged:
-                            (data) => setState(() => _ccdcData = data),
-                      ),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.center,
-                        child: SGText(
-                          text: 'Bảng ghi tăng/giảm Tài sản cố định',
-                          style: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      AssetLedgerTable(data: _assetData, title: 'tài sản'),
-                      if (_ccdcData.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.center,
-                          child: SGText(
-                            text: 'Bảng ghi tăng/giảm Công cụ, dụng cụ cố định',
-                            style: SettingPage.textStyle.copyWith(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          SGText(
+                            text: 'Sổ Theo dõi tài sản cố định (S22-DN)',
+                            style: const TextStyle(
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        AssetLedgerTable(
-                          data: _ccdcData,
-                          title: 'công cụ, dụng cụ',
-                        ),
-                      ],
-                      FoooterBienBanKiemKe(),
-                      DetailPageWidget(),
-                    ],
+                          const Divider(height: 32),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CmFormDropdownObject<PhongBan>(
+                                  label: 'Chọn đơn vị',
+                                  value: _selectedDonVi,
+                                  controller: _donViController,
+                                  isEditing: true,
+                                  items: [
+                                    ..._listPhongBan.map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e.tenPhongBan ?? ''),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedDonVi = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: CmFormDate(
+                                  label: 'Năm',
+                                  controller: _dateController,
+                                  isEditing: true,
+                                  value: _selectedDate,
+                                  dateTimeMode: SGDateTimeMode.year,
+                                  showTimeSection: false,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedDate = value ?? DateTime.now();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _handleGetData,
+                                icon: const Icon(Icons.refresh, size: 20),
+                                label: const Text('Lấy dữ liệu'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  if (_isExporting) return;
+                                  setState(() {
+                                    _isExporting = true;
+                                  });
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) async {
+                                    await ReportProvider().exportToPdf(
+                                      [_repaintKey],
+                                      context,
+                                      () {
+                                        setState(() => _isExporting = false);
+                                        AppUtility.showSnackBar(
+                                          context,
+                                          'Xuất PDF thành công!',
+                                          isError: false,
+                                        );
+                                      },
+                                    );
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.picture_as_pdf,
+                                  size: 20,
+                                ),
+                                label: const Text('Xuất PDF'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              GestureDetector(
+                                onTap: () {
+                                  if (_isExporting) return;
+                                  setState(() {
+                                    _isExporting = true;
+                                  });
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) async {
+                                    await ReportProvider().exportToPdfAndPrint(
+                                      [_repaintKey],
+                                      context,
+                                      () {
+                                        setState(() => _isExporting = false);
+                                      },
+                                    );
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: const Icon(
+                                    Icons.print,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+
+                  // Report Content
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: RepaintBoundary(
+                            key: _repaintKey,
+                            child: Column(
+                              children: [
+                                HeaderBienBanKiemKe(
+                                  donVi: _selectedDonVi,
+                                  date: _selectedDate,
+                                ),
+                                const SizedBox(height: 16),
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: SGText(
+                                    text: 'Bảng ghi tăng/giảm Tài sản cố định',
+                                    style: SettingPage.textStyle.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                AssetLedgerTable(
+                                  data: _assetData,
+                                  title: 'tài sản',
+                                ),
+                                if (_ccdcData.isNotEmpty) ...[
+                                  const SizedBox(height: 24),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: SGText(
+                                      text:
+                                          'Bảng ghi tăng/giảm Công cụ, dụng cụ cố định',
+                                      style: SettingPage.textStyle.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  AssetLedgerTable(
+                                    data: _ccdcData,
+                                    title: 'công cụ, dụng cụ',
+                                  ),
+                                ],
+                                FoooterBienBanKiemKe(),
+                                DetailPageWidget(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -238,92 +457,17 @@ class _EditablePlaceholderState extends State<EditablePlaceholder> {
 }
 
 class HeaderBienBanKiemKe extends StatefulWidget {
-  final ValueChanged<List<DataMap>>? onAssetDataChanged;
-  final ValueChanged<List<DataMap>>? onCcdcDataChanged;
+  final PhongBan? donVi;
+  final DateTime? date;
 
-  const HeaderBienBanKiemKe({
-    super.key,
-    this.onAssetDataChanged,
-    this.onCcdcDataChanged,
-  });
+  const HeaderBienBanKiemKe({super.key, this.donVi, this.date});
 
   @override
   State<HeaderBienBanKiemKe> createState() => _HeaderBienBanKiemKeState();
 }
 
 class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
-  final TextEditingController quyetDinhController = TextEditingController();
-  final TextEditingController ngayQDController = TextEditingController();
-  final TextEditingController thangQDController = TextEditingController();
-  final TextEditingController namQDController = TextEditingController();
-  final TextEditingController donViController = TextEditingController();
   final TextEditingController diaChiController = TextEditingController();
-  final TextEditingController ngayThamChieuController = TextEditingController();
-  final TextEditingController thangThamChieuController =
-      TextEditingController();
-  final TextEditingController namThamChieuController = TextEditingController();
-
-  final TextEditingController gioKiemKeController = TextEditingController();
-  final TextEditingController ngayKiemKeController = TextEditingController();
-  final TextEditingController thangKiemKeController = TextEditingController();
-  final TextEditingController namKiemKeController = TextEditingController();
-
-  final TextEditingController diaDiemController = TextEditingController();
-
-  final TextEditingController tenController1 = TextEditingController();
-  final TextEditingController tenController2 = TextEditingController();
-  final TextEditingController tenController3 = TextEditingController();
-  final TextEditingController chucVuController1 = TextEditingController();
-  final TextEditingController chucVuController2 = TextEditingController();
-  final TextEditingController chucVuController3 = TextEditingController();
-  final TextEditingController daiDienController1 = TextEditingController();
-  final TextEditingController daiDienController2 = TextEditingController();
-  final TextEditingController daiDienController3 = TextEditingController();
-
-  final TextEditingController gioNoiDungController = TextEditingController();
-  final TextEditingController ngayNoiDungController = TextEditingController();
-  final TextEditingController thangNoiDungController = TextEditingController();
-  final TextEditingController namNoiDungController = TextEditingController();
-  final TextEditingController gioController = TextEditingController();
-
-  final TextEditingController ctrlSelectDate = TextEditingController();
-
-  PhongBan? donVi;
-  DateTime? selectedDate;
-
-  List<AssetManagementDto> listAssetManagement = [];
-  List<ToolsAndSuppliesDto> listCCDC = [];
-
-  List<PhongBan> listPhongBan = [];
-
-  List<DataMap> listDataMap = [];
-
-  @override
-  void initState() {
-    super.initState();
-    selectedDate = DateTime.now();
-    getAsset();
-    getCCDC();
-    listPhongBan = AccountHelper.instance.getDepartment() ?? [];
-  }
-
-  void getAsset() async {
-    listAssetManagement = await ReportProvider().getListAsset();
-  }
-
-  void getCCDC() async {
-    listCCDC = await ReportProvider().getListCCDC('ct001');
-  }
-
-  AssetManagementDto? getInfoAsset(String idAsset) {
-    if (listAssetManagement.isNotEmpty) {
-      return listAssetManagement.firstWhere(
-        (element) => element.id == idAsset,
-        orElse: () => AssetManagementDto.empty(),
-      );
-    }
-    return AssetManagementDto.empty();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -351,185 +495,14 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 300),
-                        child: CmFormDropdownObject<PhongBan>(
-                          label: 'Chọn đơn vị',
-                          value: donVi,
-                          controller: donViController,
-                          isEditing: true,
-                          fontSize: 16,
-                          items: [
-                            ...listPhongBan.map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.tenPhongBan ?? ''),
-                              ),
-                            ),
-                          ],
-                          contentPadding: const EdgeInsets.only(
-                            left: 10,
-                            top: 10,
-                            bottom: 12,
+                      Expanded(
+                        child: SGText(
+                          text:
+                              widget.donVi?.tenPhongBan ??
+                              '...................',
+                          style: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          isShowSuffixIcon: false,
-                          showUnderlineBorderOnly: true,
-                          onChanged: (value) async {
-                            List<AssetHandoverDto> listIncrease = [];
-                            List<AssetHandoverDto> listReduce = [];
-                            List<ToolAndSuppliesHandoverDto> listCCDCIncrease =
-                                [];
-                            List<ToolAndSuppliesHandoverDto> listCCDCReduce =
-                                [];
-                            Map<String, dynamic> resultAsset =
-                                await ReportProvider().getReportAsset(
-                                  value.id ?? '',
-                                  selectedDate ?? DateTime.now(),
-                                );
-                            Map<String, dynamic> resultCCDC =
-                                await ReportProvider().getReportCCDC(
-                                  value.id ?? '',
-                                  selectedDate ?? DateTime.now(),
-                                );
-
-                            listReduce = resultAsset['data_reduce'];
-                            listIncrease = resultAsset['data_increase'];
-                            listCCDCReduce = resultCCDC['data_reduce'];
-                            listCCDCIncrease = resultCCDC['data_increase'];
-
-                            List<DetailAssetHandoverDto>
-                            listDetailAssetIncrease = [];
-                            List<DetailAssetHandoverDto> listDetailAssetReduce =
-                                [];
-                            List<DetailSubppliesHandoverDto>
-                            listDetailCCDCIncrease = [];
-                            List<DetailSubppliesHandoverDto>
-                            listDetailCCDCReduce = [];
-
-                            // Tài sản: gom chi tiết
-                            if (listIncrease.isNotEmpty) {
-                              for (var item in listIncrease) {
-                                listDetailAssetIncrease.addAll(
-                                  item.chiTietBanGiaoTaiSan ?? [],
-                                );
-                              }
-                            }
-                            if (listReduce.isNotEmpty) {
-                              for (var item in listReduce) {
-                                listDetailAssetReduce.addAll(
-                                  item.chiTietBanGiaoTaiSan ?? [],
-                                );
-                              }
-                            }
-
-                            // Map tài sản -> DataMap
-                            final listDataMapIncrease = ReportProvider()
-                                .mapIncrease(
-                                  listDetailAssetIncrease,
-                                  listAssetManagement,
-                                );
-                            final listDataMapReduce = ReportProvider()
-                                .mapReduce(
-                                  listDetailAssetReduce,
-                                  listAssetManagement,
-                                );
-                            final listDataMapAsset = [
-                              ...listDataMapIncrease,
-                              ...listDataMapReduce,
-                            ];
-
-                            // CCDC: gom chi tiết
-                            if (listCCDCIncrease.isNotEmpty) {
-                              for (var item in listCCDCIncrease) {
-                                listDetailCCDCIncrease.addAll(
-                                  item.listDetailSubppliesHandover ?? [],
-                                );
-                              }
-                            }
-                            if (listCCDCReduce.isNotEmpty) {
-                              for (var item in listCCDCReduce) {
-                                listDetailCCDCReduce.addAll(
-                                  item.listDetailSubppliesHandover ?? [],
-                                );
-                              }
-                            }
-
-                            // Chuyển DetailSubppliesHandoverDto -> DetailToolAndMaterialTransferDto
-                            DetailToolAndMaterialTransferDto mapHandoverDetail(
-                              DetailSubppliesHandoverDto d,
-                            ) {
-                              if (d.chiTietDieuDongCCDCVatTuDTO != null) {
-                                return d.chiTietDieuDongCCDCVatTuDTO!;
-                              }
-                              return DetailToolAndMaterialTransferDto.empty()
-                                  .copyWith(
-                                    idCCDCVatTu: d.idCCDCVatTu,
-                                    idChiTietCCDCVatTu: d.idChiTietCCDCVatTu,
-                                    soLuong: d.soLuong,
-                                    tenPhieu: d.tenPhieuBanGiao,
-                                    tenCCDCVatTu: d.tenVatTu,
-                                    donViTinh: d.donViTinh,
-                                    soKyHieu: d.soKyHieu,
-                                    kyHieu: d.kyHieu,
-                                    ngayTao: d.ngayTao,
-                                  );
-                            }
-
-                            final detailCcdcIncrease =
-                                listDetailCCDCIncrease
-                                    .map(mapHandoverDetail)
-                                    .toList();
-                            final detailCcdcReduce =
-                                listDetailCCDCReduce
-                                    .map(mapHandoverDetail)
-                                    .toList();
-
-                            // Ánh xạ CCDC -> DataMap
-                            final listDataMapCcdcIncrease =
-                                detailCcdcIncrease.map((dto) {
-                                  final info = ReportProvider().getInfoCCDC(
-                                    dto.idCCDCVatTu,
-                                    listCCDC,
-                                  );
-                                  return DataMap(
-                                    tenTaiSan: dto.tenCCDCVatTu,
-                                    soHieu: dto.soKyHieu,
-                                    ngayThang: dto.ngayTao,
-                                    donViTinh: dto.donViTinh,
-                                    soLuong: dto.soLuong,
-                                    donGia: info?.giaTri ?? 0,
-                                    soTien: info?.giaTri ?? 0,
-                                    type: DataMapType.INCREASE,
-                                  );
-                                }).toList();
-
-                            final listDataMapCcdcReduce =
-                                detailCcdcReduce.map((dto) {
-                                  final info = ReportProvider().getInfoCCDC(
-                                    dto.idCCDCVatTu,
-                                    listCCDC,
-                                  );
-                                  return DataMap(
-                                    tenTaiSan: dto.tenCCDCVatTu,
-                                    soHieu: dto.soKyHieu,
-                                    ngayThang: dto.ngayTao,
-                                    donViTinh: dto.donViTinh,
-                                    soLuong: dto.soLuong,
-                                    donGia: info?.giaTri ?? 0,
-                                    soTien: info?.giaTri ?? 0,
-                                    type: DataMapType.REDUCE,
-                                  );
-                                }).toList();
-
-                            final listDataMapCcdc = [
-                              ...listDataMapCcdcIncrease,
-                              ...listDataMapCcdcReduce,
-                            ];
-
-                            // bắn dữ liệu ra ngoài cho 2 bảng
-                            widget.onAssetDataChanged?.call(listDataMapAsset);
-                            widget.onCcdcDataChanged?.call(listDataMapCcdc);
-                          },
                         ),
                       ),
                     ],
@@ -545,11 +518,13 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      EditablePlaceholder(
-                        controller: diaChiController,
-                        placeholder: "...........",
-                        textStyle: SettingPage.textStyle.copyWith(
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: EditablePlaceholder(
+                          controller: diaChiController,
+                          placeholder: "...........",
+                          textStyle: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -594,7 +569,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
         Center(
           child: SGText(
             text:
-                "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
+                "Sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
             textAlign: TextAlign.center,
             style: SettingPage.textStyle.copyWith(
               fontWeight: FontWeight.bold,
@@ -608,29 +583,10 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SGText(text: "Năm ", style: SettingPage.textStyle.copyWith()),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 80),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: CmFormDate(
-                  contentPadding: const EdgeInsets.only(bottom: 15),
-                  height: 35,
-                  showSuffixIcon: false,
-                  showUnderlineBorderOnly: true,
-                  value: selectedDate,
-                  sizePadding: 0,
-                  label: '',
-                  controller: ctrlSelectDate,
-                  isEditing: true,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDate = value;
-                    });
-                  },
-                  textAlign: TextAlign.center,
-                  dateTimeMode: SGDateTimeMode.year,
-                  showTimeSection: false,
-                ),
+            SGText(
+              text: widget.date?.year.toString() ?? '....',
+              style: SettingPage.textStyle.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -644,9 +600,11 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
               style: SettingPage.textStyle.copyWith(),
             ),
             Expanded(
-              child: EditablePlaceholder(
-                controller: donViController,
-                placeholder: "......",
+              child: SGText(
+                text: widget.donVi?.tenPhongBan ?? '......',
+                style: SettingPage.textStyle.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

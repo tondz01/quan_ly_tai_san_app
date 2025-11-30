@@ -348,9 +348,9 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                   color: Colors.green,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'Xuất PDF',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -374,9 +374,9 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                   color: Colors.blue,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'In',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.print,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

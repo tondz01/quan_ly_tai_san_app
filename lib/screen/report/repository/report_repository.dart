@@ -9,7 +9,6 @@ import '../../../core/network/Services/end_point_api.dart';
 import '../../../core/utils/response_parser.dart';
 
 class ReportRepository extends ApiBase {
-
   Future<Map<String, dynamic>> getReportAsset(String idCongTy, int loai) async {
     List<DieuDongTaiSanDto> list = [];
     Map<String, dynamic> result = {
@@ -43,7 +42,10 @@ class ReportRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> getInventoryMinutes(String idDonVi, String ngayBanGiao) async {
+  Future<Map<String, dynamic>> getInventoryMinutes(
+    String idDonVi,
+    String ngayBanGiao,
+  ) async {
     List<InventoryMinutes> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -55,7 +57,7 @@ class ReportRepository extends ApiBase {
         '${EndPointAPI.BAO_CAO}/baocaokiemketaisan',
         queryParameters: {'iddonvi': idDonVi, 'ngayBanGiao': ngayBanGiao},
       );
-      
+
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -77,7 +79,10 @@ class ReportRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> getInventoryReportToolsSupplies(String idDonVi, String ngayBanGiao) async {
+  Future<Map<String, dynamic>> getInventoryReportToolsSupplies(
+    String idDonVi,
+    String ngayBanGiao,
+  ) async {
     List<CCDCInventoryReport> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -105,6 +110,64 @@ class ReportRepository extends ApiBase {
         "AssetHandoverRepository",
         "Error at getListAssetHandover - AssetHandoverRepository: $e",
       );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getS22DnReport(
+    String idDonVi,
+    String nam,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': {},
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.BAO_CAO}/s22dn',
+        queryParameters: {'iddonvi': idDonVi, 'nam': nam},
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      SGLog.error("ReportRepository", "Error at getS22DnReport: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getS22DnReportCCDC(
+    String idDonVi,
+    String nam,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': {},
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.BAO_CAO}/s22dn-ccdc',
+        queryParameters: {'iddonvi': idDonVi, 'nam': nam},
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      SGLog.error("ReportRepository", "Error at getS22DnReportCCDC: $e");
     }
 
     return result;

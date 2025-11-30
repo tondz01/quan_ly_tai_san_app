@@ -174,7 +174,10 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
       donVi!.id!,
       formattedDate,
     );
-    final resultTaiSan = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
+    final resultTaiSan = await _repo.getInventoryMinutes(
+      donVi!.id!,
+      formattedDate,
+    );
 
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
@@ -232,9 +235,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     return trimmed;
   }
 
-  List<List<AssetRowData>> _chunkAssetRowData(
-    List<AssetRowData> source,
-  ) {
+  List<List<AssetRowData>> _chunkAssetRowData(List<AssetRowData> source) {
     if (source.isEmpty) return [];
 
     final List<List<AssetRowData>> pages = [];
@@ -358,16 +359,18 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                   color: Colors.green,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'Xuất PDF',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) async {
                                   await ReportProvider().exportToPdfAndPrint(
                                     _pageKeys,
                                     context,
@@ -381,9 +384,9 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                   color: Colors.blue,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'In',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.print,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -472,7 +475,8 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                                   children: [
                                                     HeaderMauSo01(),
                                                     BodyMauSo01(
-                                                      assetRows: _listPages[index],
+                                                      assetRows:
+                                                          _listPages[index],
                                                     ),
                                                   ],
                                                 ),
@@ -511,7 +515,8 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                                     //       ),
                                                     // ),
                                                     child: BodyMauSo01(
-                                                        assetRows: _listPages[index],
+                                                      assetRows:
+                                                          _listPages[index],
                                                     ),
                                                   ),
                                                   NumberPageView(index: index),
@@ -558,7 +563,9 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                               scale: 1.2,
                                               maxWidth: 800,
                                               maxHeight: 800 * (297 / 210),
-                                              child: BodyMauSo01(assetRows: _listPages[index]),
+                                              child: BodyMauSo01(
+                                                assetRows: _listPages[index],
+                                              ),
                                             ),
                                             NumberPageView(index: index),
                                           ],
@@ -608,10 +615,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     final List<AssetRowData> result = [];
 
     // 1. Thêm header "A - Tài sản cố định"
-    result.add(AssetRowData(
-      stt: 'A',
-      tenNhanHieu: 'Tài sản cố định',
-    ));
+    result.add(AssetRowData(stt: 'A', tenNhanHieu: 'Tài sản cố định'));
 
     // 2. Convert InventoryMinutes → DataMap → AssetRowData
     final assetDataMaps = DataConverterMau01.convertInventoryMinutesToDataMap(
@@ -620,50 +624,51 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
 
     int assetIndex = 1;
     for (final asset in assetDataMaps) {
-      result.add(AssetRowData(
-        stt: assetIndex.toString(),
-        tenNhanHieu: asset.tenTaiSan ?? '',
-        dvt: asset.donViTinh ?? '',
-        nuocSx: '',
-        soDuDauKy: asset.soLuong?.toString() ?? '',
-        tangSoLuong: '',
-        tangLyDo: asset.lyDo ?? '',
-        giamSoLuong: '',
-        giamLyDo: '',
-        soDuCuoiKy: '',
-        tinhTrang: '',
-        ghiChu: asset.ghiChu ?? '',
-      ));
+      result.add(
+        AssetRowData(
+          stt: assetIndex.toString(),
+          tenNhanHieu: asset.tenTaiSan ?? '',
+          dvt: asset.donViTinh ?? '',
+          nuocSx: '',
+          soDuDauKy: asset.soLuong?.toString() ?? '',
+          tangSoLuong: '',
+          tangLyDo: asset.lyDo ?? '',
+          giamSoLuong: '',
+          giamLyDo: '',
+          soDuCuoiKy: '',
+          tinhTrang: '',
+          ghiChu: asset.ghiChu ?? '',
+        ),
+      );
       assetIndex++;
     }
 
     // 3. Thêm header "B - Công cụ dụng cụ"
-    result.add(AssetRowData(
-      stt: 'B',
-      tenNhanHieu: 'Công cụ dụng cụ',
-    ));
+    result.add(AssetRowData(stt: 'B', tenNhanHieu: 'Công cụ dụng cụ'));
 
     // 4. Convert CCDCInventoryReport → DataMap → AssetRowData
     final ccdcDataMaps = DataConverterMau01.convertCCDCInventoryReportToDataMap(
-      _listCcdc
+      _listCcdc,
     );
 
     int ccdcIndex = 1;
     for (final ccdc in ccdcDataMaps) {
-      result.add(AssetRowData(
-        stt: ccdcIndex.toString(),
-        tenNhanHieu: ccdc.tenTaiSan ?? '',
-        dvt: ccdc.donViTinh ?? '',
-        nuocSx: '',
-        soDuDauKy: ccdc.soLuong?.toString() ?? '',
-        tangSoLuong: '',
-        tangLyDo: ccdc.lyDo ?? '',
-        giamSoLuong: '',
-        giamLyDo: '',
-        soDuCuoiKy: '',
-        tinhTrang: '',
-        ghiChu: ccdc.ghiChu ?? '',
-      ));
+      result.add(
+        AssetRowData(
+          stt: ccdcIndex.toString(),
+          tenNhanHieu: ccdc.tenTaiSan ?? '',
+          dvt: ccdc.donViTinh ?? '',
+          nuocSx: '',
+          soDuDauKy: ccdc.soLuong?.toString() ?? '',
+          tangSoLuong: '',
+          tangLyDo: ccdc.lyDo ?? '',
+          giamSoLuong: '',
+          giamLyDo: '',
+          soDuCuoiKy: '',
+          tinhTrang: '',
+          ghiChu: ccdc.ghiChu ?? '',
+        ),
+      );
       ccdcIndex++;
     }
 
@@ -671,7 +676,6 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
       _allAssetRows = result;
     });
   }
-
 }
 
 class NumberPageView extends StatelessWidget {

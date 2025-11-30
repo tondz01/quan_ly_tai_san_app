@@ -196,8 +196,6 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
         idNhomTaiSan: loaiTaiSan!.id!,
       );
 
-      debugPrint("huynd result: ${result}");
-
       if (!mounted) return;
 
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
@@ -213,11 +211,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
         setState(() {
           _isLoading = false;
         });
-        AppUtility.showSnackBar(
-          context,
-          'Lỗi khi lấy dữ liệu! Mã lỗi: ${result['status_code']}',
-          isError: true,
-        );
+        AppUtility.showSnackBar(context, 'Không có báo cáo', isError: true);
       }
     } catch (e) {
       SGLog.error('onloadViewPage', 'Lỗi: $e');
@@ -390,9 +384,9 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                       color: Colors.blue,
                                       borderRadius: BorderRadius.circular(24),
                                     ),
-                                    child: const Text(
-                                      'In',
-                                      style: TextStyle(color: Colors.white),
+                                    child: const Icon(
+                                      Icons.print,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
@@ -432,6 +426,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                   child: SoTaiSanCoDinhS21Page(
                                     year: selectedYear,
                                     loaiTaiSan: loaiTaiSan,
+                                    khauHaoTaiSanList: listKhauHaoTaiSan,
                                   ),
                                 ),
                               ),

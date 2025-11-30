@@ -11,7 +11,7 @@ class DataConverter {
         tenTaiSan: item.tenTaiSan,
         donViTinh: 'Cái', // Default value
         nuocSanXuat: '', // Default value
-        hienTrang: 1, // Default value
+        hienTrang: '1', // Default value
         ghiChu: item.ghiChu,
       );
     }).toList();

@@ -156,7 +156,8 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
   }
 
   Future<void> _loadData() async {
-    listPhongBan = AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
+    listPhongBan =
+        AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
     setState(() {});
   }
 
@@ -177,9 +178,10 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     }
 
     // Giới hạn số lượng items để tránh treo web
-    final assetsToProcess = allAssets.length > _maxItemsToDisplay
-        ? allAssets.sublist(0, _maxItemsToDisplay)
-        : allAssets;
+    final assetsToProcess =
+        allAssets.length > _maxItemsToDisplay
+            ? allAssets.sublist(0, _maxItemsToDisplay)
+            : allAssets;
 
     _hasMoreData = allAssets.length > _maxItemsToDisplay;
 
@@ -202,9 +204,10 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
       for (int i = 0; i < assetsToProcess.length; i += batchSize) {
         if (!mounted) return; // Dừng nếu widget bị dispose
 
-        final int end = (i + batchSize < assetsToProcess.length)
-            ? i + batchSize
-            : assetsToProcess.length;
+        final int end =
+            (i + batchSize < assetsToProcess.length)
+                ? i + batchSize
+                : assetsToProcess.length;
 
         final batch = assetsToProcess.sublist(i, end);
 
@@ -215,7 +218,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
               tenTaiSan: asset.tenTaiSan,
               donViTinh: asset.donViTinh ?? '',
               nuocSanXuat: asset.nuocSanXuat,
-              hienTrang: asset.hienTrang,
+              hienTrang: asset.hienTrang?.toString() ?? '',
               ghiChu: asset.ghiChu,
             ),
           );
@@ -227,7 +230,8 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
         await Future.value();
 
         // Log progress mỗi 200 items
-        if (processedCount % 200 == 0 || processedCount == assetsToProcess.length) {
+        if (processedCount % 200 == 0 ||
+            processedCount == assetsToProcess.length) {
           SGLog.info(
             'Loading',
             'Đã xử lý $processedCount / ${assetsToProcess.length} items (${(processedCount / assetsToProcess.length * 100).toStringAsFixed(1)}%)',
@@ -255,9 +259,11 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
       });
 
       if (mounted) {
-        String message = 'Lấy dữ liệu thành công! (${result.length} tài sản, ${listPages.length} trang)';
+        String message =
+            'Lấy dữ liệu thành công! (${result.length} tài sản, ${listPages.length} trang)';
         if (_hasMoreData) {
-          message = 'Hiển thị ${result.length}/$_totalAssetCount tài sản (giới hạn để tránh lag)';
+          message =
+              'Hiển thị ${result.length}/$_totalAssetCount tài sản (giới hạn để tránh lag)';
         }
         AppUtility.showSnackBar(context, message);
       }
@@ -473,16 +479,18 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                   color: Colors.green,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'Xuất PDF',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) async {
                                   await ReportProvider().exportToPdfAndPrint(
                                     _pageKeys,
                                     context,
@@ -496,9 +504,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                   color: Colors.blue,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'In',
-                                  style: TextStyle(color: Colors.white),
+                                child: const Icon(
+                                  Icons.print,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

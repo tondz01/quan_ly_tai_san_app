@@ -21,6 +21,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ReportProvider {
@@ -115,6 +116,26 @@ class ReportProvider {
       return resultReport;
     }
     return resultReport;
+  }
+
+  Future<Map<String, dynamic>> getS22DnReport(
+    String idDepartment,
+    DateTime year,
+  ) async {
+    return await ReportRepository().getS22DnReport(
+      idDepartment,
+      year.year.toString(),
+    );
+  }
+
+  Future<Map<String, dynamic>> getS22DnReportCCDC(
+    String idDepartment,
+    DateTime year,
+  ) async {
+    return await ReportRepository().getS22DnReportCCDC(
+      idDepartment,
+      year.year.toString(),
+    );
   }
 
   AssetManagementDto? getInfoAsset(

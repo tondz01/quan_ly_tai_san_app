@@ -2,7 +2,7 @@ class InventoryMinutes {
   final String? tenTaiSan;
   final String donViTinh;
   final String? nuocSanXuat;
-  final int? hienTrang;
+  final String? hienTrang;
   final String? ghiChu;
 
   InventoryMinutes({
@@ -15,17 +15,12 @@ class InventoryMinutes {
 
   factory InventoryMinutes.fromJson(Map<String, dynamic> json) {
     String parseString(dynamic v) => v?.toString() ?? '';
-    int parseInt(dynamic v) {
-      if (v is int) return v;
-      if (v is num) return v.toInt();
-      return int.tryParse(v?.toString() ?? '0') ?? 0;
-    }
 
     return InventoryMinutes(
       tenTaiSan: parseString(json['tenTaiSan']),
       donViTinh: parseString(json['donViTinh']),
       nuocSanXuat: parseString(json['nuocSanXuat']),
-      hienTrang: parseInt(json['hienTrang']),
+      hienTrang: parseString(json['hienTrang']),
       ghiChu: parseString(json['ghiChu']),
     );
   }
@@ -41,6 +36,6 @@ class InventoryMinutes {
   }
 
   factory InventoryMinutes.empty() {
-    return InventoryMinutes(tenTaiSan: '', donViTinh: '', nuocSanXuat: '', hienTrang: 0, ghiChu: '');
+    return InventoryMinutes(tenTaiSan: '', donViTinh: '', nuocSanXuat: '', hienTrang: '0', ghiChu: '');
   }
 }
