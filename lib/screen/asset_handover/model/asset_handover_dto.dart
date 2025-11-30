@@ -134,9 +134,9 @@ class AssetHandoverDto {
       tenFile: json['tenFile'],
       duongDanFile: json['duongDanFile'],
       listSignatory:
-          json['listSignatory'] != null
+          json['nguoiKyList'] != null
               ? List<SignatoryDto>.from(
-                json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
+                json['nguoiKyList'].map((x) => SignatoryDto.fromJson(x)),
               )
               : null,
       byStep: json['byStep'],
@@ -192,7 +192,7 @@ class AssetHandoverDto {
       'share': share,
       'tenFile': tenFile,
       'duongDanFile': duongDanFile,
-      'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
+      'nguoiKyList': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
       'trangThaiPhieu': trangThaiPhieu,
       'chiTietBanGiaoTaiSan':

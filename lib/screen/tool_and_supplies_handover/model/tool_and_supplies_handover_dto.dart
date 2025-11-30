@@ -121,9 +121,9 @@ class ToolAndSuppliesHandoverDto {
       tenFile: json['tenFile'],
       active: json['active'],
       listSignatory:
-          json['listSignatory'] != null
+          json['nguoiKyList'] != null
               ? List<SignatoryDto>.from(
-                json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
+                json['nguoiKyList'].map((x) => SignatoryDto.fromJson(x)),
               )
               : null,
       byStep: json['byStep'],
