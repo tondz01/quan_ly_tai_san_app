@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
@@ -97,12 +96,13 @@ class AssetHandoverRepository extends ApiBase {
             AssetHandoverDto.fromJson,
           );
 
-      log('response.data: ${response.data}');
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      log('assetHandover: ${jsonEncode(assetHandover)}');
       result['data'] = assetHandover;
     } catch (e) {
-      log("Error at getAllAssetHandover - AssetHandoverRepository: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at getAllAssetHandover - AssetHandoverRepository: $e",
+      );
     }
     return result;
   }
@@ -151,7 +151,6 @@ class AssetHandoverRepository extends ApiBase {
     };
 
     try {
-      log('createAssetHandover request: ${jsonEncode(request)}');
       final response = await post(EndPointAPI.ASSET_HANDOVER, data: request);
 
       final int? status = response.statusCode;
@@ -163,13 +162,11 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      log('listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}');
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
       String idNeedToDo =
-          "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory, admin";
+          "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory, admin,${request['nguoiTao']}";
 
-      log('idNeedToDo: $idNeedToDo');
       Future.delayed(const Duration(milliseconds: 200)).then((_) {
         MessageServiceRealtime().pushJsonMessage(
           typeFunc: FunctionType.ASSET_HANDOVER,
@@ -308,7 +305,6 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = response.statusCode;
         return result;
       }
-      log('message test16: ${response.data}');
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
@@ -327,7 +323,10 @@ class AssetHandoverRepository extends ApiBase {
         await updateStateAssetTransfer(idDieuChuyen, true);
       }
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateState - AssetHandoverRepository: $e",
+      );
     }
 
     return result;
@@ -358,7 +357,10 @@ class AssetHandoverRepository extends ApiBase {
       // Parse response data using the common ResponseParser utility
       result['data'] = response.data;
     } catch (e) {
-      log("Error at updateStateBanGiao - AssetTransferRepository: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateStateAssetTransfer - AssetHandoverRepository: $e",
+      );
     }
 
     return result;
@@ -395,9 +397,11 @@ class AssetHandoverRepository extends ApiBase {
         response.data,
         AssetHandoverDto.fromJson,
       );
-      log('response.data điều động: ${result['data']}');
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at cancelAssetHandover - AssetHandoverRepository: $e",
+      );
     }
 
     return result;
@@ -410,7 +414,6 @@ class AssetHandoverRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
     try {
       // Tối ưu: sử dụng Set để tự động loại bỏ duplicate IDs
       final allIds = <String>{};
@@ -433,38 +436,10 @@ class AssetHandoverRepository extends ApiBase {
             if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
           }
         }
-        final Map<String, dynamic> request = {
-          "id": item.id,
-          "idCongTy": item.idCongTy ?? '',
-          "banGiaoTaiSan": item.banGiaoTaiSan ?? '',
-          "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
-          "lenhDieuDong": item.lenhDieuDong ?? '',
-          "idDonViGiao": item.idDonViGiao ?? '',
-          "idDonViNhan": item.idDonViNhan ?? '',
-          "ngayBanGiao": item.ngayBanGiao ?? '',
-          "idLanhDao": item.idLanhDao ?? '',
-          "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
-          "daXacNhan": item.daXacNhan ?? '',
-          "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
-          "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan ?? '',
-          "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
-          "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan ?? '',
-          "idDonViDaiDien": item.idDonViDaiDien ?? '',
-          "donViDaiDienXacNhan": item.donViDaiDienXacNhan ?? '',
-          "trangThai": item.trangThai ?? '',
-          "note": item.note ?? '',
-          "ngayTao": item.ngayTao ?? '',
-          "ngayCapNhat": DateTime.now().toIso8601String(),
-          "nguoiTao": item.nguoiTao ?? '',
-          "nguoiCapNhat": currentUser.tenDangNhap,
-          "isActive": item.isActive ?? '',
-          "share": true,
-          "tenFile": item.tenFile ?? '',
-          "duongDanFile": item.duongDanFile ?? '',
-        };
+        item.copyWith(share: true);
         final response = await put(
           '${EndPointAPI.ASSET_HANDOVER}/${item.id}',
-          data: request,
+          data: jsonEncode(item.toJson()),
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           result['data'] = response.data;
@@ -475,7 +450,7 @@ class AssetHandoverRepository extends ApiBase {
       // Gửi message realtime nếu có IDs
       if (allIds.isNotEmpty) {
         // Thêm admin mặc định vào danh sách nhận thông báo
-        allIds.add('admin');
+        allIds.add('admin,${items.map((e) => e.nguoiTao).join(',')}');
         Future.delayed(const Duration(milliseconds: 200)).then((_) {
           MessageServiceRealtime().pushJsonMessage(
             typeFunc: FunctionType.ASSET_HANDOVER,
@@ -486,7 +461,10 @@ class AssetHandoverRepository extends ApiBase {
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
-      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at sendToSigner - AssetHandoverRepository: $e",
+      );
     }
 
     return result;
@@ -521,7 +499,7 @@ class AssetHandoverRepository extends ApiBase {
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",
-        "Error at updateAsset - AssetManagementRepository: $e",
+        "Error at updateOwnershipUnit - AssetHandoverRepository: $e",
       );
     }
 
@@ -531,7 +509,6 @@ class AssetHandoverRepository extends ApiBase {
   Future<Map<String, dynamic>> createDetailHandoverAsset(
     List<DetailAssetHandoverDto> request,
   ) async {
-    log('request: $request');
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -554,8 +531,9 @@ class AssetHandoverRepository extends ApiBase {
       // Parse response data using the common ResponseParser utility
       result['data'] = response.data;
     } catch (e) {
-      log(
-        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at createDetailHandoverAsset - AssetHandoverRepository: $e",
       );
     }
 
@@ -565,7 +543,6 @@ class AssetHandoverRepository extends ApiBase {
   Future<Map<String, dynamic>> updateDetailHandoverAsset(
     Map<String, dynamic> request,
   ) async {
-    log('request: $request');
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -588,8 +565,9 @@ class AssetHandoverRepository extends ApiBase {
       // Parse response data using the common ResponseParser utility
       result['data'] = response.data;
     } catch (e) {
-      log(
-        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateDetailHandoverAsset - AssetHandoverRepository: $e",
       );
     }
 
@@ -614,8 +592,8 @@ class AssetHandoverRepository extends ApiBase {
       result['data'] = response.data.toString();
     } catch (e) {
       SGLog.error(
-        "ToolAndSuppliesHandoverRepository",
-        "Error at deleteDetailHandoverCCDC - ToolAndSuppliesHandoverRepository: $e",
+        "AssetHandoverRepository",
+        "Error at deleteDetailHandoverCCDC - AssetHandoverRepository: $e",
       );
     }
     return result;
@@ -642,11 +620,10 @@ class AssetHandoverRepository extends ApiBase {
     final userInfo = AccountHelper.instance.getUserInfo();
 
     try {
-      String userid =
-          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      String userid = userInfo?.tenDangNhap ?? 'admin';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
+        '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -695,7 +672,10 @@ class AssetHandoverRepository extends ApiBase {
         result['totalComplete'] = 0;
       }
     } catch (e) {
-      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at getDataWithPagination - AssetHandoverRepository: $e",
+      );
     }
 
     return result;

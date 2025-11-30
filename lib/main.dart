@@ -15,14 +15,13 @@ import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:quan_ly_tai_san_app/firebase_options.dart';
 
 class Config {
   static const String environment = "prd";
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.0.14_29/11/2025',
+    defaultValue: '${environment}_0.0.14_30/11/2025',
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
@@ -53,7 +52,18 @@ void main() async {
   await initializeDateFormatting('vi_VN');
   await di.init();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: "AIzaSyA1ao20BuCfBbjROooGzn_qbO8x3XJoFHU",
+      authDomain: "quanlyphuongtien-22dd4.firebaseapp.com",
+      databaseURL: "https://quanlyphuongtien-22dd4-default-rtdb.firebaseio.com",
+      projectId: "quanlyphuongtien-22dd4",
+      storageBucket: "quanlyphuongtien-22dd4.appspot.com",
+      messagingSenderId: "51589792579",
+      appId: "1:51589792579:web:23c1d200f54a3dcb5ba5f6",
+      measurementId: "G-MJ8V6TWTD6",
+    ),
+  );
   FirebaseDatabase.instance;
   Bloc.transformer = bloc_concurrency.sequential();
   Bloc.observer = const AppBlocObserver();

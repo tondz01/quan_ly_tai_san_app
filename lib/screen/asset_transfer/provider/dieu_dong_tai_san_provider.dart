@@ -232,12 +232,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
-      log("message [ref.listen] [DieuDongTaiSanProvider] update received:${userInfo?.tenDangNhap} $jsonMsg");
+      log(
+        "message [ref.listen] [DieuDongTaiSanProvider] update received:${userInfo?.tenDangNhap} $jsonMsg",
+      );
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
         jsonMsg['id_need_to_do'] ?? '',
       )) {
-        log("message [ref.listen] [DieuDongTaiSanProvider] involved, reloading data...");
+        log(
+          "message [ref.listen] [DieuDongTaiSanProvider] involved, reloading data...",
+        );
         onReloadDataPage(context, false);
       }
     } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
@@ -709,7 +713,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     String newSignatory =
         item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
     String idNeedToDo =
-        "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin";
+        "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin,${item.nguoiTao}";
     Future.delayed(const Duration(milliseconds: 200)).then((_) {
       MessageServiceRealtime().pushJsonMessage(
         typeFunc: FunctionType.ASSET_TRANSFER,

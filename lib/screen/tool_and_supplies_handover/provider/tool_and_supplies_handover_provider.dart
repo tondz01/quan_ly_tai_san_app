@@ -624,11 +624,13 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     String newSignatory =
         item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
     String idNeedToDo =
-        "${item.idDonViGiao},${item.idDonViNhan},${item.idGiamDoc},$newSignatory, admin";
-    MessageServiceRealtime().pushJsonMessage(
-      typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
-      typeAction: ActionType.CREATE,
-      idNeedToDo: idNeedToDo,
-    );
+        "${item.idDonViGiao},${item.idDonViNhan},${item.idGiamDoc},$newSignatory, admin,${item.nguoiTao}";
+    Future.delayed(const Duration(milliseconds: 200)).then((_) {
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
+    });
   }
 }

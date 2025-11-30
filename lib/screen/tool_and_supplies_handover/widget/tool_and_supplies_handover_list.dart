@@ -859,10 +859,6 @@ class _ToolAndSuppliesHandoverListState
     final flow =
         [
           {
-            "id": item.idDaiDiendonviBanHanhQD,
-            "signed": item.daXacNhan == true,
-          },
-          {
             "id": item.idDaiDienBenGiao,
             "signed": item.daiDienBenGiaoXacNhan == true,
           },
@@ -877,8 +873,13 @@ class _ToolAndSuppliesHandoverListState
                     )
                     .toList() ??
                 []),
-          {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
-        ].where((s) => (s["id"] as String?)?.isNotEmpty == true).toList();
+          {
+            "id": item.idGiamDoc,
+            "signed": item.giamDocKy == true,
+          },
+        ].where(
+          (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+        ).toList();
     final current = flow.indexWhere((s) => s["id"] == userInfo?.tenDangNhap);
     if (current == -1) return 2;
     if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&

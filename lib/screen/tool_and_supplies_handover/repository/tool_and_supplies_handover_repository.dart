@@ -313,12 +313,14 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       String idNeedToDo =
-          "${request['idDonViGiao']},${request['idDonViNhan']},$newSignatory, admin";
-      MessageServiceRealtime().pushJsonMessage(
-        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
-        typeAction: ActionType.CREATE,
-        idNeedToDo: idNeedToDo,
-      );
+          "${request['idDonViGiao']},${request['idDonViNhan']},${request['idGiamDoc']},$newSignatory, admin,${request['nguoiTao']}";
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+          typeAction: ActionType.CREATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data.toString();
     } catch (e) {
@@ -597,12 +599,14 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       }
       String newSignatory = request.map((e) => e['idNguoiKy']).join(',');
       String idNeedToDo =
-          "${request.map((e) => e['idDonViGiao']).join(',')},${request.map((e) => e['idDonViNhan']).join(',')},${request.map((e) => e['idGiamDoc']).join(',')},$newSignatory, admin";
-      MessageServiceRealtime().pushJsonMessage(
-        typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
-        typeAction: ActionType.UPDATE,
-        idNeedToDo: idNeedToDo,
-      );
+          "${request.map((e) => e['idDonViGiao']).join(',')},${request.map((e) => e['idDonViNhan']).join(',')},${request.map((e) => e['idGiamDoc']).join(',')},$newSignatory, admin,${request.map((e) => e['nguoiTao']).join(',')}";
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+          typeAction: ActionType.UPDATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
