@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -146,7 +148,10 @@ class _ToolAndMaterialTransferViewState
       if (next == null || next.isEmpty) return;
       log('message [ref.listen][ToolAndMaterialTransferView]  next not null');
       // Gọi update
-      context.read<ToolAndMaterialTransferProvider>().onRealtimeUpdate(next, context);
+      context.read<ToolAndMaterialTransferProvider>().onRealtimeUpdate(
+        next,
+        context,
+      );
     });
     return BlocConsumer<
       ToolAndMaterialTransferBloc,
@@ -166,7 +171,7 @@ class _ToolAndMaterialTransferViewState
 
               return LoadingOverlay(
                 isLoading: provider.isLoading,
-                message: 'Đang tải dữ liệu...',
+                message: provider.messageLoading,
                 child: Scaffold(
                   appBar: AppBar(
                     title: HeaderComponent(

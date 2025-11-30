@@ -240,16 +240,20 @@ class _ToolAndMaterialTransferDetailState
 
   Future<void> _loadPdf(String path) async {
     final document = await PdfDocument.openFile(path);
-    setState(() {
-      _document = document;
-    });
+    if (mounted) {
+      setState(() {
+        _document = document;
+      });
+    }
   }
 
   Future<void> _loadPdfFromBytes(Uint8List bytes) async {
     final document = await PdfDocument.openData(bytes);
-    setState(() {
-      _document = document;
-    });
+    if (mounted) {
+      setState(() {
+        _document = document;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -257,13 +261,17 @@ class _ToolAndMaterialTransferDetailState
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
       );
-      setState(() {
-        _document = document;
-      });
+      if (mounted) {
+        setState(() {
+          _document = document;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _document = null;
-      });
+      if (mounted) {
+        setState(() {
+          _document = null;
+        });
+      }
       SGLog.error("Error loading PDF", e.toString());
     }
   }
@@ -335,9 +343,11 @@ class _ToolAndMaterialTransferDetailState
         //load date value dropdown
         donViGiao = widget.provider.getPhongBanByID(item?.idDonViGiao ?? '');
         widget.provider.getListOwnership(item?.idDonViGiao ?? '').then((value) {
-          setState(() {
-            listOwnershipUnit = value;
-          });
+          if (mounted) {
+            setState(() {
+              listOwnershipUnit = value;
+            });
+          }
         });
         listStaffByDepartment =
             widget.provider.dataNhanVien
@@ -430,7 +440,8 @@ class _ToolAndMaterialTransferDetailState
         isNguoiLapPhieuKyNhay = false;
         isByStep = false;
         donViGiao = null;
-        donViNhan = widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
+        donViNhan =
+            widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
         NhanVien nhanVienLogin = widget.provider.getNhanVienByID(
           widget.provider.userInfo?.tenDangNhap ?? '',
         );
@@ -636,13 +647,18 @@ class _ToolAndMaterialTransferDetailState
 
   @override
   Widget build(BuildContext context) {
-    _checkAndRefreshWidget();
+    // Defer setState calls to after build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndRefreshWidget();
 
-    if (item == null && !isRefreshing) {
-      onReload();
-      isEditing = true;
-      isRefreshing = true;
-    }
+      if (item == null && !isRefreshing) {
+        onReload();
+        setState(() {
+          isEditing = true;
+          isRefreshing = true;
+        });
+      }
+    });
 
     return MultiBlocListener(
       listeners: [
@@ -858,7 +874,7 @@ class _ToolAndMaterialTransferDetailState
                           isEditing: widget.type == 3 ? false : isEditing,
                           value: donViNhan,
                           items: widget.provider.itemsDDPhongBan,
-                          defaultValue: 
+                          defaultValue:
                               controllerReceivingUnit.text.isNotEmpty
                                   ? widget.provider.getPhongBanByID(
                                     controllerReceivingUnit.text,
@@ -1113,65 +1129,69 @@ class _ToolAndMaterialTransferDetailState
                 allAssets: widget.provider.dataAsset ?? [],
                 listOwnershipUnit: widget.provider.listOwnershipUnit,
                 onDataChanged: (data) {
-                  setState(() {
-                    String keyOf(
-                      String idCCDCVatTu,
-                      String idChiTietCCDCVatTu,
-                    ) => '$idCCDCVatTu|$idChiTietCCDCVatTu';
-                    final initialByKey = {
-                      for (final d in _initialDetails)
-                        keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
-                    };
+                  // Defer setState to avoid calling during build
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    setState(() {
+                      String keyOf(
+                        String idCCDCVatTu,
+                        String idChiTietCCDCVatTu,
+                      ) => '$idCCDCVatTu|$idChiTietCCDCVatTu';
+                      final initialByKey = {
+                        for (final d in _initialDetails)
+                          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+                      };
 
-                    listNewDetails =
-                        data.map((e) {
-                          final idCCDC = e.asset?.id ?? '';
-                          final idChiTiet = e.idDetaiAsset;
-                          final key = keyOf(idCCDC, idChiTiet);
-                          final preservedId = initialByKey[key]?.id;
-                          return DetailToolAndMaterialTransferDto(
-                            id:
-                                (preservedId != null && preservedId.isNotEmpty)
-                                    ? preservedId
-                                    : UUIDGenerator.generateWithFormat(
-                                      'CTDD-****',
-                                    ),
-                            idDieuDongCCDCVatTu: controllerSoChungTu.text,
-                            soQuyetDinh: item?.soQuyetDinh ?? '',
-                            tenPhieu: controllerDocumentName.text,
-                            tenCCDCVatTu: e.asset?.ten ?? '',
-                            congSuat: e.asset?.congSuat ?? '0',
-                            nuocSanXuat: e.asset?.nuocSanXuat ?? '',
-                            soKyHieu: e.asset?.soKyHieu ?? '',
-                            kyHieu: e.asset?.kyHieu ?? '',
-                            namSanXuat: e.namSanXuat,
-                            idCCDCVatTu: idCCDC,
-                            idChiTietCCDCVatTu: idChiTiet,
-                            donViTinh: e.donViTinh,
-                            soLuong: e.soLuong,
-                            ghiChu: e.ghiChu,
-                            ngayTao: AppUtility.formatDateString(
-                              DateTime.now(),
-                            ),
-                            ngayCapNhat: AppUtility.formatDateString(
-                              DateTime.now(),
-                            ),
-                            nguoiTao: widget.provider.userInfo?.id ?? '',
-                            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
-                            active: true,
-                            soLuongXuat: e.soLuongXuat,
-                            soLuongDaBanGiao: 0,
-                          );
-                        }).toList();
-                    log("check listNewDetails: ${jsonEncode(listNewDetails)}");
-                    if (listNewDetails.isNotEmpty) {
-                      isShowPreview = true;
-                    } else {
-                      isShowPreview = false;
-                    }
-                    itemPreview = _createToolAndMaterialTransPreview(
-                      typeTransfer,
-                    );
+                      listNewDetails =
+                          data.map((e) {
+                            final idCCDC = e.asset?.id ?? '';
+                            final idChiTiet = e.idDetaiAsset;
+                            final key = keyOf(idCCDC, idChiTiet);
+                            final preservedId = initialByKey[key]?.id;
+                            return DetailToolAndMaterialTransferDto(
+                              id:
+                                  (preservedId != null && preservedId.isNotEmpty)
+                                      ? preservedId
+                                      : UUIDGenerator.generateWithFormat(
+                                        'CTDD-****',
+                                      ),
+                              idDieuDongCCDCVatTu: controllerSoChungTu.text,
+                              soQuyetDinh: item?.soQuyetDinh ?? '',
+                              tenPhieu: controllerDocumentName.text,
+                              tenCCDCVatTu: e.asset?.ten ?? '',
+                              congSuat: e.asset?.congSuat ?? '0',
+                              nuocSanXuat: e.asset?.nuocSanXuat ?? '',
+                              soKyHieu: e.asset?.soKyHieu ?? '',
+                              kyHieu: e.asset?.kyHieu ?? '',
+                              namSanXuat: e.namSanXuat,
+                              idCCDCVatTu: idCCDC,
+                              idChiTietCCDCVatTu: idChiTiet,
+                              donViTinh: e.donViTinh,
+                              soLuong: e.soLuong,
+                              ghiChu: e.ghiChu,
+                              ngayTao: AppUtility.formatDateString(
+                                DateTime.now(),
+                              ),
+                              ngayCapNhat: AppUtility.formatDateString(
+                                DateTime.now(),
+                              ),
+                              nguoiTao: widget.provider.userInfo?.id ?? '',
+                              nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+                              active: true,
+                              soLuongXuat: e.soLuongXuat,
+                              soLuongDaBanGiao: 0,
+                            );
+                          }).toList();
+                      log("check listNewDetails: ${jsonEncode(listNewDetails)}");
+                      if (listNewDetails.isNotEmpty) {
+                        isShowPreview = true;
+                      } else {
+                        isShowPreview = false;
+                      }
+                      itemPreview = _createToolAndMaterialTransPreview(
+                        typeTransfer,
+                      );
+                    });
                   });
                 },
               ),
@@ -1203,6 +1223,8 @@ class _ToolAndMaterialTransferDetailState
   }
 
   void _checkAndRefreshWidget() {
+    if (!mounted) return;
+    
     if (widget.provider.item != item) {
       _refreshWidget();
     }
@@ -1274,6 +1296,7 @@ class _ToolAndMaterialTransferDetailState
       share: false,
       daBanGiao: false,
       byStep: isByStep,
+    
     );
   }
 
@@ -1378,11 +1401,22 @@ class _ToolAndMaterialTransferDetailState
     UserInfoDTO userInfo = widget.provider.userInfo!;
     // final bloc = context.read<DieuDongTaiSanBloc>();
     if (item == null) {
+      widget.provider.messageLoading = 'Đang lưu dữ liệu...';
+      widget.provider.onSetLoading(true);
+
       final request = _createToolAndMaterialTransRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       final requestSignatory = _createListSignatory();
-      request.copyWith(ngayTao: userInfo.tenDangNhap);
-      // bloc.add(CreateDieuDongEvent(context, request));
+      
+      log('[_handleSave] Creating new item');
+      log('[_handleSave] fileName: ${_selectedFileName ?? "null"}');
+      log('[_handleSave] filePath: ${_selectedFilePath ?? "null"}');
+      log('[_handleSave] fileBytes length: ${_selectedFileBytes?.length ?? 0}');
+      log('[_handleSave] Request ID: ${request.id}');
+      log('[_handleSave] Request: ${jsonEncode(request.toJson())}');
+      log('[_handleSave] RequestDetail count: ${requestDetail.length}');
+      log('[_handleSave] RequestSignatory count: ${requestSignatory.length}');
+      
       widget.provider.saveAssetTransfer(
         context,
         request,
@@ -1393,6 +1427,8 @@ class _ToolAndMaterialTransferDetailState
         _selectedFileBytes ?? Uint8List(0),
       );
     } else if (item != null && isEditing) {
+      widget.provider.messageLoading = 'Đang cập nhật dữ liệu...';
+      widget.provider.onSetLoading(true);
       final request = _createToolAndMaterialTransRequest(
         widget.type,
         item!.trangThai ?? 0,
@@ -1414,7 +1450,9 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (_signatoriesChanged()) {
-        log('message additionalSigners syncSignatories: ${jsonEncode(additionalSignersDetailed)}');
+        log(
+          'message additionalSigners syncSignatories: ${jsonEncode(additionalSignersDetailed)}',
+        );
         await UpdateSignerData().syncSignatories(
           item!.id!,
           additionalSignersDetailed,

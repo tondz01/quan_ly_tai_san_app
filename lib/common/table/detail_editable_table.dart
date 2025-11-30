@@ -191,12 +191,34 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
   @override
   void didUpdateWidget(DetailEditableTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Chỉ sync initialData nếu thực sự thay đổi từ bên ngoài
+    // Tránh reset table khi user đang thêm/sửa dòng
     if (widget.initialData != oldWidget.initialData) {
-      setState(() {
-        _tableData = List.from(widget.initialData);
-        _initRowEditableFlags();
-        _clearCache();
-      });
+      final oldLength = oldWidget.initialData.length;
+      final newLength = widget.initialData.length;
+      final currentLength = _tableData.length;
+      
+      // Chỉ sync nếu:
+      // 1. initialData tăng lên (có thể là từ external source)
+      // 2. initialData giảm (có thể là xóa từ external)
+      // 3. initialData thay đổi nhưng length giữ nguyên VÀ current table length khác với initialData length
+      //    (nghĩa là có thay đổi từ bên ngoài, không phải từ user interaction)
+      
+      // Nếu table đang có nhiều row hơn initialData (user đã thêm), không reset
+      if (currentLength > newLength && newLength == oldLength) {
+        // User đã thêm row, không reset
+        return;
+      }
+      
+      // Nếu initialData thay đổi đáng kể (length khác hoặc data khác)
+      if (newLength != oldLength || 
+          (newLength == oldLength && newLength != currentLength)) {
+        setState(() {
+          _tableData = List.from(widget.initialData);
+          _initRowEditableFlags();
+          _clearCache();
+        });
+      }
     }
   }
 
@@ -218,14 +240,29 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
       return;
     }
 
-    setState(() {
+    try {
       final newItem = widget.createEmptyItem();
+      
+      // Update data first
       _tableData.add(newItem);
       final newIndex = _tableData.length - 1;
       _initRowEditableFlag(newIndex);
       _clearCache();
-    });
-    _notifyDataChanged();
+      
+      // Then update UI and notify
+      setState(() {});
+      
+      // Defer notification to avoid rebuild loops
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyDataChanged();
+      });
+      
+      debugPrint('[DetailEditableTable] Row added successfully, new count: ${_tableData.length}');
+    } catch (e, stackTrace) {
+      debugPrint('[DetailEditableTable] Error adding row: $e');
+      debugPrint('[DetailEditableTable] StackTrace: $stackTrace');
+      _showError('Lỗi khi thêm dòng: $e');
+    }
   }
 
   void _removeRow(int index) {
@@ -820,7 +857,10 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
     return SizedBox(
       height: 36,
       child: TextButton.icon(
-        onPressed: _addRow,
+        onPressed: () {
+          debugPrint('[DetailEditableTable] Add row button pressed');
+          _addRow();
+        },
         icon: const Icon(Icons.add, size: 18),
         label: Text(widget.addRowText),
         style: TextButton.styleFrom(

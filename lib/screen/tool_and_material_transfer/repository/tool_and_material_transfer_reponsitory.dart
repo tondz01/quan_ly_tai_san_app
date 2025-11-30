@@ -38,6 +38,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     List<ChiTietBanGiaoRequest> requestDetail,
     List<SignatoryDto> listSignatory,
   ) async {
+    log('[createToolAndMaterialTransfer] START - Request ID: ${request.id}');
+    log('[createToolAndMaterialTransfer] Request: ${jsonEncode(request.toJson())}');
+    log('[createToolAndMaterialTransfer] RequestDetail count: ${requestDetail.length}');
+    log('[createToolAndMaterialTransfer] Signatory count: ${listSignatory.length}');
+    
     ToolAndMaterialTransferDto? data;
     Map<String, dynamic> result = {
       'data': data,
@@ -45,10 +50,13 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     };
 
     try {
+      log('[createToolAndMaterialTransfer] Calling POST to: ${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}');
       final response = await post(
         EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
         data: request.toJson(),
       );
+      log('[createToolAndMaterialTransfer] POST response status: ${response.statusCode}');
+      log('[createToolAndMaterialTransfer] POST response data: ${response.data}');
 
       final int? status = response.statusCode;
       final bool isOk =
@@ -56,25 +64,31 @@ class ToolAndMaterialTransferRepository extends ApiBase {
           status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
           status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOk) {
+        log('[createToolAndMaterialTransfer] Main request failed, status: $status');
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
 
+      log('[createToolAndMaterialTransfer] Main request successful, creating details');
       final dynamic respData = response.data;
+      log('[createToolAndMaterialTransfer] Calling POST details to: ${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch');
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
         data: jsonEncode(requestDetail),
       );
+      log('[createToolAndMaterialTransfer] Details response status: ${responseDetail.statusCode}');
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
           statusDetail == Numeral.STATUS_CODE_SUCCESS ||
           statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
           statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOkDetail) {
+        log('[createToolAndMaterialTransfer] Details request failed, status: $statusDetail');
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
 
+      log('[createToolAndMaterialTransfer] Details request successful, creating signatories');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request.id.toString(),

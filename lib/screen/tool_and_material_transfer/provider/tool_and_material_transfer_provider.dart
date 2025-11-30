@@ -66,6 +66,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get itemsDDPhongBanKho => _itemsDDPhongBanKho;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
+  String get messageLoading => _messageLoading;
+
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
@@ -145,6 +147,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   // Timer? _autoReloadTimer;
 
   bool _isLoading = false;
+  String _messageLoading = '';
+
+  set messageLoading(String value) {
+    _messageLoading = value;
+    notifyListeners();
+  }
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -340,6 +348,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
     _isShowInput = false;
+    Future.delayed(const Duration(milliseconds: 300), () {
+      onSetLoading(false);
+    });
     notifyListeners();
   }
 
@@ -588,33 +599,83 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
-    Map<String, dynamic>? result = await uploadWordDocument(
-      context,
-      fileName,
-      filePath,
-      fileBytes,
-    );
-    if (result == null) {
-      notifyListeners();
+    log('[saveAssetTransfer] Starting - fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}');
+    
+    // Lưu bloc reference trước khi upload để tránh lỗi khi context bị deactivated
+    ToolAndMaterialTransferBloc? bloc;
+    if (context.mounted) {
+      bloc = context.read<ToolAndMaterialTransferBloc>();
+      log('[saveAssetTransfer] Bloc reference saved');
+    } else {
+      log('[saveAssetTransfer] Context not mounted, cannot get bloc');
       return;
     }
-    request.duongDanFile = result['filePath'] ?? '';
-    request.tenFile = result['fileName'] ?? '';
+    
+    // Only upload if we have a new file to upload
+    bool hasNewFile = (kIsWeb && fileName.isNotEmpty && fileBytes.isNotEmpty) ||
+                      (!kIsWeb && filePath.isNotEmpty);
+    
+    if (hasNewFile) {
+      log('[saveAssetTransfer] Has new file, uploading...');
+      Map<String, dynamic>? result = await uploadWordDocument(
+        context,
+        fileName,
+        filePath,
+        fileBytes,
+      );
+      
+      log('[saveAssetTransfer] Upload result: $result');
+      
+      if (result == null) {
+        log('[saveAssetTransfer] Upload failed, returning early');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi khi tải lên tài liệu. Vui lòng thử lại.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        notifyListeners();
+        return;
+      }
+      
+      request.duongDanFile = result['filePath'] ?? '';
+      request.tenFile = result['fileName'] ?? '';
+      log('[saveAssetTransfer] File uploaded successfully - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}');
+    } else {
+      log('[saveAssetTransfer] No new file to upload, using existing file info');
+      // Use existing file info if available
+      if (fileName.isNotEmpty) {
+        request.tenFile = fileName;
+      }
+      if (filePath.isNotEmpty) {
+        request.duongDanFile = filePath;
+      }
+    }
 
     SGLog.debug(
-      "AssetTransferProvider",
-      "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
+      "AssetTransferProvider saveAssetTransfer",
+      "Final request - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}",
     );
-    if (!context.mounted) return;
-    final bloc = context.read<ToolAndMaterialTransferBloc>();
+    
+    log('[saveAssetTransfer] Calling CreateToolAndMaterialTransferEvent');
+    log('[saveAssetTransfer] Request: ${jsonEncode(request.toJson())}');
+    log('[saveAssetTransfer] RequestDetail count: ${requestDetail.length}');
+    log('[saveAssetTransfer] RequestSignatory count: ${requestSignatory.length}');
+    
+    // Sử dụng bloc đã lưu trước khi upload
+    // Context có thể đã bị deactivated sau upload, nhưng bloc vẫn hoạt động
+    // Event vẫn cần context (mặc dù bloc không dùng), nên truyền context cũ
     bloc.add(
       CreateToolAndMaterialTransferEvent(
-        context,
+        context, // Context có thể đã deactivated nhưng bloc không dùng nó
         request,
         requestDetail,
         requestSignatory,
       ),
     );
+    log('[saveAssetTransfer] Event dispatched successfully');
     notifyListeners();
   }
 
@@ -624,12 +685,22 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
+    log('[uploadWordDocument] Starting - kIsWeb: $kIsWeb, fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}');
+    
     if (kIsWeb) {
-      if (fileName.isEmpty || filePath.isEmpty) return null;
+      if (fileName.isEmpty || (filePath.isEmpty && fileBytes.isEmpty)) {
+        log('[uploadWordDocument] Web: fileName or filePath/fileBytes is empty, returning null');
+        return null;
+      }
     } else {
-      if (filePath.isEmpty) return null;
+      if (filePath.isEmpty && fileBytes.isEmpty) {
+        log('[uploadWordDocument] Mobile: filePath and fileBytes are empty, returning null');
+        return null;
+      }
     }
+    
     try {
+      log('[uploadWordDocument] Calling repository upload method');
       final result =
           kIsWeb
               ? await ToolAndMaterialTransferRepository().uploadFileBytes(
@@ -637,8 +708,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                 fileBytes,
               )
               : await ToolAndMaterialTransferRepository().uploadFile(filePath);
+      
+      log('[uploadWordDocument] Repository result: $result');
       final statusCode = result['status_code'] as int? ?? 0;
+      
       if (statusCode >= 200 && statusCode < 300) {
+        log('[uploadWordDocument] Upload successful, statusCode: $statusCode');
         if (context.mounted) {
           // ScaffoldMessenger.of(context).showSnackBar(
           //   SnackBar(
@@ -649,6 +724,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         }
         return result['data'];
       } else {
+        log('[uploadWordDocument] Upload failed, statusCode: $statusCode');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -660,6 +736,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
+      log('[uploadWordDocument] Exception: $e');
       SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -919,4 +996,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   //   }
   //   notifyListeners();
   // }
+
+  onSetLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
 }

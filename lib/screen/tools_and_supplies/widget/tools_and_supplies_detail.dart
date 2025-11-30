@@ -126,10 +126,13 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail>
   void didUpdateWidget(ToolsAndSuppliesDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Chỉ initData khi KHÔNG đang tương tác và provider yêu cầu update
-    if (!_isUserInteracting &&
-        oldWidget.provider.data != data &&
-        widget.provider.isUpdateDetail) {
-      widget.provider.isUpdateDetail = false;
+    // if (!_isUserInteracting &&
+    //     oldWidget.provider.data != data &&
+    //     widget.provider.isUpdateDetail) {
+    //   widget.provider.isUpdateDetail = false;
+    //   initData();
+    // }
+    if (oldWidget.provider.dataDetail != data) {
       initData();
     }
   }

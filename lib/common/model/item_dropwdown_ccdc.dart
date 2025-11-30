@@ -122,7 +122,7 @@ class ItemDropdownDetailCcdc {
   static ItemDropdownDetailCcdc empty() {
     return ItemDropdownDetailCcdc(
       id: '',
-      idCCDCVatTu: 'adasdas',
+      idCCDCVatTu: '',
       tenCCDCVatTu: '',
       idDetaiAsset: '',
       tenDetailAsset: '',
