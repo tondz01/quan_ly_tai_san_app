@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -19,7 +18,6 @@ class _SoTheoDoiTaiSanCoDinhPageState extends State<SoTheoDoiTaiSanCoDinhPage> {
 
   @override
   Widget build(BuildContext context) {
-    final h = Theme.of(context).textTheme;
     return Scaffold(
       body: Scrollbar(
         child: SingleChildScrollView(
@@ -141,140 +139,138 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // left block
-              Flexible(
-                flex: 6,
-                fit: FlexFit.loose,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // left block
+            Flexible(
+              flex: 6,
+              fit: FlexFit.loose,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Đơn vị:........
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SGText(
+                        text: "Đơn vị: ",
+                        style: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      EditablePlaceholder(
+                        controller: donViController,
+                        placeholder: "...........",
+                        textStyle: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+    
+                  // Đơn vị:........
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SGText(
+                        text: "Bộ phận: ",
+                        style: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      EditablePlaceholder(
+                        controller: boPhanController,
+                        placeholder: "...........",
+                        textStyle: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+    
+            // right block
+            Flexible(
+              flex: 4,
+              fit: FlexFit.loose,
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Đơn vị:........
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SGText(
-                          text: "Đơn vị: ",
-                          style: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        EditablePlaceholder(
-                          controller: donViController,
-                          placeholder: "...........",
-                          textStyle: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    // small title on top
+                    SGText(
+                      text: "Mẫu số S22-DN",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
                     ),
-
-                    // Đơn vị:........
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SGText(
-                          text: "Bộ phận: ",
-                          style: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        EditablePlaceholder(
-                          controller: boPhanController,
-                          placeholder: "...........",
-                          textStyle: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+    
+                    SGText(
+                      text: "(Ban hành theo Thông tư số 200/2014/TT-BTC",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
+                    ),
+    
+                    SGText(
+                      text: " Ngày 22/12/2014 của Bộ Tài chính)",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-
-              // right block
-              Flexible(
-                flex: 4,
-                fit: FlexFit.loose,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // small title on top
-                      SGText(
-                        text: "Mẫu số S22-DN",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-
-                      SGText(
-                        text: "(Ban hành theo Thông tư số 200/2014/TT-BTC",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      SGText(
-                        text: " Ngày 22/12/2014 của Bộ Tài chính)",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Center(
-            child: SGText(
-              text: "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
-              textAlign: TextAlign.center,
-              style: SettingPage.textStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            ),
+          ],
+        ),
+        Center(
+          child: SGText(
+            text: "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
+            textAlign: TextAlign.center,
+            style: SettingPage.textStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
-
-          // năm…….
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SGText(
-                text: "Năm ",
-                style: SettingPage.textStyle.copyWith(
-                ),
+        ),
+    
+        // năm…….
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SGText(
+              text: "Năm ",
+              style: SettingPage.textStyle.copyWith(
               ),
-              EditablePlaceholder(
-                controller: namKiemKeController,
-                placeholder: "......",
+            ),
+            EditablePlaceholder(
+              controller: namKiemKeController,
+              placeholder: "......",
+            ),
+          ],
+        ),
+    
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SGText(
+              text: "Tên đơn vị (phòng, ban hoặc người sử dụng) ",
+              style: SettingPage.textStyle.copyWith(
               ),
-            ],
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SGText(
-                text: "Tên đơn vị (phòng, ban hoặc người sử dụng) ",
-                style: SettingPage.textStyle.copyWith(
-                ),
-              ),
-              EditablePlaceholder(
-                controller: donViController,
-                placeholder: "......",
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+            EditablePlaceholder(
+              controller: donViController,
+              placeholder: "......",
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

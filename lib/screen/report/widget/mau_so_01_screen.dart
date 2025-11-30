@@ -260,13 +260,13 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     return pages;
   }
 
-  int _pageStartIndex(int pageIndex) {
-    int start = 0;
-    for (int i = 0; i < pageIndex && i < _listPages.length; i++) {
-      start += _listPages[i].length;
-    }
-    return start;
-  }
+  // int _pageStartIndex(int pageIndex) {
+  //   int start = 0;
+  //   for (int i = 0; i < pageIndex && i < _listPages.length; i++) {
+  //     start += _listPages[i].length;
+  //   }
+  //   return start;
+  // }
 
   @override
   Widget build(BuildContext context) {
