@@ -172916,7 +172916,7 @@ r=A.as(n,150,n)
 q=A.a7(16)
 p=A.a([new A.bs(0,B.O,A.aO(13,B.o.u()>>>16&255,B.o.u()>>>8&255,B.o.u()&255),B.bH,16)],t.V)
 o=t.p
-return A.hY(n,B.D_,new A.cj(B.af,n,B.ad,B.u,A.a([A.P(n,A.R(A.a([new A.akd("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bp(A.cI(A.P(n,new A.a_B(new A.bSB(b,this.a),b.x,n),B.k,n,n,new A.a3(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9R,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a3(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hb(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.1.0_01/12/2025_1",B.r),n,n,20,n,n,n)],o),n),n)},
+return A.hY(n,B.D_,new A.cj(B.af,n,B.ad,B.u,A.a([A.P(n,A.R(A.a([new A.akd("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bp(A.cI(A.P(n,new A.a_B(new A.bSB(b,this.a),b.x,n),B.k,n,n,new A.a3(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9R,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a3(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hb(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.1.1_01/12/2025_1",B.r),n,n,20,n,n,n)],o),n),n)},
 $C:"$3",
 $R:3,
 $S:1240}
@@ -183407,7 +183407,7 @@ s=A.aQ(s==null?"":s)
 r=p.go
 r=A.aQ(r==null?"":r)
 q=p.id
-return A.w(["id",p.a,"banGiaoCCDCVatTu",p.b,"quyetDinhDieuDongSo",p.c,"lenhDieuDong",p.d,"idDonViGiao",p.e,"tenDonViGiao",p.f,"idDonViNhan",p.r,"tenDonViNhan",p.w,"ngayBanGiao",o,"ngayTaoChungTu",s,"idLanhDao",p.z,"tenLanhDao",p.Q,"idDaiDiendonviBanHanhQD",p.as,"tenDaiDienBanHanhQD",p.at,"daXacNhan",p.ax,"idDaiDienBenGiao",p.ay,"tenDaiDienBenGiao",p.ch,"daiDienBenGiaoXacNhan",p.CW,"idDaiDienBenNhan",p.cx,"tenDaiDienBenNhan",p.cy,"daiDienBenNhanXacNhan",p.db,"trangThai",p.fx,"note",p.fy,"ngayTao",r,"ngayCapNhat",A.aQ(q==null?"":q),"nguoiTao",p.k1,"nguoiCapNhat",p.k2,"share",p.k3,"duongDanFile",p.k4,"tenFile",p.ok,"active",p.p1,"listSignatory",p.p2,"byStep",p.p4,"listDetailSubppliesHandover",p.p3,"trangThaiPhieu",p.R8],t.N,t.z)},
+return A.w(["id",p.a,"banGiaoCCDCVatTu",p.b,"quyetDinhDieuDongSo",p.c,"lenhDieuDong",p.d,"idDonViGiao",p.e,"tenDonViGiao",p.f,"idDonViNhan",p.r,"tenDonViNhan",p.w,"ngayBanGiao",o,"ngayTaoChungTu",s,"idLanhDao",p.z,"tenLanhDao",p.Q,"idGiamDoc",p.dx,"tenGiamDoc",p.dy,"giamDocKy",p.fr,"idDaiDiendonviBanHanhQD",p.as,"tenDaiDienBanHanhQD",p.at,"daXacNhan",p.ax,"idDaiDienBenGiao",p.ay,"tenDaiDienBenGiao",p.ch,"daiDienBenGiaoXacNhan",p.CW,"idDaiDienBenNhan",p.cx,"tenDaiDienBenNhan",p.cy,"daiDienBenNhanXacNhan",p.db,"trangThai",p.fx,"note",p.fy,"ngayTao",r,"ngayCapNhat",A.aQ(q==null?"":q),"nguoiTao",p.k1,"nguoiCapNhat",p.k2,"share",p.k3,"duongDanFile",p.k4,"tenFile",p.ok,"active",p.p1,"listSignatory",p.p2,"byStep",p.p4,"listDetailSubppliesHandover",p.p3,"trangThaiPhieu",p.R8],t.N,t.z)},
 gb4(a){return this.a},
 gSv(){return this.b},
 gJa(){return this.d},
@@ -184388,10 +184388,8 @@ b=A.w(["data",A.a([],d),"status_code",0,"totalPages",0,"currentPage",0,"totalIte
 a=B.t.bJ()
 p=4
 g=a
-if((g==null?null:g.b)==="admin")f=""
-else{g=a
-g=g==null?null:g.b
-f=g==null?"":g}m=f
+f=g==null?null:g.b
+m=f==null?"admin":f
 g=A.c(m)
 s=7
 return A.i(n.eM(0,"/api/bangiaoccdcvattu/paged?idcongty=ct001&page="+a1+"&size="+a2+"&search="+a3+"&userid="+g+"&trangThai="+A.c(a4===-1?"":a4),c),$async$t2)
