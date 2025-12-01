@@ -1408,15 +1408,6 @@ class _ToolAndMaterialTransferDetailState
       final requestDetail = _createDieuDongRequestDetail();
       final requestSignatory = _createListSignatory();
       
-      log('[_handleSave] Creating new item');
-      log('[_handleSave] fileName: ${_selectedFileName ?? "null"}');
-      log('[_handleSave] filePath: ${_selectedFilePath ?? "null"}');
-      log('[_handleSave] fileBytes length: ${_selectedFileBytes?.length ?? 0}');
-      log('[_handleSave] Request ID: ${request.id}');
-      log('[_handleSave] Request: ${jsonEncode(request.toJson())}');
-      log('[_handleSave] RequestDetail count: ${requestDetail.length}');
-      log('[_handleSave] RequestSignatory count: ${requestSignatory.length}');
-      
       widget.provider.saveAssetTransfer(
         context,
         request,

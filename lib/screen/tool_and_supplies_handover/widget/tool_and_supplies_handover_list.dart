@@ -55,17 +55,12 @@ class _ToolAndSuppliesHandoverListState
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String urlPreview = '';
-  String nameBenBan = "";
-
   UserInfoDTO? userInfo;
-
-  bool isShowDetailDepartmentTree = false;
 
   bool isShowPreview = false;
   bool isShowSigning = false;
 
   ToolAndSuppliesHandoverDto? selected;
-  List<ThreadNode> listSignatoryDetail = [];
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
@@ -234,8 +229,8 @@ class _ToolAndSuppliesHandoverListState
     if (selected != null && !newData.any((item) => item.id == selected?.id)) {
       setState(() {
         selected = null;
-        isShowDetailDepartmentTree = false;
       });
+      widget.provider.hideDetailDiagram();
     }
   }
 
@@ -496,12 +491,13 @@ class _ToolAndSuppliesHandoverListState
                                   item,
                                   isFindNewItem: false,
                                 );
-                                setState(() {
-                                  nameBenBan =
-                                      'trạng thái ký " Biên bản bàn giao ${item.id} "';
-                                  isShowDetailDepartmentTree = true;
-                                  _buildDetailDepartmentTree(item);
-                                });
+                                final nodes = _buildDetailDepartmentTree(item);
+                                widget.provider.updateDetailDiagram(
+                                  item: item,
+                                  nodes: nodes,
+                                  title:
+                                      'trạng thái ký " Biên bản bàn giao ${item.id} "',
+                                );
                               },
                               showActionsColumn: _showActionsColumn,
                               customActions: [
@@ -530,25 +526,29 @@ class _ToolAndSuppliesHandoverListState
                     ],
                   ),
                 ),
-                Visibility(
-                  visible: isShowDetailDepartmentTree,
-                  child: Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        left: BorderSide(color: Colors.grey.shade600, width: 1),
+                AnimatedBuilder(
+                  animation: widget.provider,
+                  builder: (context, _) {
+                    if (!widget.provider.isShowDetailDepartmentTree) {
+                      return const SizedBox.shrink();
+                    }
+                    return Container(
+                      width: 300,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left:
+                              BorderSide(color: Colors.grey.shade600, width: 1),
+                        ),
                       ),
-                    ),
-                    child: DetailedDiagram(
-                      title: nameBenBan,
-                      sample: listSignatoryDetail,
-                      onHiden: () {
-                        setState(() {
-                          isShowDetailDepartmentTree = false;
-                        });
-                      },
-                    ),
-                  ),
+                      child: DetailedDiagram(
+                        title: widget.provider.detailDiagramTitle,
+                        sample: widget.provider.detailDiagramNodes,
+                        onHiden: () {
+                          widget.provider.hideDetailDiagram();
+                        },
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -592,6 +592,7 @@ class _ToolAndSuppliesHandoverListState
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
+            widget.provider.onSetLoadingMessage('Đang xóa biên bản bàn giao...');
             widget.provider.isLoading = true;
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
@@ -609,6 +610,7 @@ class _ToolAndSuppliesHandoverListState
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
+            widget.provider.onSetLoadingMessage('Đang xóa biên bản bàn giao...');
             widget.provider.isLoading = true;
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
@@ -772,10 +774,9 @@ class _ToolAndSuppliesHandoverListState
   }
 
   // build detail department tree
-  void _buildDetailDepartmentTree(ToolAndSuppliesHandoverDto item) {
-    listSignatoryDetail.clear();
+  List<ThreadNode> _buildDetailDepartmentTree(ToolAndSuppliesHandoverDto item) {
     selected = item;
-    listSignatoryDetail = [
+    return [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
       // ThreadNode(
       //   header: 'Đại diện đơn vị để nghị:',
