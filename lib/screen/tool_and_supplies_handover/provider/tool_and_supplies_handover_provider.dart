@@ -65,6 +65,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   bool get isUpdateDetail => _isUpdateDetail;
+  bool get isShowDetailDepartmentTree => _isShowDetailDepartmentTree;
+  String get detailDiagramTitle => _detailDiagramTitle;
+  List<ThreadNode> get detailDiagramNodes => List.unmodifiable(_detailDiagramNodes);
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -141,7 +144,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   // Chi tiết CCDC theo lệnh điều động
 
-  List<ThreadNode> listSignatoryDetail = [];
+  bool _isShowDetailDepartmentTree = false;
+  String _detailDiagramTitle = '';
+  List<ThreadNode> _detailDiagramNodes = [];
 
   UserInfoDTO? _userInfo;
 
@@ -172,6 +177,24 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   set body(Widget? value) {
     _body = value;
+    notifyListeners();
+  }
+
+  void updateDetailDiagram({
+    required ToolAndSuppliesHandoverDto item,
+    required List<ThreadNode> nodes,
+    required String title,
+  }) {
+    _item = item;
+    _detailDiagramTitle = title;
+    _detailDiagramNodes = nodes;
+    _isShowDetailDepartmentTree = true;
+    notifyListeners();
+  }
+
+  void hideDetailDiagram() {
+    if (!_isShowDetailDepartmentTree) return;
+    _isShowDetailDepartmentTree = false;
     notifyListeners();
   }
 
@@ -434,21 +457,17 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   onLoadDataCcdc(BuildContext context) {
     _dataCcdc = AccountHelper.instance.getAllCCDC();
-    log('dataCcdc0: ${jsonEncode(_dataCcdc)}');
     if (_dataCcdc == null) {
       if (AccountHelper.instance.getAllCCDC().isEmpty) {
         AuthRepository().loadCCDCGroup('ct001').then((value) {
           _dataCcdc = AccountHelper.instance.getAllCCDC();
           notifyListeners();
-          log('dataCcdc1: ${jsonEncode(_dataCcdc)}');
         });
       } else {
         _dataCcdc = AccountHelper.instance.getAllCCDC();
         notifyListeners();
-        log('dataCcdc2: ${jsonEncode(_dataCcdc)}');
       }
     }
-    log('dataCcdc: ${jsonEncode(_dataCcdc)}');
   }
 
   void onChangeDetail(
@@ -456,12 +475,32 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     ToolAndSuppliesHandoverDto? item, {
     bool isFindNew = false,
     bool isFindNewItem = false,
-  }) {
-    _confirmBeforeLeaving(context, item);
+  }) async {
+    if (item != null) {
+      onSetLoadingMessage('Đang tải dữ liệu...');
+      _isLoading = true;
 
-    _isFindNew = isFindNew;
-    _isFindNewItem = isFindNewItem;
-    notifyListeners();
+      if (_dataCcdc == null) {
+        if (AccountHelper.instance.getAllCCDC().isEmpty) {
+          await AuthRepository().loadCCDCGroup('ct001').then((value) {
+            _dataCcdc = AccountHelper.instance.getAllCCDC();
+          });
+        } else {
+          _dataCcdc = AccountHelper.instance.getAllCCDC();
+        }
+      }
+      await getListOwnership(item.idDonViGiao ?? '').then((value) {
+        _item = item;
+      });
+      await onLoadDataAssetTransfer().then((value) {
+        isShowInput = true;
+        isShowCollapse = true;
+        _isUpdateDetail = true;
+        _isFindNew = isFindNew;
+        _isFindNewItem = isFindNewItem;
+        notifyListeners();
+      });
+    }
   }
 
   void updateItem(ToolAndSuppliesHandoverDto updatedItem) {
@@ -509,58 +548,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     AccountHelper.instance.setToolAndMaterialHandover(data);
     AccountHelper.refreshAllCounts();
     notifyListeners();
-  }
-
-  Future<bool> _showUnsavedChangesDialog(
-    BuildContext context,
-    ToolAndSuppliesHandoverDto? item,
-  ) async {
-    return await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Thay đổi chưa lưu'),
-              content: const Text(
-                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Hủy'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _item = item;
-                    isShowInput = true;
-                    isShowCollapse = true;
-                    hasUnsavedChanges = false;
-                    _isUpdateDetail = true;
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Rời khỏi'),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
-  }
-
-  // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(
-    BuildContext context,
-    ToolAndSuppliesHandoverDto? item,
-  ) async {
-    if (hasUnsavedChanges) {
-      return await _showUnsavedChangesDialog(context, item);
-    } else {
-      _item = item;
-      isShowInput = true;
-      isShowCollapse = true;
-      _isUpdateDetail = true;
-    }
-    return true;
   }
 
   NhanVien getNhanVien({required String idNhanVien}) {
@@ -644,6 +631,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       final list =
           rawData.map((item) => OwnershipUnitDetailDto.fromJson(item)).toList();
       _listOwnershipUnit = list;
+      _isLoading = false;
       notifyListeners();
       return list;
     } else {

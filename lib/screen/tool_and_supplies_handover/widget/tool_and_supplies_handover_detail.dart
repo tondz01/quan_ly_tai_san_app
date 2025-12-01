@@ -169,7 +169,6 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
-    log("nameFile: $nameFile");
     try {
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
