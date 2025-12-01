@@ -143,8 +143,15 @@ prevDocumentCcdcHandover({
     //   donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
     // ),
     SigneInfo(
-      idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
+      idNhanVien: dieuDongCcdc?.idDaiDienBenGiao ?? '',
       title: 'Đại diện đơn vị bên giao',
+      hoTen: dieuDongCcdc?.tenDaiDienBenGiao ?? '',
+      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+    ),
+    SigneInfo(
+      idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
+      title: 'Đại diện đơn vị bên nhận',
       hoTen: dieuDongCcdc?.tenDaiDienBenNhan ?? '',
       chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
       donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
@@ -157,13 +164,7 @@ prevDocumentCcdcHandover({
         chucVu: getChucVu(dieuDongCcdc?.listSignatory?[i].idNguoiKy ?? ''),
         donVi: getDonVi(dieuDongCcdc?.listSignatory?[i].idNguoiKy ?? ''),
       ),
-    SigneInfo(
-      idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
-      title: 'Đại diện đơn vị bên nhận',
-      hoTen: dieuDongCcdc?.tenDaiDienBenNhan ?? '',
-      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
-      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
-    ),
+
     SigneInfo(
       idNhanVien: dieuDongCcdc?.idGiamDoc ?? '',
       title: 'Đại diện đơn vị bên nhận',
