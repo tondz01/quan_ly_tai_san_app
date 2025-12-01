@@ -522,7 +522,7 @@ class _ToolAndSuppliesHandoverListState
                               ],
                               actionsColumnWidth: 120,
                               maxHeight:
-                                  MediaQuery.of(context).size.height * 0.8,
+                                  MediaQuery.of(context).size.height * 0.7,
                             );
                           },
                         ),

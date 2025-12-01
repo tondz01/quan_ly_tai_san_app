@@ -39,7 +39,6 @@ import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
-import 'package:provider/provider.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
