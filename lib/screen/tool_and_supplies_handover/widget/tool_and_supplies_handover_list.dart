@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -180,7 +178,6 @@ class _ToolAndSuppliesHandoverListState
 
     if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
       _onFilteredDataChanged(oldData, newData);
-      log('Filtered data changed in didUpdateWidget');
     }
 
     setState(() {
@@ -536,8 +533,10 @@ class _ToolAndSuppliesHandoverListState
                       width: 300,
                       decoration: BoxDecoration(
                         border: Border(
-                          left:
-                              BorderSide(color: Colors.grey.shade600, width: 1),
+                          left: BorderSide(
+                            color: Colors.grey.shade600,
+                            width: 1,
+                          ),
                         ),
                       ),
                       child: DetailedDiagram(
@@ -592,7 +591,9 @@ class _ToolAndSuppliesHandoverListState
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
-            widget.provider.onSetLoadingMessage('Đang xóa biên bản bàn giao...');
+            widget.provider.onSetLoadingMessage(
+              'Đang xóa biên bản bàn giao...',
+            );
             widget.provider.isLoading = true;
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
@@ -610,7 +611,9 @@ class _ToolAndSuppliesHandoverListState
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
-            widget.provider.onSetLoadingMessage('Đang xóa biên bản bàn giao...');
+            widget.provider.onSetLoadingMessage(
+              'Đang xóa biên bản bàn giao...',
+            );
             widget.provider.isLoading = true;
             context.read<ToolAndSuppliesHandoverBloc>().add(
               DeleteToolAndSuppliesHandoverEvent(context, item.id!),
@@ -651,7 +654,6 @@ class _ToolAndSuppliesHandoverListState
               UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
               ToolAndSuppliesHandoverDto? item =
                   selectedItems.isNotEmpty ? selectedItems.first : null;
-              log("Selected item for signing: ${item?.tenFile}");
               _handleSignDocument(item!, userInfo!, widget.provider);
             }
           },
@@ -859,28 +861,30 @@ class _ToolAndSuppliesHandoverListState
   int getPermissionSigning(ToolAndSuppliesHandoverDto item) {
     final flow =
         [
-          {
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-          },
-          {
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-          },
-          if (item.listSignatory?.isNotEmpty ?? false)
-            ...(item.listSignatory
-                    ?.map(
-                      (e) => {"id": e.idNguoiKy, "signed": e.trangThai == 1},
-                    )
-                    .toList() ??
-                []),
-          {
-            "id": item.idGiamDoc,
-            "signed": item.giamDocKy == true,
-          },
-        ].where(
-          (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-        ).toList();
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                          },
+                        )
+                        .toList() ??
+                    []),
+              {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
     final current = flow.indexWhere((s) => s["id"] == userInfo?.tenDangNhap);
     if (current == -1) return 2;
     if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&
