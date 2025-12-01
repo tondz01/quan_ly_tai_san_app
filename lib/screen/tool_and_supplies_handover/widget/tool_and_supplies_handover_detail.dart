@@ -528,6 +528,8 @@ class _ToolAndSuppliesHandoverDetailState
             )
             .toList();
     if (provider.isFindNewItem ? true : item == null) {
+      provider.onSetLoadingMessage("Đang tạo mới biên bản bàn giao...");
+      provider.isLoading = true;
       if (!mounted) return;
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
@@ -567,6 +569,8 @@ class _ToolAndSuppliesHandoverDetailState
         ),
       );
     } else {
+      provider.onSetLoadingMessage("Đang cập nhập lại biên bản bàn giao...");
+      provider.isLoading = true;
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
@@ -905,7 +909,6 @@ class _ToolAndSuppliesHandoverDetailState
                               )
                               .toList();
                       getToolAndSuppliesHandoverPreview();
-                      log('listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}');
                       // Chỉ setState cho preview, không rebuild table
                       // Table đã tự quản lý state riêng, không cần rebuild từ parent
                       setState(() {});
@@ -1023,7 +1026,6 @@ class _ToolAndSuppliesHandoverDetailState
                   ) ??
                   [],
             ];
-            log('listDetailSubppliesHandover: $listDetailSubppliesHandover');
           },
           validationErrors: _validationErrors,
           isRequired: true,

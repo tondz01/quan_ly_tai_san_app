@@ -54,6 +54,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   List<PhongBan>? get dataDepartment => _dataDepartment;
   List<NhanVien>? get dataStaff => _dataStaff;
 
+  String? get loadingMessage => _loadingMessage;
+
   ToolAndSuppliesHandoverDto? get item => _item;
   get data => _data;
   get dataCcdc => _dataCcdc;
@@ -109,6 +111,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
+  String? _loadingMessage;
   // Timer? _autoReloadTimer;
 
   int typeAssetTransfer = 1;
@@ -409,6 +412,15 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  onCloseDetail() {
+    _item = null;
+    _isShowCollapse = true;
+    _isShowInput = false;
+    if (isLoading) {
+      _isLoading = false;
+    }
+    notifyListeners();
+  }
   // Cập nhật danh sách trạng thái
 
   void getListToolAndSuppliesHandover(BuildContext context) {
@@ -651,5 +663,10 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
         idNeedToDo: idNeedToDo,
       );
     });
+  }
+
+  onSetLoadingMessage(String? message) {
+    _loadingMessage = message;
+    notifyListeners();
   }
 }
