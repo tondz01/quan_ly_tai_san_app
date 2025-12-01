@@ -773,8 +773,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     final userInfo = AccountHelper.instance.getUserInfo();
 
     try {
-      String userid =
-          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final userid = userInfo?.tenDangNhap ?? 'admin';
       final response = await get(
         // Đổi từ post thành get
         '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
