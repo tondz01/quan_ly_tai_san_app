@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -81,6 +83,13 @@ class _ToolAndSuppliesHandoverListState
     super.initState();
     userInfo = widget.provider.userInfo;
     _initializeTableConfig();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    selectedItems.clear();
+    log('dispose');
   }
 
   void _initializeTableConfig() {
@@ -640,8 +649,7 @@ class _ToolAndSuppliesHandoverListState
         onPressed: _openColumnConfigDialog,
       ),
       if (selectedItems.isNotEmpty &&
-          selectedItems.length < 2 &&
-          getPermissionSigning(selectedItems.first) != 0)
+          selectedItems.length < 2)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -685,11 +693,6 @@ class _ToolAndSuppliesHandoverListState
     final signatureFlow =
         [
               {
-                "id": item.idDaiDiendonviBanHanhQD,
-                "signed": item.daXacNhan == true,
-                "label": "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
-              },
-              {
                 "id": item.idDaiDienBenGiao,
                 "signed": item.daiDienBenGiaoXacNhan == true,
                 "label": "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
@@ -710,6 +713,11 @@ class _ToolAndSuppliesHandoverListState
                         )
                         .toList() ??
                     []),
+              {
+                "id": item.idGiamDoc,
+                "signed": item.giamDocKy == true,
+                "label": "Giám đốc ký duyệt: ${item.tenGiamDoc}",
+              },
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
