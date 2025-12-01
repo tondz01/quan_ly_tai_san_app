@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
@@ -551,7 +550,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-try {
+    try {
       // Tối ưu: sử dụng Set để tự động loại bỏ duplicate IDs
       final allIds = <String>{};
 
@@ -573,10 +572,10 @@ try {
             if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
           }
         }
-        item.copyWith(share: true);
+        final payload = item.copyWith(share: true);
         final response = await put(
-          '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/${item.id}',
-          data: jsonEncode(item.toJson()),
+          EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
+          data: payload.toJson(),
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           result['data'] = response.data;
