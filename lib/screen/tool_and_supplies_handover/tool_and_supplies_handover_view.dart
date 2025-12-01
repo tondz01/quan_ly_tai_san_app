@@ -174,6 +174,7 @@ class _ToolAndSuppliesHandoverViewState
           context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is DeleteToolAndSuppliesHandoverSuccessState) {
+          context.read<ToolAndSuppliesHandoverProvider>().isLoading = false;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Xóa biên bản bàn giao thành công'),
@@ -202,6 +203,7 @@ class _ToolAndSuppliesHandoverViewState
           context.read<ToolAndSuppliesHandoverProvider>().onReloadDataPage(context);
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is CancelToolAndSuppliesHandoverSuccessState) {
+          context.read<ToolAndSuppliesHandoverProvider>().isLoading = false;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Hủy biên bản bàn giao thành công'),
