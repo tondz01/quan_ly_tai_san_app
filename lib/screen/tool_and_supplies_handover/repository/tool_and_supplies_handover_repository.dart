@@ -551,63 +551,57 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
-    final request =
-        items
-            .map(
-              (item) => {
-                "id": item.id,
-                "idCongTy": currentUser.idCongTy,
-                "banGiaoCCDCVatTu": item.banGiaoCCDCVatTu ?? '',
-                "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
-                "lenhDieuDong": item.lenhDieuDong ?? '',
-                "idDonViGiao": item.idDonViGiao ?? '',
-                "idDonViNhan": item.idDonViNhan ?? '',
-                "idLanhDao": item.idLanhDao ?? '',
-                "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
-                "daXacNhan": item.daXacNhan,
-                "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
-                "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan,
-                "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
-                "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan,
-                "trangThai": item.trangThai,
-                "note": item.note ?? '',
-                "nguoiTao": item.nguoiTao ?? '',
-                "nguoiCapNhat": currentUser.tenDangNhap,
-                "isActive": true,
-                "ngayBanGiao": item.ngayBanGiao,
-                "ngayTao": item.ngayTao,
-                "ngayCapNhat": item.ngayCapNhat,
-                "share": true,
-                "tenFile": item.tenFile ?? '',
-                "duongDanFile": item.duongDanFile ?? '',
-              },
-            )
-            .toList();
+try {
+      // Tối ưu: sử dụng Set để tự động loại bỏ duplicate IDs
+      final allIds = <String>{};
 
-    try {
-      final response = await put(
-        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/batch',
-        data: jsonEncode(request),
-      );
-      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
-        result['data'] = response.data;
-      } else {
-        result['status_code'] = response.statusCode;
-      }
-      String newSignatory = request.map((e) => e['idNguoiKy']).join(',');
-      String idNeedToDo =
-          "${request.map((e) => e['idDonViGiao']).join(',')},${request.map((e) => e['idDonViNhan']).join(',')},${request.map((e) => e['idGiamDoc']).join(',')},$newSignatory, admin,${request.map((e) => e['nguoiTao']).join(',')}";
-      Future.delayed(const Duration(milliseconds: 200)).then((_) {
-        MessageServiceRealtime().pushJsonMessage(
-          typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
-          typeAction: ActionType.UPDATE,
-          idNeedToDo: idNeedToDo,
+      for (var item in items) {
+        final id1 = item.idDaiDiendonviBanHanhQD;
+        final id2 = item.idDaiDienBenGiao;
+        final id3 = item.idDaiDienBenNhan;
+        final id4 = item.idGiamDoc;
+
+        if (id1 != null && id1.isNotEmpty) allIds.add(id1);
+        if (id2 != null && id2.isNotEmpty) allIds.add(id2);
+        if (id3 != null && id3.isNotEmpty) allIds.add(id3);
+        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
+
+        final signatories = item.listSignatory;
+        if (signatories != null) {
+          for (var s in signatories) {
+            final sigId = s.idNguoiKy;
+            if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
+          }
+        }
+        item.copyWith(share: true);
+        final response = await put(
+          '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/${item.id}',
+          data: jsonEncode(item.toJson()),
         );
-      });
+        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+          result['data'] = response.data;
+        } else {
+          result['status_code'] = response.statusCode;
+        }
+      }
+      // Gửi message realtime nếu có IDs
+      if (allIds.isNotEmpty) {
+        // Thêm admin mặc định vào danh sách nhận thông báo
+        allIds.add('admin,${items.map((e) => e.nguoiTao).join(',')}');
+        Future.delayed(const Duration(milliseconds: 200)).then((_) {
+          MessageServiceRealtime().pushJsonMessage(
+            typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
+            typeAction: ActionType.UPDATE,
+            idNeedToDo: allIds.join(','),
+          );
+        });
+      }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
-      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at sendToSigner - AssetHandoverRepository: $e",
+      );
     }
 
     return result;
