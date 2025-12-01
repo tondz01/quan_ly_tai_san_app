@@ -172867,7 +172867,7 @@ r=A.as(n,150,n)
 q=A.a7(16)
 p=A.a([new A.br(0,B.O,A.aO(13,B.o.u()>>>16&255,B.o.u()>>>8&255,B.o.u()&255),B.bH,16)],t.V)
 o=t.p
-return A.hZ(n,B.D_,new A.ci(B.af,n,B.ad,B.u,A.a([A.P(n,A.R(A.a([new A.akd("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bp(A.cI(A.P(n,new A.a_B(new A.bSJ(b,this.a),b.x,n),B.k,n,n,new A.a3(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9R,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a3(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hb(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.0.17_01/12/2025_2",B.t),n,n,20,n,n,n)],o),n),n)},
+return A.hZ(n,B.D_,new A.ci(B.af,n,B.ad,B.u,A.a([A.P(n,A.R(A.a([new A.akd("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bp(A.cI(A.P(n,new A.a_B(new A.bSJ(b,this.a),b.x,n),B.k,n,n,new A.a3(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9R,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a3(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hb(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.0.1_01/12/2025_1",B.t),n,n,20,n,n,n)],o),n),n)},
 $C:"$3",
 $R:3,
 $S:1240}
@@ -184511,36 +184511,42 @@ q=q.h(b,"id_need_to_do")
 if(A.ae6(p,q==null?"":q))r.fZ(s)}else if(J.h(q.h(b,o),5))r.fZ(s)},
 $S:198}
 A.cbL.prototype={
-$2(a,b){var s,r=null
+$2(a,b){var s,r,q=null
 if(!(b instanceof A.tT))if(b instanceof A.Ze)A.a1(a,!1,t.Vt).ayo(a,b)
 else if(b instanceof A.WL){s=t.Vt
 A.a1(a,!1,s).a6P()
-a.a2(t.q).f.be(A.bX(r,r,r,B.Q,r,B.u,r,A.t("T\u1ea1o bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))
+a.a2(t.q).f.be(A.bX(q,q,q,B.Q,q,B.u,q,A.t("T\u1ea1o bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))
 A.a1(a,!1,s).fZ(a)
 s=A.a1(a,!1,s)
 s.a=!1
 s.F()}else if(b instanceof A.Rz){s=t.Vt
 A.a1(a,!1,s).a6P()
-a.a2(t.q).f.be(A.bX(r,r,r,B.Q,r,B.u,r,A.t("C\u1eadp nh\u1eadt bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))
+a.a2(t.q).f.be(A.bX(q,q,q,B.Q,q,B.u,q,A.t("C\u1eadp nh\u1eadt bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))
 A.a1(a,!1,s).fZ(a)
 s=A.a1(a,!1,s)
 s.a=!1
-s.F()}else if(b instanceof A.Xt){a.a2(t.q).f.be(A.bX(r,r,r,B.Q,r,B.u,r,A.t("X\xf3a bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))
-s=t.Vt
+s.F()}else if(b instanceof A.Xt){s=t.Vt
+r=A.a1(a,!1,s)
+r.Q=!1
+r.F()
+a.a2(t.q).f.be(A.bX(q,q,q,B.Q,q,B.u,q,A.t("X\xf3a bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))
 A.a1(a,!1,s).fZ(a)
 s=A.a1(a,!1,s)
 s.a=!1
 s.F()}else if(b instanceof A.uO){s=A.a1(a,!1,t.Vt)
 s.Q=!1
 s.F()
-a.a2(t.q).f.be(A.bX(r,r,r,B.a3,r,B.u,r,A.t("L\u1ed7i: "+b.c,r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))}else if(b instanceof A.a5E){s=t.Vt
+a.a2(t.q).f.be(A.bX(q,q,q,B.a3,q,B.u,q,A.t("L\u1ed7i: "+b.c,q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))}else if(b instanceof A.a5E){s=t.Vt
 A.a1(a,!1,s).a6P()
-a.a2(t.q).f.be(A.bX(r,r,r,B.Q,r,B.u,r,A.t(u.R,r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))
+a.a2(t.q).f.be(A.bX(q,q,q,B.Q,q,B.u,q,A.t(u.R,q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))
 A.a1(a,!1,s).fZ(a)
 s=A.a1(a,!1,s)
 s.a=!1
-s.F()}else if(b instanceof A.VJ){a.a2(t.q).f.be(A.bX(r,r,r,B.Q,r,B.u,r,A.t("H\u1ee7y bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",r,r,r,r,r,r,r),r,B.S,r,r,r,r,r,r,r,r,r))
-s=t.Vt
+s.F()}else if(b instanceof A.VJ){s=t.Vt
+r=A.a1(a,!1,s)
+r.Q=!1
+r.F()
+a.a2(t.q).f.be(A.bX(q,q,q,B.Q,q,B.u,q,A.t("H\u1ee7y bi\xean b\u1ea3n b\xe0n giao th\xe0nh c\xf4ng",q,q,q,q,q,q,q),q,B.S,q,q,q,q,q,q,q,q,q))
 A.a1(a,!1,s).fZ(a)
 s=A.a1(a,!1,s)
 s.a=!1
