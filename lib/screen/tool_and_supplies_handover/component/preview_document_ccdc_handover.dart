@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -175,6 +176,22 @@ prevDocumentCcdcHandover({
 
     // SigneInfo(
   ];
+  List<DetailSubppliesHandoverDto> listDetailSubppliesHandover =
+      (dieuDongCcdc?.listDetailSubppliesHandover ?? [])
+          .map(
+            (e) {
+              final foundDetail = item.detailToolAndMaterialTransfers
+                  ?.where((element) => element.id == e.idChiTietDieuDong)
+                  .firstOrNull;
+              
+              return e.copyWith(
+                chiTietDieuDongCCDCVatTuDTO: foundDetail != null
+                    ? foundDetail.copyWith(soLuong: e.soLuong)
+                    : e.chiTietDieuDongCCDCVatTuDTO,
+              );
+            },
+          )
+          .toList();
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -188,7 +205,7 @@ prevDocumentCcdcHandover({
               maxHeight: 800 * (297 / 210),
               child: ContractPage.toolAndSuppliesHandoverPageV2(
                 dieuDongCcdc!,
-                dieuDongCcdc.listDetailSubppliesHandover,
+                listDetailSubppliesHandover,
                 listSigneInfo,
               ),
             ),
