@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -270,194 +272,310 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
 
   @override
   Widget build(BuildContext context) {
+    double sizeWidth = MediaQuery.of(context).size.width;
     return Stack(
       children: [
         Center(
           child: Padding(
-            padding: const EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: 16.0,
-              bottom: 16.0,
-            ),
+            padding: const EdgeInsets.all(24.0),
             child: SizedBox(
-              width: 960,
+              width: 1400,
               child: Column(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        SGText(
-                          text: 'Biên bản kiểm kê CCDC',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Divider(),
-                        CmFormDate(
-                          label: 'Ngày kiểm kê',
-                          controller: controllerImportDate,
-                          isEditing: true,
-                          fieldName: 'importDate',
-                          onChanged: (date) {
-                            setState(() {});
-                          },
-                        ),
-                        CmFormDropdownObject<PhongBan>(
-                          label: 'Đơn vị',
-                          controller: controllerDonVi,
-                          isEditing: true,
-                          items: [
-                            ...listPhongBan.map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.tenPhongBan ?? ''),
-                              ),
-                            ),
-                          ],
-                          fieldName: 'tPDonVi',
-                          value: donVi,
-                          onChanged: (value) {
-                            setState(() {
-                              donVi = value;
-                            });
-                          },
-                        ),
-                        Divider(),
-                        SizedBox(height: 16),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                onloadViewPage();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'Lấy dữ liệu',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            Expanded(child: SizedBox.shrink()),
-                            GestureDetector(
-                              onTap: () {
-                                _exportToPdf();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.picture_as_pdf,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) async {
-                                  await ReportProvider().exportToPdfAndPrint(
-                                    _pageKeys,
-                                    context,
-                                    () {},
-                                  );
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.print,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          SGText(
+                            text: 'Biên bản kiểm kê CCDC',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Divider(),
+                          CmFormDate(
+                            label: 'Ngày kiểm kê',
+                            controller: controllerImportDate,
+                            isEditing: true,
+                            fieldName: 'importDate',
+                            onChanged: (date) {
+                              setState(() {});
+                            },
+                          ),
+                          CmFormDropdownObject<PhongBan>(
+                            label: 'Đơn vị',
+                            controller: controllerDonVi,
+                            isEditing: true,
+                            items: [
+                              ...listPhongBan.map(
+                                (e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.tenPhongBan ?? ''),
+                                ),
+                              ),
+                            ],
+                            fieldName: 'tPDonVi',
+                            value: donVi,
+                            onChanged: (value) {
+                              setState(() {
+                                donVi = value;
+                              });
+                            },
+                          ),
+                          Divider(),
+                          SizedBox(height: 16),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  onloadViewPage();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Lấy dữ liệu',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: SizedBox.shrink()),
+                              GestureDetector(
+                                onTap: () {
+                                  _exportToPdf();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.picture_as_pdf,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) async {
+                                    await ReportProvider().exportToPdfAndPrint(
+                                      _pageKeys,
+                                      context,
+                                      () {},
+                                    );
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.print,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
                   Expanded(
-                    child: Stack(
-                      children: [
-                        NotificationListener<ScrollNotification>(
-                          onNotification: (notification) {
-                            return true; // Xử lý scroll event bình thường
-                          },
-                          child: SingleChildScrollView(
-                            physics:
-                                _scrollController.isParentScrolling
-                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                            scrollDirection: Axis.vertical,
-                            child: Column(
-                              children: [
-                                if (_listPages.isEmpty)
-                                  RepaintBoundary(
-                                    key:
-                                        _pageKeys.isNotEmpty
-                                            ? _pageKeys[0]
-                                            : GlobalKey(),
-                                    child: Stack(
-                                      children: [
-                                        A4Canvas(
-                                          marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
-                                          maxWidth: 800,
-                                          maxHeight: 800 * (297 / 210),
-                                          child: MauSo01Page(
-                                            listCcdc: _listCcdc,
-                                            listTaiSan: [],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              return true; // Xử lý scroll event bình thường
+                            },
+                            child: SingleChildScrollView(
+                              physics:
+                                  _scrollController.isParentScrolling
+                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: [
+                                  if (_listPages.isEmpty)
+                                    RepaintBoundary(
+                                      key:
+                                          _pageKeys.isNotEmpty
+                                              ? _pageKeys[0]
+                                              : GlobalKey(),
+                                      child: Stack(
+                                        children: [
+                                          A4Canvas(
+                                            marginsMm: EdgeInsets.all(4),
+                                            scale: 1.2,
+                                            maxWidth: sizeWidth,
+                                            maxHeight: sizeWidth * (297 / 210),
+                                            child: MauSo01Page(
+                                              listCcdc: _listCcdc,
+                                              listTaiSan: [],
+                                            ),
                                           ),
-                                        ),
-                                        NumberPageView(index: 0),
-                                      ],
-                                    ),
-                                  )
-                                else if (_listPages.length < numberPageStart)
-                                  RepaintBoundary(
-                                    key:
-                                        _pageKeys.isNotEmpty
-                                            ? _pageKeys[0]
-                                            : GlobalKey(),
-                                    child: Stack(
-                                      children: [
-                                        A4Canvas(
-                                          marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
-                                          maxWidth: 800,
-                                          maxHeight: 800 * (297 / 210),
-                                          child: MauSo01Page(
-                                            listCcdc: _listCcdc,
-                                            listTaiSan: [],
+                                          NumberPageView(index: 0),
+                                        ],
+                                      ),
+                                    )
+                                  else if (_listPages.length < numberPageStart)
+                                    RepaintBoundary(
+                                      key:
+                                          _pageKeys.isNotEmpty
+                                              ? _pageKeys[0]
+                                              : GlobalKey(),
+                                      child: Stack(
+                                        children: [
+                                          A4Canvas(
+                                            marginsMm: EdgeInsets.all(4),
+                                            scale: 1.2,
+                                            maxWidth: sizeWidth,
+                                            maxHeight: sizeWidth * (297 / 210),
+                                            child: MauSo01Page(
+                                              listCcdc: _listCcdc,
+                                              listTaiSan: [],
+                                            ),
                                           ),
-                                        ),
-                                        NumberPageView(index: 0),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  ...List.generate(_listPages.length, (index) {
-                                    if (index == 0) {
+                                          NumberPageView(index: 0),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    ...List.generate(_listPages.length, (
+                                      index,
+                                    ) {
+                                      if (index == 0) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12.0,
+                                          ),
+                                          child: RepaintBoundary(
+                                            key: _pageKeys[index],
+                                            child: Stack(
+                                              children: [
+                                                A4Canvas(
+                                                  marginsMm: EdgeInsets.all(4),
+                                                  scale: 1.2,
+                                                  maxWidth: sizeWidth,
+                                                  maxHeight: sizeWidth * (297 / 210),
+                                                  child: Column(
+                                                    children: [
+                                                      HeaderMauSo01(),
+                                                      BodyMauSo01(
+                                                        assetRows:
+                                                            _listPages[index],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                NumberPageView(index: index),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      if (index == _listPages.length - 1) {
+                                        return Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 12.0,
+                                              ),
+                                              child: RepaintBoundary(
+                                                key: _pageKeys[index],
+                                                child: Stack(
+                                                  children: [
+                                                    A4Canvas(
+                                                      marginsMm: EdgeInsets.all(
+                                                        4,
+                                                      ),
+                                                      scale: 1.2,
+                                                      maxWidth: sizeWidth,
+                                                      maxHeight:
+                                                          sizeWidth * (297 / 210),
+                                                      // child: BodyBankiemKeCCDC(
+                                                      //   ccdcInventory:
+                                                      //       _listPages[index],
+                                                      //   startIndex:
+                                                      //       _pageStartIndex(
+                                                      //         index,
+                                                      //       ),
+                                                      // ),
+                                                      child: BodyMauSo01(
+                                                        assetRows:
+                                                            _listPages[index],
+                                                      ),
+                                                    ),
+                                                    NumberPageView(
+                                                      index: index,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                bottom: 12.0,
+                                              ),
+                                              child: RepaintBoundary(
+                                                key: _pageKeys[index + 1],
+                                                child: Stack(
+                                                  children: [
+                                                    A4Canvas(
+                                                      marginsMm: EdgeInsets.all(
+                                                        4,
+                                                      ),
+                                                      scale: 1.2,
+                                                      maxWidth: sizeWidth,
+                                                      maxHeight:
+                                                          sizeWidth * (297 / 210),
+                                                      child: FoooterMauSo01(),
+                                                    ),
+                                                    NumberPageView(
+                                                      index: index,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }
                                       return Padding(
                                         padding: const EdgeInsets.only(
                                           bottom: 12.0,
@@ -469,16 +587,10 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
                                                 scale: 1.2,
-                                                maxWidth: 800,
-                                                maxHeight: 800 * (297 / 210),
-                                                child: Column(
-                                                  children: [
-                                                    HeaderMauSo01(),
-                                                    BodyMauSo01(
-                                                      assetRows:
-                                                          _listPages[index],
-                                                    ),
-                                                  ],
+                                                maxWidth: sizeWidth,
+                                                maxHeight: sizeWidth * (297 / 210),
+                                                child: BodyMauSo01(
+                                                  assetRows: _listPages[index],
                                                 ),
                                               ),
                                               NumberPageView(index: index),
@@ -486,110 +598,25 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                           ),
                                         ),
                                       );
-                                    }
-                                    if (index == _listPages.length - 1) {
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 12.0,
-                                            ),
-                                            child: RepaintBoundary(
-                                              key: _pageKeys[index],
-                                              child: Stack(
-                                                children: [
-                                                  A4Canvas(
-                                                    marginsMm: EdgeInsets.all(
-                                                      4,
-                                                    ),
-                                                    scale: 1.2,
-                                                    maxWidth: 800,
-                                                    maxHeight:
-                                                        800 * (297 / 210),
-                                                    // child: BodyBankiemKeCCDC(
-                                                    //   ccdcInventory:
-                                                    //       _listPages[index],
-                                                    //   startIndex:
-                                                    //       _pageStartIndex(
-                                                    //         index,
-                                                    //       ),
-                                                    // ),
-                                                    child: BodyMauSo01(
-                                                      assetRows:
-                                                          _listPages[index],
-                                                    ),
-                                                  ),
-                                                  NumberPageView(index: index),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 12.0,
-                                            ),
-                                            child: RepaintBoundary(
-                                              key: _pageKeys[index + 1],
-                                              child: Stack(
-                                                children: [
-                                                  A4Canvas(
-                                                    marginsMm: EdgeInsets.all(
-                                                      4,
-                                                    ),
-                                                    scale: 1.2,
-                                                    maxWidth: 800,
-                                                    maxHeight:
-                                                        800 * (297 / 210),
-                                                    child: FoooterMauSo01(),
-                                                  ),
-                                                  NumberPageView(index: index),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    }
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 12.0,
-                                      ),
-                                      child: RepaintBoundary(
-                                        key: _pageKeys[index],
-                                        child: Stack(
-                                          children: [
-                                            A4Canvas(
-                                              marginsMm: EdgeInsets.all(4),
-                                              scale: 1.2,
-                                              maxWidth: 800,
-                                              maxHeight: 800 * (297 / 210),
-                                              child: BodyMauSo01(
-                                                assetRows: _listPages[index],
-                                              ),
-                                            ),
-                                            NumberPageView(index: index),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        if (_isLoading)
-                          Positioned.fill(
-                            child: Container(
-                              color: Colors.black54,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
+                                    }),
+                                ],
                               ),
                             ),
                           ),
-                      ],
+
+                          if (_isLoading)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.black54,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

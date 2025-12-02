@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -262,129 +264,135 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double sizeWidth = MediaQuery.of(context).size.width;
     return Stack(
       children: [
         Center(
           child: Padding(
-            padding: const EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: 16.0,
-              bottom: 16.0,
-            ),
+            padding: const EdgeInsets.all(24.0),
             child: SizedBox(
-              width: 960,
+              width: 1400,
               child: Column(
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        SGText(
-                          text: 'Biên bản kiểm kê CCDC',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Divider(),
-                        CmFormDate(
-                          label: 'Ngày kiểm kê',
-                          controller: controllerImportDate,
-                          isEditing: true,
-                          fieldName: 'importDate',
-                          onChanged: (date) {
-                            setState(() {});
-                          },
-                        ),
-                        CmFormDropdownObject<PhongBan>(
-                          label: 'Đơn vị',
-                          controller: controllerDonVi,
-                          isEditing: true,
-                          items: [
-                            ...listPhongBan.map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.tenPhongBan ?? ''),
-                              ),
-                            ),
-                          ],
-                          fieldName: 'tPDonVi',
-                          value: donVi,
-                          onChanged: (value) {
-                            setState(() {
-                              donVi = value;
-                            });
-                          },
-                        ),
-                        Divider(),
-                        SizedBox(height: 16),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                onloadViewPage();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'Lấy dữ liệu',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            Expanded(child: SizedBox.shrink()),
-                            GestureDetector(
-                              onTap: () {
-                                _exportToPdf();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.picture_as_pdf,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) async {
-                                  await ReportProvider().exportToPdfAndPrint(
-                                    _pageKeys,
-                                    context,
-                                    () {},
-                                  );
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.print,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          SGText(
+                            text: 'Biên bản kiểm kê CCDC',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Divider(),
+                          CmFormDate(
+                            label: 'Ngày kiểm kê',
+                            controller: controllerImportDate,
+                            isEditing: true,
+                            fieldName: 'importDate',
+                            onChanged: (date) {
+                              setState(() {});
+                            },
+                          ),
+                          CmFormDropdownObject<PhongBan>(
+                            label: 'Đơn vị',
+                            controller: controllerDonVi,
+                            isEditing: true,
+                            items: [
+                              ...listPhongBan.map(
+                                (e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.tenPhongBan ?? ''),
+                                ),
+                              ),
+                            ],
+                            fieldName: 'tPDonVi',
+                            value: donVi,
+                            onChanged: (value) {
+                              setState(() {
+                                donVi = value;
+                              });
+                            },
+                          ),
+                          Divider(),
+                          SizedBox(height: 16),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  onloadViewPage();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Lấy dữ liệu',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: SizedBox.shrink()),
+                              GestureDetector(
+                                onTap: () {
+                                  _exportToPdf();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.picture_as_pdf,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) async {
+                                    await ReportProvider().exportToPdfAndPrint(
+                                      _pageKeys,
+                                      context,
+                                      () {},
+                                    );
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.print,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -414,8 +422,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
                                           scale: 1.2,
-                                          maxWidth: 800,
-                                          maxHeight: 800 * (297 / 210),
+                                          maxWidth: sizeWidth,
+                                          maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeCcdcPage(
                                             ccdcInventory: _list,
                                             denNgay: formatToYyyyMmDd(
@@ -439,8 +447,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
                                           scale: 1.2,
-                                          maxWidth: 800,
-                                          maxHeight: 800 * (297 / 210),
+                                          maxWidth: sizeWidth,
+                                          maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeCcdcPage(
                                             ccdcInventory: _list,
                                             denNgay: formatToYyyyMmDd(
@@ -467,8 +475,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
                                                 scale: 1.2,
-                                                maxWidth: 800,
-                                                maxHeight: 800 * (297 / 210),
+                                                maxWidth: sizeWidth,
+                                                maxHeight: sizeWidth * (297 / 210),
                                                 child: Column(
                                                   children: [
                                                     HeaderBankiemKeCCDC(
@@ -513,9 +521,9 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                                       4,
                                                     ),
                                                     scale: 1.2,
-                                                    maxWidth: 800,
+                                                    maxWidth: sizeWidth,
                                                     maxHeight:
-                                                        800 * (297 / 210),
+                                                        sizeWidth * (297 / 210),
                                                     child: BodyBankiemKeCCDC(
                                                       ccdcInventory:
                                                           _listPages[index],
@@ -543,9 +551,9 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                                       4,
                                                     ),
                                                     scale: 1.2,
-                                                    maxWidth: 800,
+                                                    maxWidth: sizeWidth,
                                                     maxHeight:
-                                                        800 * (297 / 210),
+                                                        sizeWidth * (297 / 210),
                                                     child:
                                                         FooterBankiemKeCCDC(),
                                                   ),
@@ -568,8 +576,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                             A4Canvas(
                                               marginsMm: EdgeInsets.all(4),
                                               scale: 1.2,
-                                              maxWidth: 800,
-                                              maxHeight: 800 * (297 / 210),
+                                              maxWidth: sizeWidth,
+                                              maxHeight: sizeWidth * (297 / 210),
                                               child: BodyBankiemKeCCDC(
                                                 ccdcInventory:
                                                     _listPages[index],

@@ -44,7 +44,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
 
       final repository = TaiSanCoDinhRepository();
       final result = await repository.getListTaiSanCoDinh(widget.idDonVi);
-      print('result: ${result}');
 
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         setState(() {
@@ -69,7 +68,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
 
   Future<void> _exportToPDF() async {
     try {
-      // TODO: Implement PDF export functionality
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chức năng xuất PDF đang được phát triển'),

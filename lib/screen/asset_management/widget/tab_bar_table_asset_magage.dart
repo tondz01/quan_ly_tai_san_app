@@ -52,6 +52,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
     return DefaultTabController(
+      initialIndex: 1, // Default to tab 2 on load
       length: 3,
       child: Container(
       height: MediaQuery.of(context).size.height + 250,
