@@ -34,7 +34,8 @@ class UpdateSignerData {
       // final repo = SignatoryRepository();
 
       log('message additionalSigners idTaiLieu: $idTaiLieu');
-      final result = await AssetTransferRepository().updateSignatory(
+      log('message additionalSigners additionalSignersDetailed: ${jsonEncode(additionalSignersDetailed)}');
+      await AssetTransferRepository().updateSignatory(
         idTaiLieu,
         additionalSignersDetailed
             .map(

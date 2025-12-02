@@ -607,7 +607,7 @@ class ContractPage {
 
         SGText(
           text:
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.quyetDinhDieuDongSo ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.soQuyetDinh ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayTaoChungTu ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
@@ -732,42 +732,55 @@ class ContractPage {
           ],
         ),
         SizedBox(height: 20 * SettingPage.scale),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ...listSigneInfo!.map(
-              (e) => Column(
-                children: [
-                  SGText(
-                    text: e.title,
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
+        IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...listSigneInfo!.map(
+                (e) => Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 50 * SettingPage.scale,
+                        child: Container(
+                          alignment: Alignment.topCenter,
+                          child: SGText(
+                            text: e.donVi,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: SettingPage.textStyle.copyWith(
+                              fontSize: 12 * SettingPage.scale,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 90 * SettingPage.scale,
+                      ),
+                      SizedBox(
+                        height: 40 * SettingPage.scale,
+                        child: Container(
+                          alignment: Alignment.topCenter,
+                          child: SGText(
+                            text: e.hoTen.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: SettingPage.textStyle.copyWith(
+                              fontSize: 11 * SettingPage.scale,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SGText(
-                    text: "(${e.donVi})",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SGText(
-                    text: "(Ký, họ tên)",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 11 * SettingPage.scale,
-                    ),
-                  ),
-                  SGText(
-                    text: e.hoTen,
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 11 * SettingPage.scale,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -953,42 +966,71 @@ class ContractPage {
           ],
         ),
         SizedBox(height: 20 * SettingPage.scale),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ...listSigneInfo!.map(
-              (e) => Column(
-                children: [
-                  SGText(
-                    text: e.title,
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
+        IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...listSigneInfo!.map(
+                (e) => Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 30 * SettingPage.scale,
+                        child: Center(
+                          child: SGText(
+                            text: e.title,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            style: SettingPage.textStyle.copyWith(
+                              fontSize: 12 * SettingPage.scale,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 50 * SettingPage.scale,
+                        child: Center(
+                          child: SGText(
+                            text: "(${e.donVi})",
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: SettingPage.textStyle.copyWith(
+                              fontSize: 12 * SettingPage.scale,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SGText(
+                        text: "(Ký, họ tên)",
+                        textAlign: TextAlign.center,
+                        style: SettingPage.textStyle.copyWith(
+                          fontSize: 11 * SettingPage.scale,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40 * SettingPage.scale,
+                        child: Center(
+                          child: SGText(
+                            text: e.hoTen.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: SettingPage.textStyle.copyWith(
+                              fontSize: 11 * SettingPage.scale,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SGText(
-                    text: "(${e.donVi})",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SGText(
-                    text: "(Ký, họ tên)",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 11 * SettingPage.scale,
-                    ),
-                  ),
-                  SGText(
-                    text: e.hoTen,
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 11 * SettingPage.scale,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
