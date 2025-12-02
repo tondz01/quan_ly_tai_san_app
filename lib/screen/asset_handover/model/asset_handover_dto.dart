@@ -43,6 +43,10 @@ class AssetHandoverDto {
   final String? duongDanFile;
   final bool? byStep;
   final int? trangThaiPhieu;
+  final String? soQuyetDinh;
+  final String? ngayQuyetDinh;
+  final String? ngayChungTu;
+  final String? diaDiemQuyetDinh;
   List<SignatoryDto>? listSignatory;
   List<DetailAssetHandoverDto>? chiTietBanGiaoTaiSan;
 
@@ -87,6 +91,10 @@ class AssetHandoverDto {
     this.duongDanFile,
     this.listSignatory,
     this.byStep,
+    this.soQuyetDinh,
+    this.ngayQuyetDinh,
+    this.ngayChungTu,
+    this.diaDiemQuyetDinh,
     this.trangThaiPhieu,
     this.chiTietBanGiaoTaiSan,
   });
@@ -104,7 +112,7 @@ class AssetHandoverDto {
       tenDonViNhan: json['tenDonViNhan'],
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
-      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao'] ?? ''),
       ngayTaoChungTu: AppUtility.formatFromISOString(
         json['ngayTaoChungTu'] ?? '',
       ),
@@ -125,8 +133,8 @@ class AssetHandoverDto {
       tenGiamDoc: json['tenGiamDoc'],
       giamDocKy: json['giamDocKy'],
       note: json['note'],
-      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
-      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -140,6 +148,10 @@ class AssetHandoverDto {
               )
               : null,
       byStep: json['byStep'],
+      soQuyetDinh: json['soQuyetDinh'],
+      ngayQuyetDinh: AppUtility.formatFromISOString(json['ngayQuyetDinh'] ?? ''),
+      ngayChungTu: AppUtility.formatFromISOString(json['ngayChungTu'] ?? ''),
+      diaDiemQuyetDinh: json['diaDiemQuyetDinh'],
       trangThaiPhieu: json['trangThaiPhieu'],
       chiTietBanGiaoTaiSan:
           json['chiTietBanGiaoTaiSan'] != null
@@ -194,6 +206,10 @@ class AssetHandoverDto {
       'duongDanFile': duongDanFile,
       'nguoiKyList': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
+      'soQuyetDinh': soQuyetDinh,
+      'ngayQuyetDinh': AppUtility.formatFromISOString(ngayQuyetDinh ?? ''),
+      'ngayChungTu': AppUtility.formatFromISOString(ngayChungTu ?? ''),
+      'diaDiemQuyetDinh': diaDiemQuyetDinh,
       'trangThaiPhieu': trangThaiPhieu,
       'chiTietBanGiaoTaiSan':
           chiTietBanGiaoTaiSan?.map((x) => x.toJson()).toList(),

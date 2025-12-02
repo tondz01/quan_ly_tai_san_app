@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
@@ -436,10 +437,11 @@ class AssetHandoverRepository extends ApiBase {
             if (sigId != null && sigId.isNotEmpty) allIds.add(sigId);
           }
         }
-        item.copyWith(share: true);
+        AssetHandoverDto itemCopy = item.copyWith(share: true);
+        log('itemCopy: ${jsonEncode(itemCopy.toJson())}');
         final response = await put(
-          '${EndPointAPI.ASSET_HANDOVER}/${item.id}',
-          data: jsonEncode(item.toJson()),
+          '${EndPointAPI.ASSET_HANDOVER}/${itemCopy.id}',
+          data: jsonEncode(itemCopy.toJson()),
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           result['data'] = response.data;
@@ -621,10 +623,11 @@ class AssetHandoverRepository extends ApiBase {
 
     try {
       String userid = userInfo?.tenDangNhap ?? 'admin';
-      final response = await get(
-        // Đổi từ post thành get
-        '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
-      );
+      // Chỉ thêm tham số trangThai nếu không phải -1
+      final trangThaiParam = trangThai == -1 ? '' : '&trangThai=$trangThai';
+      final url = '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid$trangThaiParam';
+      
+      final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

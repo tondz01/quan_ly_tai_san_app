@@ -1,11 +1,12 @@
-import 'dart:convert';
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/components/convert_pdf.dart';
+import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
@@ -63,6 +64,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
+  late TextEditingController controllerDecisionDate = TextEditingController();
+  late TextEditingController controllerDecisionNumber = TextEditingController();
+  late TextEditingController controllerDecisionLocation =
+      TextEditingController();
   late TextEditingController controllerDocumentCreationDate =
       TextEditingController();
   // late TextEditingController controllerLeader = TextEditingController();
@@ -124,10 +129,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   final List<NhanVien?> _additionalSigners = [];
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
+  List<AdditionalSignerData> _initialSignersDetailed = [];
 
   DateTime? ngayBanGiao;
   DateTime? ngayTaoChungTu;
-
+  DateTime? ngayQuyetDinh;
   @override
   void initState() {
     setState(() {
@@ -245,14 +251,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     )
                     .toList()
                 : <DetailAssetHandoverDto>[]);
-        log(
-          'message [AssetHandoverDetail] listDetailAssetHandover: $listDetailAssetHandover',
-        );
       } else {
         listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
-        log(
-          'message [AssetHandoverDetail] onInit  listDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}',
-        );
       }
 
       isByStep = item?.byStep ?? false;
@@ -268,7 +268,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
       ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
       ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
-
+      ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
       isRepresentativeUnitConfirm =
           item?.donViDaiDienXacNhan == "0" ? false : true;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
@@ -287,6 +287,24 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       if (!widget.isFindNew) {
         _loadPdfNetwork(item?.tenFile ?? '');
       }
+      // Thêm phần này - Lưu snapshot signatories ban đầu để so sánh
+      _initialSignersDetailed = List<AdditionalSignerData>.from(
+        item?.listSignatory
+                ?.map(
+                  (e) => AdditionalSignerData(
+                    department: widget.provider.dataDepartment?.firstWhere(
+                      (element) => element.id == e.idPhongBan,
+                      orElse: () => PhongBan(),
+                    ),
+                    employee: widget.provider.dataStaff?.firstWhere(
+                      (element) => element.id == e.idNguoiKy,
+                      orElse: () => NhanVien(),
+                    ),
+                  ),
+                )
+                .toList() ??
+            [],
+      );
     } else {
       isDetail = false;
       isByStep = false;
@@ -332,6 +350,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 .toList()
             : <DropdownMenuItem<DieuDongTaiSanDto>>[];
     dieuDongTaiSan = null;
+    _initialSignersDetailed.clear();
 
     setState(() {
       _updateControllers();
@@ -381,6 +400,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     }
     if (controllerDocumentCreationDate.text.isEmpty) {
       newValidationErrors['documentCreationDate'] = true;
+    }
+    if (controllerDecisionNumber.text.isEmpty) {
+      newValidationErrors['decisionNumber'] = true;
+    }
+    if (controllerDecisionLocation.text.isEmpty) {
+      newValidationErrors['decisionLocation'] = true;
+    }
+    if (controllerDecisionDate.text.isEmpty) {
+      newValidationErrors['decisionDate'] = true;
     }
     // if (controllerLeader.text.isEmpty) {
     //   newValidationErrors['leader'] = true;
@@ -443,11 +471,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     }
   }
 
-  Future<void> _saveAssetHandover() async {
-    log(
-      'message [AssetHandoverDetail] _saveAssetHandover ${nguoiKyGiamDoc?.hoTen}',
+  bool _signatoriesChanged() {
+    if (item == null) return _additionalSignersDetailed.isNotEmpty;
+    final beforeJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(_initialSignersDetailed),
     );
+    final afterJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(_additionalSignersDetailed),
+    );
+    return beforeJson != afterJson;
+  }
 
+  Future<void> _saveAssetHandover() async {
     if (!mounted) return;
     final assetHandoverProvider = context.read<AssetHandoverProvider>();
     final dieuDongProvider = context.read<DieuDongTaiSanProvider>();
@@ -487,6 +522,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "isActive": true,
       "share": false,
       "byStep": isByStep,
+      "soQuyetDinh": controllerDecisionNumber.text,
+      "ngayQuyetDinh": AppUtility.formatDateString(
+        ngayQuyetDinh ?? DateTime.now(),
+      ),
+      "diaDiemQuyetDinh": controllerDecisionLocation.text,
     };
 
     if (listDetailAssetHandover.isEmpty) {
@@ -561,6 +601,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       }
 
       int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
+      // Thêm dòng này - Cập nhật người ký nếu có thay đổi
+      if (_signatoriesChanged()) {
+        await UpdateSignerData().syncSignatories(
+          item!.id!,
+          _additionalSignersDetailed,
+        );
+      }
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
         Map<String, dynamic>? result = await dieuDongProvider
@@ -691,22 +738,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             // Hiển thị indicator unsaved changes và nút Save/Cancel
             Row(
               children: [
-                // if (widget.provider.hasUnsavedChanges)
-                //   Container(
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 8,
-                //       vertical: 4,
-                //     ),
-                //     decoration: BoxDecoration(
-                //       color: Colors.orange,
-                //       borderRadius: BorderRadius.circular(4),
-                //     ),
-                //     child: const Text(
-                //       'Có thay đổi chưa lưu',
-                //       style: TextStyle(color: Colors.white, fontSize: 12),
-                //     ),
-                //   ),
-                // const SizedBox(width: 10),
                 Visibility(
                   visible: isEditing,
                   child: MaterialTextButton(
@@ -1032,6 +1063,41 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
           validationErrors: _validationErrors,
         ),
+        CommonFormInput(
+          label: 'Số quyết định',
+          controller: controllerDecisionNumber,
+          isEditing: isEditing,
+          textContent: item?.soQuyetDinh ?? '',
+          fieldName: 'decisionNumber',
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CommonFormInput(
+          label: 'Địa điểm quyết định',
+          controller: controllerDecisionLocation,
+          isEditing: isEditing,
+          textContent: item?.diaDiemQuyetDinh ?? '',
+          fieldName: 'decisionLocation',
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CmFormDate(
+          label: 'Ngày quyết định',
+          controller: controllerDecisionDate,
+          isEditing: isEditing,
+          value: ngayQuyetDinh,
+          onChanged: (dt) {
+            setState(() {
+              ngayQuyetDinh = dt;
+            });
+            if (dt != null) {
+              controllerDecisionDate.text = AppUtility.formatDateString(dt);
+            }
+          },
+          validationErrors: _validationErrors,
+          fieldName: 'decisionDate',
+          isRequired: true,
+        ),
         CmFormDate(
           label: 'Ngày bàn giao',
           controller: controllerTransferDate,
@@ -1207,7 +1273,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 ),
           ],
           onChanged: (value) {
-            nguoiKyGiamDoc = value;
+            setState(() {
+              nguoiKyGiamDoc = value;
+            });
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1251,8 +1319,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
       tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
-      ngayBanGiao: controllerTransferDate.text,
-      ngayTaoChungTu: controllerDocumentCreationDate.text,
+      ngayBanGiao:  AppUtility.formatDateString(ngayBanGiao ?? DateTime.now()),
+      ngayTaoChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
@@ -1272,6 +1340,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       nguoiTao: currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: true,
+      idGiamDoc: nguoiKyGiamDoc?.id ?? '',
+      tenGiamDoc: nguoiKyGiamDoc?.hoTen ?? '',
+      giamDocKy: isGiamDocConfirm,
+      soQuyetDinh: controllerDecisionNumber.text,
+      ngayQuyetDinh: AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now()),
+      diaDiemQuyetDinh: controllerDecisionLocation.text,
+      ngayChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
       listSignatory:
           _additionalSignersDetailed
               .map(
@@ -1336,8 +1411,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     List<DetailAssetHandoverDto> currentList,
     List<DetailAssetHandoverDto> newList,
   ) {
-    log('_performCRUDOperations: Starting comparison...');
-
     final itemsToAdd =
         newList
             .where(
@@ -1356,40 +1429,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             )
             .toList();
 
-    log('_performCRUDOperations: itemsToAdd count: ${itemsToAdd.length}');
-    log('_performCRUDOperations: itemsToDelete count: ${itemsToDelete.length}');
-
-    if (itemsToAdd.isNotEmpty) {
-      log('_performCRUDOperations: Items to add:');
-      for (final item in itemsToAdd) {
-        log('  - ${item.tenTaiSan} (id: ${item.id})');
-      }
-    }
-
-    if (itemsToDelete.isNotEmpty) {
-      log('_performCRUDOperations: Items to delete:');
-      for (final item in itemsToDelete) {
-        log('  - ${item.tenTaiSan} (id: ${item.id})');
-      }
-    }
-
     // Thực hiện thêm mới
     if (itemsToAdd.isNotEmpty) {
-      log('_performCRUDOperations: Calling createDetailHandoverAsset...');
       repository.createDetailHandoverAsset(itemsToAdd);
     }
 
     // Thực hiện xóa
     for (final item in itemsToDelete) {
       if (item.id != null) {
-        log(
-          '_performCRUDOperations: Calling deleteDetailHandoverCCDC for ${item.id}...',
-        );
         repository.deleteDetailHandoverCCDC(item.id!);
       }
     }
-
-    log('_performCRUDOperations: CRUD operations completed');
   }
 
   onInitListDetailAssetHandover(Map<String, dynamic> request) {
@@ -1419,9 +1469,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   )
                   .toList()
               : <DetailAssetHandoverDto>[]);
-      log(
-        'message [AssetHandoverDetail] onInitListDetailAssetHandover ${jsonEncode(listDetailAssetHandover)}',
-      );
     }
   }
 }
