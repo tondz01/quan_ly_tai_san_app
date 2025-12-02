@@ -21,7 +21,7 @@ class Config {
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.1.3_01/12/2025',
+    defaultValue: '${environment}_0.1.4_02/12/2025',
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
