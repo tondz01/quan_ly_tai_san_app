@@ -66,8 +66,9 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
     int index,
     String field,
     String originalValue,
-    double width,
-  ) {
+    double width, {
+    TextAlign textAlign = TextAlign.center,
+  }) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.top,
       child: Container(
@@ -81,6 +82,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           ),
           width: width,
           maxLines: null, // Cho phép xuống dòng
+          textAlign: textAlign,
           onChanged: (value) {
             _updateValue(index, field, value);
           },

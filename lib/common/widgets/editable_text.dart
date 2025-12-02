@@ -47,6 +47,22 @@ class _CustomEditableTextState extends State<CustomEditableText> {
     super.dispose();
   }
 
+  // Helper method to convert TextAlign to Alignment
+  Alignment _getAlignment(TextAlign? textAlign) {
+    switch (textAlign) {
+      case TextAlign.center:
+        return Alignment.center;
+      case TextAlign.right:
+      case TextAlign.end:
+        return Alignment.centerRight;
+      case TextAlign.left:
+      case TextAlign.start:
+      case null:
+      default:
+        return Alignment.centerLeft;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -67,7 +83,7 @@ class _CustomEditableTextState extends State<CustomEditableText> {
                       widget.style?.fontSize != null
                           ? widget.style!.fontSize! * 1.2
                           : 20,
-                  alignment: Alignment.centerLeft,
+                  alignment: _getAlignment(widget.textAlign),
                   child: TextField(
                     controller: _controller,
                     style: widget.style,
@@ -101,7 +117,7 @@ class _CustomEditableTextState extends State<CustomEditableText> {
                       widget.style?.fontSize != null
                           ? widget.style!.fontSize! * 1.2
                           : 20,
-                  alignment: Alignment.centerLeft,
+                  alignment: _getAlignment(widget.textAlign),
                   child: SGText(
                     text:
                         _currentValue.isEmpty
