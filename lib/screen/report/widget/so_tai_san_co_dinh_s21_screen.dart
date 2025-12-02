@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -325,37 +327,40 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                ElevatedButton.icon(
-                                  onPressed: onloadViewPage,
-                                  icon: const Icon(Icons.refresh, size: 20),
-                                  label: const Text('Lấy dữ liệu'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
+                                GestureDetector(
+                                  onTap: () {
+                                    onloadViewPage();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Lấy dữ liệu',
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                ElevatedButton.icon(
-                                  onPressed: _exportToPdf,
-                                  icon: const Icon(
-                                    Icons.picture_as_pdf,
-                                    size: 20,
-                                  ),
-                                  label: const Text('Xuất PDF'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
+                                Expanded(child: SizedBox.shrink()),
+                                GestureDetector(
+                                  onTap: () {
+                                    _exportToPdf();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.picture_as_pdf,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
                                     if (_isExporting) return;
