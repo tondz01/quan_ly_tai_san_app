@@ -265,7 +265,7 @@ class AssetHandoverProvider with ChangeNotifier {
       return;
     }
     _isOnInitCalled = true;
-    
+
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
@@ -294,13 +294,14 @@ class AssetHandoverProvider with ChangeNotifier {
     _dataDepartment = AccountHelper.instance.getDepartment();
     _dataStaff = AccountHelper.instance.getNhanVien();
     if (_dataStaff == null) {
-       AuthRepository().loadUserEmployee('ct001');
+      AuthRepository().loadUserEmployee('ct001');
       _dataStaff = AccountHelper.instance.getNhanVien();
     }
     if (_dataDepartment == null) {
       AuthRepository().loadUserDepartments('ct001');
       _dataDepartment = AccountHelper.instance.getDepartment();
     }
+    log('message [AssetHandoverProvider] dataStaff: ${jsonEncode(_dataStaff)}');
   }
 
   // onGetDataAsset() async {
@@ -335,7 +336,9 @@ class AssetHandoverProvider with ChangeNotifier {
 
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
-    log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] jsonMsg: $jsonMsg');
+    log(
+      'message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] jsonMsg: $jsonMsg',
+    );
     if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
@@ -344,7 +347,9 @@ class AssetHandoverProvider with ChangeNotifier {
         onReloadDataPage(context);
       }
     } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
-      log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] update received: $jsonMsg');
+      log(
+        'message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] update received: $jsonMsg',
+      );
       onReloadDataPage(context);
     } else if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
       onLoadDataAssetTransfer();
@@ -521,7 +526,9 @@ class AssetHandoverProvider with ChangeNotifier {
               ),
             )
             .toList();
-    log('message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}');
+    log(
+      'message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}',
+    );
     notifyListeners();
   }
 

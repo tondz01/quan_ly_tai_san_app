@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,6 +36,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
@@ -210,6 +212,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
+    log('message listNhanVien: ${jsonEncode(listNhanVien)}');
     listAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
@@ -276,14 +279,20 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           item?.listSignatory
               ?.map(
                 (e) => AdditionalSignerData(
+                  department: widget.provider.dataDepartment?.firstWhere(
+                    (element) => element.id == e.idPhongBan,
+                    orElse: () => PhongBan(),
+                  ),
                   employee: widget.provider.dataStaff?.firstWhere(
                     (element) => element.id == e.idNguoiKy,
                     orElse: () => NhanVien(),
                   ),
+                  signed: e.trangThai == 1,
                 ),
               )
               .toList() ??
           [];
+      log('message item?.listSignatory: ${jsonEncode(item?.listSignatory)}');
       if (!widget.isFindNew) {
         _loadPdfNetwork(item?.tenFile ?? '');
       }
@@ -315,6 +324,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       _selectedFileName = null;
       _selectedFilePath = null;
     }
+   
     itemsNhanVien =
         listNhanVien.isNotEmpty
             ? listNhanVien
@@ -326,7 +336,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 )
                 .toList()
             : <DropdownMenuItem<NhanVien>>[];
-
+    log('message itemsNhanVien: ${jsonEncode(listNhanVien)}');
     itemsPhongBan =
         listPhongBan.isNotEmpty
             ? listPhongBan
@@ -338,6 +348,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 )
                 .toList()
             : <DropdownMenuItem<PhongBan>>[];
+    log('message itemsPhongBan: ${jsonEncode(listPhongBan)}');
     itemsAssetTransfer =
         listAssetTransfer.isNotEmpty
             ? listAssetTransfer
@@ -918,6 +929,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                 .toList();
                         widget.provider.dataDetailAssetHandover =
                             listDetailAssetHandover;
+                        log(
+                          'listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
+                        );
                         getAssetHandoverPreview();
                       });
                     },
@@ -1319,8 +1333,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
       tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
-      ngayBanGiao:  AppUtility.formatDateString(ngayBanGiao ?? DateTime.now()),
-      ngayTaoChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
+      ngayBanGiao: AppUtility.formatDateString(ngayBanGiao ?? DateTime.now()),
+      ngayTaoChungTu: AppUtility.formatDateString(
+        ngayTaoChungTu ?? DateTime.now(),
+      ),
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
@@ -1344,9 +1360,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenGiamDoc: nguoiKyGiamDoc?.hoTen ?? '',
       giamDocKy: isGiamDocConfirm,
       soQuyetDinh: controllerDecisionNumber.text,
-      ngayQuyetDinh: AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now()),
+      ngayQuyetDinh: AppUtility.formatDateString(
+        ngayQuyetDinh ?? DateTime.now(),
+      ),
       diaDiemQuyetDinh: controllerDecisionLocation.text,
-      ngayChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
+      ngayChungTu: AppUtility.formatDateString(
+        ngayTaoChungTu ?? DateTime.now(),
+      ),
       listSignatory:
           _additionalSignersDetailed
               .map(

@@ -25,14 +25,28 @@ class TableAssetMovementDetail extends StatefulWidget {
 }
 
 class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
-  List<DropdownMenuItem<ChiTietDieuDongTaiSan>> items = [];
+  List<DropdownMenuItem<dynamic>> items = [];
+  List<DropdownMenuItem<dynamic>> hienTrangItems = [];
   List<ChiTietDieuDongTaiSan> listDetailAssetMobilization = [];
   bool isExpanded = true;
 
   @override
   void initState() {
     super.initState();
+    _initHienTrangItems();
     _syncDetailAssets();
+  }
+
+  /// Khởi tạo dropdown items cho HienTrang
+  void _initHienTrangItems() {
+    hienTrangItems = AppUtility.listHienTrang
+        .map(
+          (hienTrang) => DropdownMenuItem<dynamic>(
+            value: hienTrang,
+            child: Text(hienTrang.name),
+          ),
+        )
+        .toList();
   }
 
   @override
@@ -45,29 +59,30 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
     }
   }
 
+  /// Đồng bộ dữ liệu dropdown và danh sách hiển thị trong bảng
   void _syncDetailAssets() {
-    List<ChiTietDieuDongTaiSan> list = [];
-    items = [
-      ...widget.listDetailAssetMobilization
-              ?.map(
-                (e) => DropdownMenuItem<ChiTietDieuDongTaiSan>(
-                  value: e,
-                  child: Text(e.tenTaiSan),
-                ),
-              )
-              .toList() ??
-          [],
-    ];
-    for (final d in widget.listDetailAssetHandover ?? []) {
-      ChiTietDieuDongTaiSan chiTietDieuDongTaiSan =
-          widget.listDetailAssetMobilization?.firstWhere(
-            (e) => e.idTaiSan == d.idTaiSan,
-            orElse: () => ChiTietDieuDongTaiSan.empty(),
-          ) ??
-          ChiTietDieuDongTaiSan.empty();
-      list.add(chiTietDieuDongTaiSan);
-    }
+    // Tạo dropdown items từ danh sách tài sản điều động
+    items = widget.listDetailAssetMobilization
+            ?.map(
+              (e) => DropdownMenuItem<dynamic>(
+                value: e,
+                child: Text(e.tenTaiSan),
+              ),
+            )
+            .toList() ??
+        [];
+
+    // Nếu là chế độ xem chi tiết, map từ listDetailAssetHandover
     if (widget.isDetail) {
+      final list = <ChiTietDieuDongTaiSan>[];
+      for (final d in widget.listDetailAssetHandover ?? []) {
+        final chiTiet = widget.listDetailAssetMobilization?.firstWhere(
+              (e) => e.idTaiSan == d.idTaiSan,
+              orElse: () => ChiTietDieuDongTaiSan.empty(),
+            ) ??
+            ChiTietDieuDongTaiSan.empty();
+        list.add(chiTiet);
+      }
       listDetailAssetMobilization = list;
     } else {
       listDetailAssetMobilization = widget.listDetailAssetMobilization ?? [];
@@ -143,17 +158,23 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   title: 'Tên tài sản',
                   titleAlignment: TextAlign.center,
                   width: 120,
-                  getValue: (item) => item,
+                  // Hiển thị tên tài sản trong cell
+                  getValue: (item) => item.tenTaiSan,
+                  // Khi chọn item từ dropdown, copy dữ liệu vào row hiện tại
                   setValue: (item, value) {
-                    item.idDieuDongTaiSan = value.tenTaiSan ?? '';
-                    item.soQuyetDinh = value.soQuyetDinh ?? '';
-                    item.tenPhieu = value.tenPhieu ?? '';
-                    item.idTaiSan = value.idTaiSan ?? '';
-                    item.tenTaiSan = value.tenTaiSan ?? '';
-                    item.donViTinh = value.donViTinh;
-                    item.hienTrang = value.hienTrang ?? 0;
-                    item.soLuong = value.soLuong ?? 0;
-                    item.ghiChu = value.ghiChu ?? '';
+                    // Ép kiểu value về ChiTietDieuDongTaiSan để type-safe
+                    if (value is! ChiTietDieuDongTaiSan) return;
+                    
+                    final selectedAsset = value;
+                    item.idDieuDongTaiSan = selectedAsset.tenTaiSan;
+                    item.soQuyetDinh = selectedAsset.soQuyetDinh;
+                    item.tenPhieu = selectedAsset.tenPhieu;
+                    item.idTaiSan = selectedAsset.idTaiSan;
+                    item.tenTaiSan = selectedAsset.tenTaiSan;
+                    item.donViTinh = selectedAsset.donViTinh;
+                    item.hienTrang = selectedAsset.hienTrang;
+                    item.soLuong = selectedAsset.soLuong;
+                    item.ghiChu = selectedAsset.ghiChu;
                   },
                   sortValueGetter: (item) => item.tenTaiSan,
                   editor: EditableCellEditor.dropdown,
@@ -183,12 +204,41 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   field: 'condition',
                   title: 'Tình trạng kỹ thuật',
                   titleAlignment: TextAlign.center,
-                  isEditable: false,
+                  isEditable: true,
                   width: 50,
-                  getValue: (item) => AppUtility.getHienTrang(item.hienTrang),
-                  setValue: (item, value) {},
-                  sortValueGetter:
-                      (item) => AppUtility.getHienTrang(item.hienTrang),
+                  // Hiển thị tên HienTrang để controller text được set đúng
+                  getValue: (item) {
+                    final hienTrang = AppUtility.listHienTrang.firstWhere(
+                      (ht) => ht.id == item.hienTrang,
+                      orElse: () => AppUtility.listHienTrang.first,
+                    );
+                    return hienTrang.name;
+                  },
+                  // Khi chọn HienTrang từ dropdown, cập nhật item.hienTrang với id của HienTrang được chọn
+                  setValue: (item, value) {
+                    if (value is! HienTrang) return;
+                    item.hienTrang = value.id;
+                  },
+                  // Sử dụng getValueWithIndex để trả về HienTrang object cho dropdown so sánh
+                  // Đảm bảo trả về cùng instance từ list để dropdown có thể so sánh đúng
+                  getValueWithIndex: (item, rowIndex) {
+                    try {
+                      final index = AppUtility.listHienTrang
+                          .indexWhere((ht) => ht.id == item.hienTrang);
+                      if (index >= 0) {
+                        return AppUtility.listHienTrang[index];
+                      }
+                    } catch (e) {
+                      // Fallback nếu có lỗi
+                    }
+                    return AppUtility.listHienTrang.isNotEmpty
+                        ? AppUtility.listHienTrang.first
+                        : null;
+                  },
+                  sortValueGetter: (item) =>
+                      AppUtility.getHienTrang(item.hienTrang).name,
+                  editor: EditableCellEditor.dropdown,
+                  dropdownItems: hienTrangItems,
                 ),
                 SgEditableColumn<ChiTietDieuDongTaiSan>(
                   field: 'node',

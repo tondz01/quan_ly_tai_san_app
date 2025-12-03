@@ -72,7 +72,7 @@ class ContractPage {
 
   static Widget tableCell(String text, double scale, TextStyle textStyle) {
     return TableCell(
-      verticalAlignment: TableCellVerticalAlignment.top,
+      verticalAlignment: TableCellVerticalAlignment.middle,
       child: Padding(
         padding: EdgeInsets.all(2.0 * scale),
         child: Text(
@@ -661,11 +661,6 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Ký, mã hiệu quy cách",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
                   "Đơn vị tính",
                   SettingPage.scale,
                   SettingPage.textStyle,
@@ -703,22 +698,27 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].idTaiSan ?? '',
+                    AccountHelper.instance
+                            .getUnitById(
+                              listDetailAssetMobilization[i].donViTinh ?? '',
+                            )
+                            ?.tenDonVi ??
+                        '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].donViTinh ?? '',
+                    listDetailAssetMobilization[i].soLuong == 0
+                        ? '1'
+                        : listDetailAssetMobilization[i].soLuong?.toString() ??
+                            '1',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].soLuong.toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    listDetailAssetMobilization[i].hienTrang?.toString() ?? '',
+                    AppUtility.getHienTrang(
+                      listDetailAssetMobilization[i].hienTrang ?? 0,
+                    ).name,
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -758,9 +758,7 @@ class ContractPage {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        height: 90 * SettingPage.scale,
-                      ),
+                      SizedBox(height: 90 * SettingPage.scale),
                       SizedBox(
                         height: 40 * SettingPage.scale,
                         child: Container(
@@ -978,24 +976,11 @@ class ContractPage {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SizedBox(
-                        height: 30 * SettingPage.scale,
-                        child: Center(
-                          child: SGText(
-                            text: e.title,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            style: SettingPage.textStyle.copyWith(
-                              fontSize: 12 * SettingPage.scale,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
                         height: 50 * SettingPage.scale,
-                        child: Center(
+                        child: Container(
+                          alignment: Alignment.topCenter,
                           child: SGText(
-                            text: "(${e.donVi})",
+                            text: e.donVi,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(
@@ -1005,16 +990,11 @@ class ContractPage {
                           ),
                         ),
                       ),
-                      SGText(
-                        text: "(Ký, họ tên)",
-                        textAlign: TextAlign.center,
-                        style: SettingPage.textStyle.copyWith(
-                          fontSize: 11 * SettingPage.scale,
-                        ),
-                      ),
+                      SizedBox(height: 90 * SettingPage.scale),
                       SizedBox(
                         height: 40 * SettingPage.scale,
-                        child: Center(
+                        child: Container(
+                          alignment: Alignment.topCenter,
                           child: SGText(
                             text: e.hoTen.toUpperCase(),
                             textAlign: TextAlign.center,

@@ -188,9 +188,12 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
+      log('message request id: ${jsonEncode(listSignatory)}');
       for (var signatory in listSignatory) {
+        log('message request id: ${request['id']}');
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request['id'].toString(),
+          trangThai: 0,
         );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,

@@ -149,7 +149,9 @@ class AssetHandoverDto {
               : null,
       byStep: json['byStep'],
       soQuyetDinh: json['soQuyetDinh'],
-      ngayQuyetDinh: AppUtility.formatFromISOString(json['ngayQuyetDinh'] ?? ''),
+      ngayQuyetDinh: AppUtility.formatFromISOString(
+        json['ngayQuyetDinh'] ?? '',
+      ),
       ngayChungTu: AppUtility.formatFromISOString(json['ngayChungTu'] ?? ''),
       diaDiemQuyetDinh: json['diaDiemQuyetDinh'],
       trangThaiPhieu: json['trangThaiPhieu'],

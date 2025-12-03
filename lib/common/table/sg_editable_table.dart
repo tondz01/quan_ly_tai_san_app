@@ -204,10 +204,16 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   void _setCellValue(int rowIndex, String field, dynamic value) {
     final column = widget.columns.firstWhere((c) => c.field == field);
     column.setValue(_tableData[rowIndex], value);
-    // Sync controller if exists
+    // Sync controller if exists - get the display value from getValue/getValueWithIndex
     final controller = _controllers[rowIndex]?[field];
-    if (controller != null && controller.text != (value?.toString() ?? '')) {
-      controller.text = value?.toString() ?? '';
+    if (controller != null) {
+      final item = _tableData[rowIndex];
+      final displayValue = column.getValueWithIndex?.call(item, rowIndex) ??
+          column.getValue(item);
+      final textValue = displayValue?.toString() ?? '';
+      if (controller.text != textValue) {
+        controller.text = textValue;
+      }
     }
     setState(() {});
     _notifyDataChanged();
@@ -488,24 +494,27 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      final currentValue =
+      // Lấy object cho dropdown so sánh (getValueWithIndex ưu tiên)
+      final dropdownValue =
           column.getValueWithIndex?.call(item, rowIndex) ??
           column.getValue(item);
-      controller.text = currentValue.toString();
+      // Lấy text để hiển thị trong controller (luôn dùng getValue để lấy String)
+      final displayText = column.getValue(item)?.toString() ?? '';
+      controller.text = displayText;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        child: SGDropdownInputButton<T>(
+        child: SGDropdownInputButton<dynamic>(
           height: 40,
           controller: controller,
-          value: currentValue,
-          defaultValue: currentValue,
-          items: column.dropdownItems ?? [],
+          value: dropdownValue,
+          defaultValue: dropdownValue,
+          items: column.dropdownItems ?? const [],
           // showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
           isShowSuffixIcon: true,
-          hintText: '$currentValue',
+          hintText: displayText,
           textAlign: TextAlign.left,
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
@@ -516,19 +525,18 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             right: 2,
           ),
           onChanged: (value) {
-            if (value != null) {
-              _updateCellValue(rowIndex, column.field, value);
-              // cascade updates
-              final updater = column.onValueChanged;
-              if (updater != null) {
-                updater(item, rowIndex, value, (
-                  String targetField,
-                  dynamic targetValue,
-                ) {
-                  if (targetField == column.field) return; // avoid recursion
-                  _setCellValue(rowIndex, targetField, targetValue);
-                });
-              }
+            if (value == null) return;
+            _updateCellValue(rowIndex, column.field, value);
+            // cascade updates
+            final updater = column.onValueChanged;
+            if (updater != null) {
+              updater(item, rowIndex, value, (
+                String targetField,
+                dynamic targetValue,
+              ) {
+                if (targetField == column.field) return; // avoid recursion
+                _setCellValue(rowIndex, targetField, targetValue);
+              });
             }
           },
         ),
@@ -698,7 +706,8 @@ class SgEditableColumn<T> {
   final String errorText;
   // NEW: editor type and dropdown config
   final EditableCellEditor editor;
-  final List<DropdownMenuItem<T>>? dropdownItems;
+  // Cho phép kiểu giá trị dropdown khác với kiểu T (row) thông qua dynamic
+  final List<DropdownMenuItem<dynamic>>? dropdownItems;
   // NEW: cascade update callback when value changes
   final void Function(
     T item,

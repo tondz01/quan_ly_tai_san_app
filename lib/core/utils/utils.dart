@@ -31,6 +31,15 @@ class HienTrang {
   String toString() {
     return name;
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is HienTrang && other.id == id && other.name == name;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode;
 }
 
 class RoleDto {
