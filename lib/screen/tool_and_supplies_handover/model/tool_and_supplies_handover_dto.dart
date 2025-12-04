@@ -37,6 +37,9 @@ class ToolAndSuppliesHandoverDto {
   final String? duongDanFile;
   final String? tenFile;
   final bool? active;
+  final String? soQuyetDinh;
+  final String? diaDiemQuyetDinh;
+  final String? ngayQuyetDinh;
   List<SignatoryDto>? listSignatory;
   List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover;
   bool? byStep;
@@ -78,6 +81,9 @@ class ToolAndSuppliesHandoverDto {
     this.active,
     this.listSignatory,
     this.byStep,
+    this.soQuyetDinh,
+    this.diaDiemQuyetDinh,
+    this.ngayQuyetDinh,
     this.listDetailSubppliesHandover,
     this.trangThaiPhieu,
   });
@@ -92,7 +98,7 @@ class ToolAndSuppliesHandoverDto {
       tenDonViGiao: json['tenDonViGiao'],
       idDonViNhan: json['idDonViNhan'],
       tenDonViNhan: json['tenDonViNhan'],
-      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao'] ?? ''),
       ngayTaoChungTu: AppUtility.formatFromISOString(
         json['ngayTaoChungTu'] ?? '',
       ),
@@ -112,8 +118,8 @@ class ToolAndSuppliesHandoverDto {
       giamDocKy: json['giamDocKy'],
       trangThai: json['trangThai'],
       note: json['note'],
-      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
-      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       share: json['share'],
@@ -127,6 +133,9 @@ class ToolAndSuppliesHandoverDto {
               )
               : null,
       byStep: json['byStep'],
+      soQuyetDinh: json['soQuyetDinh'],
+      diaDiemQuyetDinh: json['diaDiemQuyetDinh'],
+      ngayQuyetDinh: AppUtility.formatFromISOString(json['ngayQuyetDinh'] ?? ''),
       listDetailSubppliesHandover:
           json['chiTietBanGiaoCCDCVatTu'] != null
               ? List<DetailSubppliesHandoverDto>.from(
@@ -177,6 +186,9 @@ class ToolAndSuppliesHandoverDto {
       'active': active,
       'listSignatory': listSignatory,
       'byStep': byStep,
+      'soQuyetDinh': soQuyetDinh ?? '',
+      'diaDiemQuyetDinh': diaDiemQuyetDinh ?? '',
+      'ngayQuyetDinh': ngayQuyetDinh != null ? AppUtility.formatFromISOString(ngayQuyetDinh!) : null,
       'listDetailSubppliesHandover': listDetailSubppliesHandover,
       'trangThaiPhieu': trangThaiPhieu,
     };
@@ -219,6 +231,9 @@ class ToolAndSuppliesHandoverDto {
     bool? active,
     List<SignatoryDto>? listSignatory,
     bool? byStep,
+    String? soQuyetDinh,
+    String? diaDiemQuyetDinh,
+    String? ngayQuyetDinh,
     List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover,
     int? trangThaiPhieu,
   }) {
@@ -268,6 +283,11 @@ class ToolAndSuppliesHandoverDto {
       active: active ?? this.active,
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
+      soQuyetDinh: soQuyetDinh ?? this.soQuyetDinh,
+      diaDiemQuyetDinh: diaDiemQuyetDinh ?? this.diaDiemQuyetDinh,
+      ngayQuyetDinh: AppUtility.formatFromISOString(
+        ngayQuyetDinh ?? this.ngayQuyetDinh ?? '',
+      ),
       listDetailSubppliesHandover:
           listDetailSubppliesHandover ?? this.listDetailSubppliesHandover,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -75,6 +77,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    // Kiểm tra userInfo trước khi khởi tạo để tránh crash
+    if (userInfo == null) {
+      log('AssetHandoverList: userInfo is null, cannot initialize table');
+      return;
+    }
     _initializeTableConfig();
   }
 
@@ -165,6 +172,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     List<AssetHandoverDto> list2,
   ) {
     if (list1.length != list2.length) return false;
+    if (userInfo == null) return false; // Bảo vệ null safety
     for (int i = 0; i < list1.length; i++) {
       int statusSign1 = TableAssetHandoverConfig.getPermissionSigning(
         list1[i],
@@ -361,9 +369,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   }
 
   bool isShowSignButton(AssetHandoverDto item) {
-    return TableAssetHandoverConfig.getPermissionSigning(item, userInfo!) ==
-            0 ||
-        TableAssetHandoverConfig.getPermissionSigning(item, userInfo!) == 5;
+    if (userInfo == null) return false;
+    final permission = TableAssetHandoverConfig.getPermissionSigning(item, userInfo!);
+    return permission == 0 || permission == 5;
   }
 
   @override
@@ -674,13 +682,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   }
 
   onDelete(AssetHandoverDto item) {
+    // Kiểm tra null safety trước khi xóa
+    if (item.id == null || item.id!.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không thể xóa: ID không hợp lệ',
+        isError: true,
+      );
+      return;
+    }
+    
     userInfo?.tenDangNhap == 'admin'
         ? showConfirmDialog(
           context,
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
-          message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
-          highlight: item.banGiaoTaiSan!,
+          message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan ?? "phiếu này"}',
+          highlight: item.banGiaoTaiSan ?? '',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
@@ -696,8 +714,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           context,
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
-          message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
-          highlight: item.banGiaoTaiSan!,
+          message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan ?? "phiếu này"}',
+          highlight: item.banGiaoTaiSan ?? '',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {

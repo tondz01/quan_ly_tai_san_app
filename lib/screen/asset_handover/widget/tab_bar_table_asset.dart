@@ -63,9 +63,10 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Container(
-        height: MediaQuery.of(context).size.height + 250,
-        decoration: BoxDecoration(
+        child: Container(
+          // Sửa: Loại bỏ +250 để tránh layout overflow, để Expanded tự điều chỉnh
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300, width: 1),

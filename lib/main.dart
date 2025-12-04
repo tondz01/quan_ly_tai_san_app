@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_concurrency/bloc_concurrency.dart' as bloc_concurrency;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -68,8 +70,29 @@ void main() async {
   Bloc.transformer = bloc_concurrency.sequential();
   Bloc.observer = const AppBlocObserver();
 
-  // Inicializar GetX
-  Get.put(MyLocale());
+  // Thêm global error handler để bắt tất cả lỗi và hiển thị trong console
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    if (kDebugMode) {
+      debugPrint('=== Flutter Error ===');
+      debugPrint('Exception: ${details.exception}');
+      debugPrint('Stack: ${details.stack}');
+    }
+  };
 
-  runApp(const ProviderScope(child: App()));
+  // Bắt tất cả unhandled exceptions trong zone
+  runZonedGuarded(
+    () {
+      // Inicializar GetX
+      Get.put(MyLocale());
+      runApp(const ProviderScope(child: App()));
+    },
+    (Object error, StackTrace stack) {
+      if (kDebugMode) {
+        debugPrint('=== Unhandled Exception ===');
+        debugPrint('Error: $error');
+        debugPrint('Stack: $stack');
+      }
+    },
+  );
 }

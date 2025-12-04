@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
@@ -248,69 +249,73 @@ class _AssetHandoverViewState
               provider.controllerDropdownPage ??= TextEditingController(
                 text: provider.rowsPerPage.toString(),
               );
-              return Scaffold(
-                appBar: AppBar(
-                  title: HeaderComponent(
-                    controller: _searchController,
-                    onSearchChanged: (value) {
-                      provider.searchTerm = value;
-                    },
-                    isShowSearch: false,
-                    onTap: provider.onTapBackHeader,
-                    onNew: () {
-                      provider.onChangeDetail(context, null);
-                      provider.onTapNewHeader();
-                    },
-                    mainScreen: 'Biên bản bàn giao tài sản',
-                    subScreen: provider.subScreen,
-                    isShowInput: false,
+              return LoadingOverlay(
+                isLoading: provider.isLoading,
+                message: provider.loadingMessage,
+                child: Scaffold(
+                  appBar: AppBar(
+                    title: HeaderComponent(
+                      controller: _searchController,
+                      onSearchChanged: (value) {
+                        provider.searchTerm = value;
+                      },
+                      isShowSearch: false,
+                      onTap: provider.onTapBackHeader,
+                      onNew: () {
+                        provider.onChangeDetail(context, null);
+                        provider.onTapNewHeader();
+                      },
+                      mainScreen: 'Biên bản bàn giao tài sản',
+                      subScreen: provider.subScreen,
+                      isShowInput: false,
+                    ),
                   ),
-                ),
-                body: Column(
-                  children: [
-                    Flexible(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          return true; // Xử lý scroll event bình thường
-                        },
-                        child: SingleChildScrollView(
-                          physics:
-                              _scrollController.isParentScrolling
-                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                          scrollDirection: Axis.vertical,
-                          child: CommonPageView(
-                            title: "Chi tiết biên bản bàn giao tài sản",
-                            childInput: AssetHandoverDetail(
-                              provider: provider,
-                              isFindNew: provider.isFindNew,
+                  body: Column(
+                    children: [
+                      Flexible(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            return true; // Xử lý scroll event bình thường
+                          },
+                          child: SingleChildScrollView(
+                            physics:
+                                _scrollController.isParentScrolling
+                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                            scrollDirection: Axis.vertical,
+                            child: CommonPageView(
+                              title: "Chi tiết biên bản bàn giao tài sản",
+                              childInput: AssetHandoverDetail(
+                                provider: provider,
+                                isFindNew: provider.isFindNew,
+                              ),
+                              childTableView: TabBarTableAsset(
+                                provider: provider,
+                              ),
+                              isShowInput: provider.isShowInput,
+                              isShowCollapse: provider.isShowCollapse,
+                              onExpandedChanged: (isExpanded) {
+                                provider.isShowCollapse = isExpanded;
+                              },
                             ),
-                            childTableView: TabBarTableAsset(
-                              provider: provider,
-                            ),
-                            isShowInput: provider.isShowInput,
-                            isShowCollapse: provider.isShowCollapse,
-                            onExpandedChanged: (isExpanded) {
-                              provider.isShowCollapse = isExpanded;
-                            },
                           ),
                         ),
                       ),
-                    ),
-                    // Visibility(
-                    //   visible: (provider.data?.length ?? 0) >= 5,
-                    //   child: SGPaginationControls(
-                    //     totalPages: provider.totalPages,
-                    //     currentPage: provider.currentPage,
-                    //     rowsPerPage: provider.rowsPerPage,
-                    //     controllerDropdownPage:
-                    //         provider.controllerDropdownPage!,
-                    //     items: provider.items,
-                    //     onPageChanged: provider.onPageChanged,
-                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                    //   ),
-                    // ),
-                  ],
+                      // Visibility(
+                      //   visible: (provider.data?.length ?? 0) >= 5,
+                      //   child: SGPaginationControls(
+                      //     totalPages: provider.totalPages,
+                      //     currentPage: provider.currentPage,
+                      //     rowsPerPage: provider.rowsPerPage,
+                      //     controllerDropdownPage:
+                      //         provider.controllerDropdownPage!,
+                      //     items: provider.items,
+                      //     onPageChanged: provider.onPageChanged,
+                      //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                      //   ),
+                      // ),
+                    ],
+                  ),
                 ),
               );
             },

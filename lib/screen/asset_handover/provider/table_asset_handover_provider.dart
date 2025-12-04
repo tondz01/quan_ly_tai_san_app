@@ -76,17 +76,18 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
     );
 
     // Bật chế độ phân trang API và load trang đầu tiên
+    // Sửa: page bắt đầu từ 1 (1-based) thay vì 0 để nhất quán với backend
     enableApiPagination(true);
     _isInitialized = true;
-    loadDataFromApi(0, _currentTrangThai);
+    loadDataFromApi(1, _currentTrangThai);
   }
 
   set searchTerm(String value) {
     _currentSearchTerm = value;
 
     if (state.paginationState.useApiPagination) {
-      // API mode: gọi lại API từ trang 0
-      loadDataFromApi(0, _currentTrangThai);
+      // API mode: gọi lại API từ trang 1
+      loadDataFromApi(1, _currentTrangThai);
     } else {
       // Local mode
       search(value);
@@ -100,15 +101,8 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
   ]) async {
     // Tránh gọi API đồng thời nhiều lần
     if (_isLoading) {
-      log(
-        'loadDataFromApi AssetHandover: Already loading, skipping duplicate call',
-      );
       return;
     }
-
-    log(
-      'loadDataFromApi AssetHandover: page=$page -- trangThai=$trangThai -- isRefresh=$isRefresh',
-    );
     _currentTrangThai = trangThai;
     _isLoading = true;
 
@@ -120,8 +114,10 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
     }
 
     try {
+      // Sửa: page đã là 1-based từ initialize, không cần trừ 1 nữa
+      // Nếu backend yêu cầu 0-based, thì đổi lại thành page - 1
       final response = await repository.getDataWithPagination(
-        page,
+        page - 1, // Backend dùng 0-based index
         state.paginationState.itemsPerPage,
         _currentSearchTerm,
         _currentTrangThai,
@@ -136,9 +132,11 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       setApiData(
         data,
         totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int?,
+        currentPage: response['currentPage'] as int? ,
         totalItems: response['totalItems'] as int?,
       );
+
+      log('currentPage: ${response['currentPage']}');
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
@@ -184,7 +182,8 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
 
   Future<void> filterByStatus(int status) async {
     _currentTrangThai = status;
-    await loadDataFromApi(0, _currentTrangThai);
+    // Sửa: reset về trang 1 khi filter
+    await loadDataFromApi(1, _currentTrangThai);
   }
 
   // ================== FILTER OFFLINE TRÊN PAGE HIỆN TẠI ==================

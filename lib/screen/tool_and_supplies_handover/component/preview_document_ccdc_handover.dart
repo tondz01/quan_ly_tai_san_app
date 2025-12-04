@@ -173,7 +173,6 @@ prevDocumentCcdcHandover({
       chucVu: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
       donVi: getDonVi(dieuDongCcdc?.idGiamDoc ?? ''),
     ),
-
     // SigneInfo(
   ];
   List<DetailSubppliesHandoverDto> listDetailSubppliesHandover =

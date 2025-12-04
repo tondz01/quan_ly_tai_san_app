@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 /// Popup loading đơn giản để chặn tương tác người dùng khi đang xử lý

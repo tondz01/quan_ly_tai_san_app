@@ -218,10 +218,10 @@ class MaterialTable<T> extends StatelessWidget {
       message: tooltip,
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -373,7 +373,7 @@ class _MaterialTableWithPaginationState<T> extends State<MaterialTableWithPagina
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.3),
+            color: ColorValue.neutral200.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),

@@ -175,7 +175,7 @@ class StyleHelper {
       boxShadow: withShadow 
           ? [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 spreadRadius: 1,
                 blurRadius: 4,
                 offset: const Offset(0, 2),
@@ -219,7 +219,7 @@ class StyleHelper {
           fontSize: 12,
         ),
       ),
-      backgroundColor: backgroundColor ?? ColorValue.lightOceanBlue.withOpacity(0.2),
+      backgroundColor: backgroundColor ?? ColorValue.lightOceanBlue.withValues(alpha: 0.2),
       deleteIcon: onDeleted != null ? const Icon(Icons.close, size: 16) : null,
       onDeleted: onDeleted,
       avatar: avatar,

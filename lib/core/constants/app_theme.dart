@@ -101,11 +101,11 @@ class AppTheme {
       elevation: 4,
     ),
     dataTableTheme: DataTableThemeData(
-      headingRowColor: MaterialStateProperty.all(ColorValue.lightOceanBlue.withOpacity(0.2)),
+      headingRowColor: MaterialStateProperty.all(ColorValue.lightOceanBlue.withValues(alpha: 0.2)),
       dataRowColor: MaterialStateProperty.resolveWith<Color?>(
         (Set<MaterialState> states) {
           if (states.contains(MaterialState.selected)) {
-            return ColorValue.lightOceanBlue.withOpacity(0.1);
+            return ColorValue.lightOceanBlue.withValues(alpha: 0.1);
           }
           return null;
         },
@@ -126,7 +126,7 @@ class AppTheme {
       space: 1,
     ),
     chipTheme: ChipThemeData(
-      backgroundColor: ColorValue.lightOceanBlue.withOpacity(0.2),
+      backgroundColor: ColorValue.lightOceanBlue.withValues(alpha: 0.2),
       disabledColor: Colors.grey.shade300,
       selectedColor: ColorValue.oceanBlue,
       secondarySelectedColor: ColorValue.oceanBlue,
@@ -159,8 +159,8 @@ class AppTheme {
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: ColorValue.oceanBlue,
-      circularTrackColor: ColorValue.lightOceanBlue.withOpacity(0.2),
-      linearTrackColor: ColorValue.lightOceanBlue.withOpacity(0.2),
+      circularTrackColor: ColorValue.lightOceanBlue.withValues(alpha: 0.2),
+      linearTrackColor: ColorValue.lightOceanBlue.withValues(alpha: 0.2),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
@@ -173,7 +173,7 @@ class AppTheme {
     ),
     listTileTheme: ListTileThemeData(
       tileColor: Colors.transparent,
-      selectedTileColor: ColorValue.lightOceanBlue.withOpacity(0.1),
+      selectedTileColor: ColorValue.lightOceanBlue.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
@@ -186,8 +186,8 @@ class AppTheme {
     headerBackgroundColor: ColorValue.oceanBlue,
     headerTextColor: Colors.white,
     oddRowBackgroundColor: Colors.white,
-    evenRowBackgroundColor: ColorValue.lightOceanBlue.withOpacity(0.05),
-    selectedRowColor: ColorValue.lightOceanBlue.withOpacity(0.2),
+    evenRowBackgroundColor: ColorValue.lightOceanBlue.withValues(alpha: 0.05),
+    selectedRowColor: ColorValue.lightOceanBlue.withValues(alpha: 0.2),
     gridLineColor: Colors.grey.shade300,
     borderRadius: 8.0,
     elevation: 2.0,

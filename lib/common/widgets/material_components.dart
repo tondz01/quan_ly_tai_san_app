@@ -80,7 +80,7 @@ class MaterialTextButton extends StatelessWidget {
         backgroundColor: backgroundColor ?? ColorValue.primaryBlue,
         foregroundColor: foregroundColor ?? Colors.white,
         elevation: 2,
-        shadowColor: ColorValue.primaryBlue.withOpacity(0.3),
+        shadowColor: ColorValue.primaryBlue.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius ?? BorderRadius.circular(8),
         ),
@@ -340,9 +340,9 @@ class MaterialStatusBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         text,

@@ -825,7 +825,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         result['totalComplete'] = 0;
       }
     } catch (e) {
-      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+      log("Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e");
     }
 
     return result;

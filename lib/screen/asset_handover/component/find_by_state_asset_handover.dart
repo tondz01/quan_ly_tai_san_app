@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 
@@ -23,21 +22,22 @@ class FindByStateAssetHandover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: provider,
-      child: _FilterCheckboxes(
-        totalAll: totalAll,
-        totalDraft: totalDraft,
-        totalBrowser: totalBrowser,
-        totalCancel: totalCancel,
-        totalComplete: totalComplete,
-      ),
+    // Sửa: Loại bỏ ChangeNotifierProvider.value trùng lặp
+    // Provider đã được cung cấp ở AssetHandoverView, không cần wrap lại
+    return _FilterCheckboxes(
+      provider: provider,
+      totalAll: totalAll,
+      totalDraft: totalDraft,
+      totalBrowser: totalBrowser,
+      totalCancel: totalCancel,
+      totalComplete: totalComplete,
     );
   }
 }
 
 class _FilterCheckboxes extends StatelessWidget {
   const _FilterCheckboxes({
+    required this.provider,
     required this.totalAll,
     required this.totalDraft,
     required this.totalBrowser,
@@ -45,6 +45,7 @@ class _FilterCheckboxes extends StatelessWidget {
     required this.totalComplete,
   });
 
+  final AssetHandoverProvider provider;
   final int totalAll;
   final int totalDraft;
   final int totalBrowser;
@@ -53,7 +54,7 @@ class _FilterCheckboxes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AssetHandoverProvider>(context);
+    // Sử dụng provider được truyền vào thay vì Provider.of
     
     // Tạo map filter states từ provider
     final filterStates = {

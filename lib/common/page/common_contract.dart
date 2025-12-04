@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
@@ -151,23 +153,15 @@ class _CommonContractState extends State<CommonContract> {
         String name = widget.nhanVien?.chuKyThuong ?? "";
 
         url = widget.signatureList.firstWhere((e) => e.contains(name));
-        print('loai ky 2');
-        print(url);
       } else if (loaiKy == 1) {
         String name = widget.nhanVien?.chuKyNhay ?? "";
         url = widget.signatureList.firstWhere((e) => e.contains(name));
-        print('loai ky 1');
-        print(url);
       } else if (loaiKy == 4) {
         String name = widget.nhanVien?.chuKyThuong ?? "";
         url = widget.signatureList.firstWhere((e) => e.contains(name));
-        print('loai ky 4');
-        print(url);
       } else if (loaiKy == 5) {
         String name = widget.nhanVien?.chuKyNhay ?? "";
         url = widget.signatureList.firstWhere((e) => e.contains(name));
-        print('loai ky 5');
-        print(url);
       }
       if (url.isEmpty) {
         if (mounted) {
@@ -315,8 +309,6 @@ class _CommonContractState extends State<CommonContract> {
           try {
             urlToUse =
                 '${ApiConfig.getBaseURL()}/api/upload/download/$urlToUse';
-            print('list signature');
-            print(urlToUse);
             final response = await http.get(Uri.parse(urlToUse));
             if (response.statusCode == 200) {
               // Với ký nháy/ký thường: chỉ hiển thị ảnh chữ ký
@@ -558,8 +550,6 @@ class _CommonContractState extends State<CommonContract> {
 
   // ===== Confirm (call API) =====
   Future<void> _confirmSignatures() async {
-    print('confirm chu ky');
-
     final signatures = getSignaturesData();
     if (signatures.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -823,7 +813,6 @@ class _CommonContractState extends State<CommonContract> {
           String name = widget.nhanVien?.chuKyThuong ?? "";
           final url = widget.signatureList.firstWhere((e) => e.contains(name));
 
-          print('Lấy hình ảnh chữ ký type 2 từ: $url');
           final response = await http.get(Uri.parse(url));
           if (response.statusCode == 200) {
             imgBytes = response.bodyBytes;
