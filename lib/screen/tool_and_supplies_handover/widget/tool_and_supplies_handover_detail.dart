@@ -314,6 +314,12 @@ class _ToolAndSuppliesHandoverDetailState
 
       ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
       ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
+      ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
+      controllerDecisionNumber.text = item?.soQuyetDinh ?? '';
+      controllerDecisionLocation.text = item?.diaDiemQuyetDinh ?? '';
+      controllerDecisionDate.text = AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now());
+      controllerTransferDate.text = AppUtility.formatDateString(ngayBanGiao ?? DateTime.now());
+      controllerDocumentCreationDate.text = AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now());
 
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       initialDetails = item?.listDetailSubppliesHandover ?? [];
@@ -1135,7 +1141,14 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerTransferDate,
           isEditing: isEditing,
           value: ngayBanGiao,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+            setState(() {
+              ngayBanGiao = dt;
+            });
+            if (dt != null) {
+              controllerTransferDate.text = AppUtility.formatDateString(dt);
+            }
+          },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
           isRequired: true,
@@ -1145,7 +1158,14 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerDocumentCreationDate,
           isEditing: isEditing,
           value: ngayTaoChungTu,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+            setState(() {
+              ngayTaoChungTu = dt;
+            });
+            if (dt != null) {
+              controllerDocumentCreationDate.text = AppUtility.formatDateString(dt);
+            }
+          },
           validationErrors: _validationErrors,
           fieldName: 'documentCreationDate',
           isRequired: true,
@@ -1369,6 +1389,9 @@ class _ToolAndSuppliesHandoverDetailState
       giamDocKy: isGiamDocConfirm,
       idGiamDoc: nguoiKyGiamDoc?.id ?? '',
       tenGiamDoc: nguoiKyGiamDoc?.hoTen ?? '',
+      soQuyetDinh: controllerDecisionNumber.text,
+      diaDiemQuyetDinh: controllerDecisionLocation.text,
+      ngayQuyetDinh: controllerDecisionDate.text,
       listSignatory:
           _additionalSignersDetailed
               .map(
