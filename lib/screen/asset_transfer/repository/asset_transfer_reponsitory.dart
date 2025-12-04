@@ -473,6 +473,7 @@ class AssetTransferRepository extends ApiBase {
     int type,
     String search,
     int trangThai,
+    [String idDepartment = '']
   ) async {
     Map<String, dynamic> result = {
       'data': <DieuDongTaiSanDto>[],
@@ -493,7 +494,7 @@ class AssetTransferRepository extends ApiBase {
           userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}&idDonViGiao=$idDepartment',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

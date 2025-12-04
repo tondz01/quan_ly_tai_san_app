@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/table_tool_and_supplies_handover_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_transfer_list.dart';
@@ -19,24 +21,24 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
   @override
   void initState() {
     super.initState();
-    _getDataAssetTransfer();
+    // _getDataAssetTransfer();
   }
 
   @override
   void didUpdateWidget(TabBarTableCcdc oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _getDataAssetTransfer();
+    // _getDataAssetTransfer();
   }
 
-  void _getDataAssetTransfer() {
-    dataAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 3)
-            // .where((element) => element.daBanGiao == false)
-            .toList() ??
-        [];
-    quyetDinhCount = dataAssetTransfer.length;
-  }
+  // void _getDataAssetTransfer() {
+  //   dataAssetTransfer =
+  //       widget.provider.dataAssetTransfer
+  //           ?.where((element) => element.trangThai == 3)
+  //           // .where((element) => element.daBanGiao == false)
+  //           .toList() ??
+  //       [];
+  //   quyetDinhCount = dataAssetTransfer.length;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -93,26 +95,36 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
                                   Text('Quyết định điều động'),
                                 ],
                               ),
-                              Positioned(
-                                right: -10,
-                                top: -6,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    '$quyetDinhCount',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
+                              riverpod.Consumer(
+                                builder: (context, ref, child) {
+                                  final totalItems = ref.watch(
+                                    tableToolAndSuppliesHandoverTransferProvider
+                                        .select(
+                                          (s) => s.paginationState.totalItems,
+                                        ),
+                                  );
+                                  return Positioned(
+                                    right: -10,
+                                    top: -6,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        '$totalItems',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -133,7 +145,6 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
                     listAssetTransfer: dataAssetTransfer,
                   ),
                   ToolAndSuppliesHandoverTransferList(
-                    data: dataAssetTransfer,
                     provider: widget.provider,
                   ),
                 ],

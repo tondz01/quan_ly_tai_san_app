@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
@@ -44,6 +45,7 @@ enum FilterStatus {
 
 class AssetHandoverProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
+  String? get loadingMessage => _loadingMessage;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   bool get isFindNew => _isFindNew;
@@ -105,6 +107,7 @@ class AssetHandoverProvider with ChangeNotifier {
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
+  String? _loadingMessage;
 
   int typeAssetTransfer = 1;
 
@@ -151,8 +154,6 @@ class AssetHandoverProvider with ChangeNotifier {
 
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
-    _isLoading = true;
-
     // Reset filter về trạng thái ban đầu
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
@@ -235,6 +236,7 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    _isLoading = false;
     final container = ProviderScope.containerOf(context);
     container.read(tableAssetHandoverProvider.notifier).refreshData(isRefresh);
   }
@@ -265,11 +267,10 @@ class AssetHandoverProvider with ChangeNotifier {
       return;
     }
     _isOnInitCalled = true;
-    
+
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
-    controllerDropdownPage = TextEditingController(text: '10');
-    await onLoadDataAssetTransfer();
+    onLoadDataAssetTransfer();
 
     _body = Container();
     onLoadDataDropdown();
@@ -294,12 +295,17 @@ class AssetHandoverProvider with ChangeNotifier {
     _dataDepartment = AccountHelper.instance.getDepartment();
     _dataStaff = AccountHelper.instance.getNhanVien();
     if (_dataStaff == null) {
-       AuthRepository().loadUserEmployee('ct001');
+      AuthRepository().loadUserEmployee('ct001');
       _dataStaff = AccountHelper.instance.getNhanVien();
     }
     if (_dataDepartment == null) {
       AuthRepository().loadUserDepartments('ct001');
       _dataDepartment = AccountHelper.instance.getDepartment();
+    }
+    if (kDebugMode) {
+      log(
+        'message [AssetHandoverProvider] dataStaff: ${jsonEncode(_dataStaff)}',
+      );
     }
   }
 
@@ -335,7 +341,11 @@ class AssetHandoverProvider with ChangeNotifier {
 
   // Hàm xử lý cập nhật realtime từ Firebase
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
-    log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] jsonMsg: $jsonMsg');
+    if (kDebugMode) {
+      log(
+        'message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] jsonMsg: $jsonMsg',
+      );
+    }
     if (jsonMsg['type_func'] == FunctionType.ASSET_HANDOVER) {
       if (AppUtility.userInList(
         userInfo?.tenDangNhap ?? '',
@@ -344,7 +354,11 @@ class AssetHandoverProvider with ChangeNotifier {
         onReloadDataPage(context);
       }
     } else if (jsonMsg['type_func'] == FunctionType.ALL_FUNCTION) {
-      log('message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] update received: $jsonMsg');
+      if (kDebugMode) {
+        log(
+          'message [ref.listen] [onRealtimeUpdate AssetHandoverProvider] update received: $jsonMsg',
+        );
+      }
       onReloadDataPage(context);
     } else if (jsonMsg['type_func'] == FunctionType.ASSET_TRANSFER) {
       onLoadDataAssetTransfer();
@@ -352,7 +366,6 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onDispose() {
-    _isLoading = false;
     _isShowInput = false;
     _data = null;
     _error = null;
@@ -380,24 +393,31 @@ class AssetHandoverProvider with ChangeNotifier {
   // Cập nhật danh sách trạng thái
 
   void getListAssetHandover(BuildContext context) {
-    _isLoading = true;
     Future.microtask(() {
       context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
     });
   }
 
-  void onChangeDetail(
+  Future<void> onChangeDetail(
     BuildContext context,
     AssetHandoverDto? item, {
     bool isFindNew = false,
-  }) {
-    if (item != null) {
-      getListDetailAssetMobilization(item.lenhDieuDong ?? '');
-    }
-    _confirmBeforeLeaving(context, item);
-
+  }) async {
+    // Ưu tiên hiển thị nhanh giao diện chi tiết, không khóa màn bằng overlay
+    _item = item;
     _isFindNew = isFindNew;
+    isShowInput = true;
+    isShowCollapse = true;
     notifyListeners();
+
+    // Tải dữ liệu chi tiết bất đồng bộ (không bật global loading overlay)
+    if (item != null) {
+      unawaited(getListDetailAssetMobilization(item.lenhDieuDong ?? ''));
+    }
+
+    if (kDebugMode) {
+      log('message [AssetHandoverProvider] onChangeDetail: $item');
+    }
   }
 
   void updateItem(AssetHandoverDto updatedItem) {
@@ -437,7 +457,6 @@ class AssetHandoverProvider with ChangeNotifier {
               )
               .toList();
     }
-    _isLoading = false;
     notifyListeners();
   }
 
@@ -448,63 +467,14 @@ class AssetHandoverProvider with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<bool> _showUnsavedChangesDialog(
-    BuildContext context,
-    AssetHandoverDto? item,
-  ) async {
-    return await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Thay đổi chưa lưu'),
-              content: const Text(
-                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Hủy'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _item = item;
-                    isShowInput = true;
-                    isShowCollapse = true;
-                    hasUnsavedChanges = false;
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Rời khỏi'),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
-  }
-
-  // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(
-    BuildContext context,
-    AssetHandoverDto? item,
-  ) async {
-    if (hasUnsavedChanges) {
-      return await _showUnsavedChangesDialog(context, item);
-    } else {
-      _item = item;
-      isShowInput = true;
-      isShowCollapse = true;
-    }
-    return true;
-  }
+  // Hàm cảnh báo thay đổi chưa lưu trước khi rời trang đã bị loại bỏ để đơn giản hóa luồng,
+  // nếu sau này cần có thể khôi phục lại từ lịch sử git.
 
   Future<void> getListDetailAssetMobilization(String id) async {
     if (id.isEmpty) return;
-    // _isLoading = true;
     final Map<String, dynamic> result = await AssetHandoverRepository()
         .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
-    // _isLoading = false;
     _dataDetailAssetHandover =
         _dataDetailAssetMobilization
             ?.map(
@@ -521,7 +491,11 @@ class AssetHandoverProvider with ChangeNotifier {
               ),
             )
             .toList();
-    log('message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}');
+    if (kDebugMode) {
+      log(
+        'message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}',
+      );
+    }
     notifyListeners();
   }
 

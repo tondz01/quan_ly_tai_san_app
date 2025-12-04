@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -136,11 +137,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   DateTime? ngayQuyetDinh;
   @override
   void initState() {
-    setState(() {
-      _initData();
-      _updateControllers();
-    });
     super.initState();
+    _initData();
   }
 
   Future<void> _loadPdf(String path) async {
@@ -180,11 +178,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     // Kiểm tra nếu có thay đổi trong item hoặc isEditing
     if (oldWidget.provider.item != item ||
         oldWidget.isEditing != widget.isEditing) {
-      // Cập nhật lại trạng thái editing
+      // Cập nhật lại dữ liệu khi provider/item thay đổi
       if (mounted) {
-        setState(() {
-          _initData();
-        });
+        _initData();
       }
     }
   }
@@ -197,164 +193,177 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
-    isNew = widget.isFindNew;
-    currentUser = AccountHelper.instance.getUserInfo();
-    item = widget.provider.item;
-    isEditing = widget.isEditing;
-
-    if (editable()) {
-      isEditing = true;
-    } else {
-      isEditing = false;
-    }
-
-    listNhanVien = widget.provider.dataStaff ?? [];
-    listPhongBan = widget.provider.dataDepartment ?? [];
-    listAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 3)
-            .toList() ??
-        [];
-
-    if (item != null) {
-      isDetail = true;
-      if (widget.isFindNew) {
-        isEditing = widget.isFindNew;
-        isDetail = false;
-        dieuDongTaiSan = listAssetTransfer.firstWhere(
-          (element) => element.id == item?.lenhDieuDong,
-          orElse: () => DieuDongTaiSanDto(),
-        );
-        controllerOrder.text = dieuDongTaiSan?.id ?? '';
-        listDetailAssetHandover =
-            (widget.provider.dataDetailAssetMobilization != null
-                ? widget.provider.dataDetailAssetMobilization!
-                    .map(
-                      (e) => DetailAssetHandoverDto(
-                        id: UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
-                        idBanGiaoTaiSan: item?.id ?? '',
-                        banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
-                        quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',
-                        idTaiSan: e.idTaiSan,
-                        tenTaiSan: e.tenTaiSan,
-                        donViTinh: e.donViTinh,
-                        hienTrang: e.hienTrang,
-                        soLuong: e.soLuong,
-                        ngayTao: AppUtility.formatDateString(DateTime.now()),
-                        ngayCapNhat: AppUtility.formatDateString(
-                          DateTime.now(),
-                        ),
-                        nguoiTao: currentUser?.tenDangNhap ?? '',
-                        nguoiCapNhat: '',
-                        isActive: true,
-                      ),
-                    )
-                    .toList()
-                : <DetailAssetHandoverDto>[]);
-      } else {
-        listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
-      }
-
-      isByStep = item?.byStep ?? false;
-      nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
-        item?.idGiamDoc ?? '',
-      );
-      isUnitConfirm = item?.daXacNhan ?? false;
-      isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
-      isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
-      isGiamDocConfirm = item?.giamDocKy ?? false;
-      _selectedFileName = item?.tenFile ?? '';
-      _selectedFilePath = item?.duongDanFile ?? '';
-
-      ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
-      ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
-      ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
-      isRepresentativeUnitConfirm =
-          item?.donViDaiDienXacNhan == "0" ? false : true;
-      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
-      _additionalSignersDetailed =
-          item?.listSignatory
-              ?.map(
-                (e) => AdditionalSignerData(
-                  employee: widget.provider.dataStaff?.firstWhere(
-                    (element) => element.id == e.idNguoiKy,
-                    orElse: () => NhanVien(),
-                  ),
-                ),
-              )
-              .toList() ??
-          [];
-      if (!widget.isFindNew) {
-        _loadPdfNetwork(item?.tenFile ?? '');
-      }
-      // Thêm phần này - Lưu snapshot signatories ban đầu để so sánh
-      _initialSignersDetailed = List<AdditionalSignerData>.from(
-        item?.listSignatory
-                ?.map(
-                  (e) => AdditionalSignerData(
-                    department: widget.provider.dataDepartment?.firstWhere(
-                      (element) => element.id == e.idPhongBan,
-                      orElse: () => PhongBan(),
-                    ),
-                    employee: widget.provider.dataStaff?.firstWhere(
-                      (element) => element.id == e.idNguoiKy,
-                      orElse: () => NhanVien(),
-                    ),
-                  ),
-                )
-                .toList() ??
-            [],
-      );
-    } else {
-      isDetail = false;
-      isByStep = false;
-      isUnitConfirm = false;
-      isDelivererConfirm = false;
-      isReceiverConfirm = false;
-      isRepresentativeUnitConfirm = false;
-      _selectedFileName = null;
-      _selectedFilePath = null;
-    }
-    itemsNhanVien =
-        listNhanVien.isNotEmpty
-            ? listNhanVien
-                .map(
-                  (user) => DropdownMenuItem<NhanVien>(
-                    value: user,
-                    child: Text(user.hoTen ?? ''),
-                  ),
-                )
-                .toList()
-            : <DropdownMenuItem<NhanVien>>[];
-
-    itemsPhongBan =
-        listPhongBan.isNotEmpty
-            ? listPhongBan
-                .map(
-                  (user) => DropdownMenuItem<PhongBan>(
-                    value: user,
-                    child: Text(user.tenPhongBan ?? ''),
-                  ),
-                )
-                .toList()
-            : <DropdownMenuItem<PhongBan>>[];
-    itemsAssetTransfer =
-        listAssetTransfer.isNotEmpty
-            ? listAssetTransfer
-                .map(
-                  (assetTransfer) => DropdownMenuItem<DieuDongTaiSanDto>(
-                    value: assetTransfer,
-                    child: Text(assetTransfer.id ?? ''),
-                  ),
-                )
-                .toList()
-            : <DropdownMenuItem<DieuDongTaiSanDto>>[];
-    dieuDongTaiSan = null;
-    _initialSignersDetailed.clear();
 
     setState(() {
+      isNew = widget.isFindNew;
+      currentUser = AccountHelper.instance.getUserInfo();
+      item = widget.provider.item;
+      isEditing = widget.isEditing;
+
+      // Nếu phiếu ở trạng thái cho phép sửa và là người tạo thì cho phép edit
+      if (editable()) {
+        isEditing = true;
+      } else {
+        isEditing = false;
+      }
+
+      listNhanVien = widget.provider.dataStaff ?? [];
+      listPhongBan = widget.provider.dataDepartment ?? [];
+      listAssetTransfer =
+          widget.provider.dataAssetTransfer
+                  ?.where((element) => element.trangThai == 3)
+                  .toList() ??
+              [];
+
+      if (item != null) {
+        isDetail = true;
+        if (widget.isFindNew) {
+          isEditing = widget.isFindNew;
+          isDetail = false;
+          dieuDongTaiSan = listAssetTransfer.firstWhere(
+            (element) => element.id == item?.lenhDieuDong,
+            orElse: () => DieuDongTaiSanDto(),
+          );
+          controllerOrder.text = dieuDongTaiSan?.id ?? '';
+          listDetailAssetHandover =
+              (widget.provider.dataDetailAssetMobilization != null
+                  ? widget.provider.dataDetailAssetMobilization!
+                      .map(
+                        (e) => DetailAssetHandoverDto(
+                          id: UUIDGenerator.generateWithFormat(
+                            'CTBGCCDC-******',
+                          ),
+                          idBanGiaoTaiSan: item?.id ?? '',
+                          banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
+                          quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',
+                          idTaiSan: e.idTaiSan,
+                          tenTaiSan: e.tenTaiSan,
+                          donViTinh: e.donViTinh,
+                          hienTrang: e.hienTrang,
+                          soLuong: e.soLuong,
+                          ngayTao: AppUtility.formatDateString(DateTime.now()),
+                          ngayCapNhat: AppUtility.formatDateString(
+                            DateTime.now(),
+                          ),
+                          nguoiTao: currentUser?.tenDangNhap ?? '',
+                          nguoiCapNhat: '',
+                          isActive: true,
+                        ),
+                      )
+                      .toList()
+                  : <DetailAssetHandoverDto>[]);
+        } else {
+          listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
+        }
+
+        isByStep = item?.byStep ?? false;
+        nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
+          item?.idGiamDoc ?? '',
+        );
+        isUnitConfirm = item?.daXacNhan ?? false;
+        isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
+        isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+        isGiamDocConfirm = item?.giamDocKy ?? false;
+        _selectedFileName = item?.tenFile ?? '';
+        _selectedFilePath = item?.duongDanFile ?? '';
+
+        ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+        ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
+        ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
+        isRepresentativeUnitConfirm =
+            item?.donViDaiDienXacNhan == "0" ? false : true;
+        getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+        _additionalSignersDetailed =
+            item?.listSignatory
+                    ?.map(
+                      (e) => AdditionalSignerData(
+                        department: widget.provider.dataDepartment?.firstWhere(
+                          (element) => element.id == e.idPhongBan,
+                          orElse: () => PhongBan(),
+                        ),
+                        employee: widget.provider.dataStaff?.firstWhere(
+                          (element) => element.id == e.idNguoiKy,
+                          orElse: () => NhanVien(),
+                        ),
+                        signed: e.trangThai == 1,
+                      ),
+                    )
+                    .toList() ??
+                [];
+
+        // Snapshot ban đầu để so sánh thay đổi người ký
+        _initialSignersDetailed = List<AdditionalSignerData>.from(
+          item?.listSignatory
+                  ?.map(
+                    (e) => AdditionalSignerData(
+                      department: widget.provider.dataDepartment?.firstWhere(
+                        (element) => element.id == e.idPhongBan,
+                        orElse: () => PhongBan(),
+                      ),
+                      employee: widget.provider.dataStaff?.firstWhere(
+                        (element) => element.id == e.idNguoiKy,
+                        orElse: () => NhanVien(),
+                      ),
+                    ),
+                  )
+                  .toList() ??
+              [],
+        );
+      } else {
+        isDetail = false;
+        isByStep = false;
+        isUnitConfirm = false;
+        isDelivererConfirm = false;
+        isReceiverConfirm = false;
+        isRepresentativeUnitConfirm = false;
+        _selectedFileName = null;
+        _selectedFilePath = null;
+      }
+
+      itemsNhanVien =
+          listNhanVien.isNotEmpty
+              ? listNhanVien
+                  .map(
+                    (user) => DropdownMenuItem<NhanVien>(
+                      value: user,
+                      child: Text(user.hoTen ?? ''),
+                    ),
+                  )
+                  .toList()
+              : <DropdownMenuItem<NhanVien>>[];
+ 
+      itemsPhongBan =
+          listPhongBan.isNotEmpty
+              ? listPhongBan
+                  .map(
+                    (user) => DropdownMenuItem<PhongBan>(
+                      value: user,
+                      child: Text(user.tenPhongBan ?? ''),
+                    ),
+                  )
+                  .toList()
+              : <DropdownMenuItem<PhongBan>>[];
+      itemsAssetTransfer =
+          listAssetTransfer.isNotEmpty
+              ? listAssetTransfer
+                  .map(
+                    (assetTransfer) => DropdownMenuItem<DieuDongTaiSanDto>(
+                      value: assetTransfer,
+                      child: Text(assetTransfer.id ?? ''),
+                    ),
+                  )
+                  .toList()
+              : <DropdownMenuItem<DieuDongTaiSanDto>>[];
+      dieuDongTaiSan = null;
+      _initialSignersDetailed.clear();
+
       _updateControllers();
     });
+
+    // Tải file PDF ở ngoài setState để tránh block build
+    if (item != null && !widget.isFindNew) {
+      _loadPdfNetwork(item?.tenFile ?? '');
+    }
 
     // Lưu giá trị ban đầu để so sánh
     // _saveOriginalValues();
@@ -454,7 +463,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         orElse: () => DieuDongTaiSanDto(),
       );
       controllerOrder.text = dieuDongTaiSan?.id ?? '';
-      widget.provider.getListDetailAssetMobilization(dieuDongTaiSan?.id ?? '');
+      // widget.provider.getListDetailAssetMobilization(dieuDongTaiSan?.id ?? '');
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
       // controllerTransferDate.text = item?.ngayBanGiao ?? '';
@@ -918,6 +927,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                 .toList();
                         widget.provider.dataDetailAssetHandover =
                             listDetailAssetHandover;
+                        log(
+                          'listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
+                        );
                         getAssetHandoverPreview();
                       });
                     },
@@ -1319,8 +1331,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
       tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
-      ngayBanGiao:  AppUtility.formatDateString(ngayBanGiao ?? DateTime.now()),
-      ngayTaoChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
+      ngayBanGiao: AppUtility.formatDateString(ngayBanGiao ?? DateTime.now()),
+      ngayTaoChungTu: AppUtility.formatDateString(
+        ngayTaoChungTu ?? DateTime.now(),
+      ),
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
@@ -1344,9 +1358,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenGiamDoc: nguoiKyGiamDoc?.hoTen ?? '',
       giamDocKy: isGiamDocConfirm,
       soQuyetDinh: controllerDecisionNumber.text,
-      ngayQuyetDinh: AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now()),
+      ngayQuyetDinh: AppUtility.formatDateString(
+        ngayQuyetDinh ?? DateTime.now(),
+      ),
       diaDiemQuyetDinh: controllerDecisionLocation.text,
-      ngayChungTu: AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now()),
+      ngayChungTu: AppUtility.formatDateString(
+        ngayTaoChungTu ?? DateTime.now(),
+      ),
       listSignatory:
           _additionalSignersDetailed
               .map(

@@ -57,13 +57,13 @@ class MaterialTableWrapper<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.neutral300.withOpacity(0.4),
+            color: ColorValue.neutral300.withValues(alpha: 0.4),
             spreadRadius: 0,
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.2),
+            color: ColorValue.neutral200.withValues(alpha: 0.2),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -77,7 +77,7 @@ class MaterialTableWrapper<T> extends StatelessWidget {
         textHeaderColor: Colors.white,
         evenRowBackgroundColor: ColorValue.neutral50,
         oddRowBackgroundColor: Colors.white,
-        selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+        selectedRowColor: ColorValue.primaryLightBlue.withValues(alpha: 0.2),
         gridLineColor: ColorValue.neutral200,
         gridLineWidth: 1.0,
         showVerticalLines: true,

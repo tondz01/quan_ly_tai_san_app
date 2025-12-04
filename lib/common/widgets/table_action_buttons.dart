@@ -14,7 +14,7 @@ class TableActionButtons {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.success.withOpacity(0.3),
+            color: ColorValue.success.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -53,7 +53,7 @@ class TableActionButtons {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.primaryBlue.withOpacity(0.3),
+            color: ColorValue.primaryBlue.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -92,7 +92,7 @@ class TableActionButtons {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.error.withOpacity(0.3),
+            color: ColorValue.error.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -131,7 +131,7 @@ class TableActionButtons {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.primaryLightBlue.withOpacity(0.3),
+            color: ColorValue.primaryLightBlue.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -170,7 +170,7 @@ class TableActionButtons {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.warning.withOpacity(0.3),
+            color: ColorValue.warning.withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -205,11 +205,11 @@ class TableActionButtons {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: ColorValue.success.withOpacity(0.8),
+        color: ColorValue.success.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.success.withOpacity(0.2),
+            color: ColorValue.success.withValues(alpha: 0.2),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),

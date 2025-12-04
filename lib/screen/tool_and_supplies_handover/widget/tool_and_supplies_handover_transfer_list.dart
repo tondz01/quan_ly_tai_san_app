@@ -42,12 +42,10 @@ enum FilterType {
 }
 
 class ToolAndSuppliesHandoverTransferList extends StatefulWidget {
-  final List<ToolAndMaterialTransferDto> data;
   final ToolAndSuppliesHandoverProvider provider;
 
   const ToolAndSuppliesHandoverTransferList({
     super.key,
-    required this.data,
     required this.provider,
   });
 
@@ -97,7 +95,6 @@ class _ToolAndSuppliesHandoverTransferListState
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
-    dataAssetTransfer = widget.data;
     dataAssetTransferFilter = dataAssetTransfer;
     _initializeTableConfig();
   }
@@ -377,14 +374,6 @@ class _ToolAndSuppliesHandoverTransferListState
               ),
               child: riverpod.Consumer(
                 builder: (context, ref, child) {
-                  final data = dataAssetTransferFilter;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ref
-                        .read(
-                          tableToolAndSuppliesHandoverTransferProvider.notifier,
-                        )
-                        .setData(data);
-                  });
                   return RiverpodTable<ToolAndMaterialTransferDto>(
                     tableProvider: tableToolAndSuppliesHandoverTransferProvider,
                     columns: _columns,

@@ -120,9 +120,15 @@ class TableToolAndSuppliesHandoverProvider
       // Set data + thông tin phân trang từ API
       setApiData(
         data,
-        totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int?,
-        totalItems: response['totalItems'] as int?,
+        totalPages: (response['totalPages'] is int) 
+            ? response['totalPages'] as int? 
+            : int.tryParse(response['totalPages']?.toString() ?? '0'),
+        currentPage: (response['currentPage'] is int) 
+            ? response['currentPage'] as int? 
+            : int.tryParse(response['currentPage']?.toString() ?? '0'),
+        totalItems: (response['totalItems'] is int) 
+            ? response['totalItems'] as int? 
+            : int.tryParse(response['totalItems']?.toString() ?? '0'),
       );
 
       totalItems = response['totalItems'] as int? ?? 0;

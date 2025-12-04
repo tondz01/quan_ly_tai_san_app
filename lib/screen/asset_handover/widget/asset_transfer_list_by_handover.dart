@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -101,6 +103,17 @@ class _AssetTransferListByHandoverState
     dataAssetTransferFilter =
         dataAssetTransfer.where((item) => item.daBanGiao == false).toList();
     _initializeTableConfig();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Delay refreshData để tránh lỗi "modify provider while widget tree is building"
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final container = riverpod.ProviderScope.containerOf(context);
+      container.read(tableAssetTransferByHandoverProvider.notifier).refreshData();
+    });
   }
 
   void _initializeTableConfig() {
@@ -344,12 +357,9 @@ class _AssetTransferListByHandoverState
               ),
               child: riverpod.Consumer(
                 builder: (context, ref, child) {
-                  final data = dataAssetTransferFilter;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    ref
-                        .read(tableAssetTransferByHandoverProvider.notifier)
-                        .setData(data);
-                  });
+                  log(
+                    'Building RiverpodTable with ${dataAssetTransferFilter.length} items',
+                  );
                   return RiverpodTable<DieuDongTaiSanDto>(
                     tableProvider: tableAssetTransferByHandoverProvider,
                     columns: _columns,

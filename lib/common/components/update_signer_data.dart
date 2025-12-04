@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
@@ -33,8 +32,6 @@ class UpdateSignerData {
     try {
       // final repo = SignatoryRepository();
 
-      log('message additionalSigners idTaiLieu: $idTaiLieu');
-      log('message additionalSigners additionalSignersDetailed: ${jsonEncode(additionalSignersDetailed)}');
       await AssetTransferRepository().updateSignatory(
         idTaiLieu,
         additionalSignersDetailed

@@ -694,9 +694,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.additionalSigners
                                 ..clear()
                                 ..addAll(list);
-                              log(
-                                'message additionalSigners: ${jsonEncode(state.additionalSigners)}',
-                              );
                             });
                           },
                           initialSignerData: state.additionalSignersDetailed,

@@ -188,9 +188,12 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
+      log('message request id: ${jsonEncode(listSignatory)}');
       for (var signatory in listSignatory) {
+        log('message request id: ${request['id']}');
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request['id'].toString(),
+          trangThai: 0,
         );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
@@ -646,7 +649,15 @@ class AssetHandoverRepository extends ApiBase {
         result['data'] = <AssetHandoverDto>[];
       }
       result['totalPages'] = response.data['totalPages'] ?? 0;
-      result['currentPage'] = response.data['currentPage'] ?? 0;
+      // Xử lý an toàn currentPage để tránh crash khi null hoặc không phải int
+      final rawPage = response.data['currentPage'];
+      int safePage = 0;
+      if (rawPage is int) {
+        safePage = rawPage;
+      } else if (rawPage != null) {
+        safePage = int.tryParse(rawPage.toString()) ?? 0;
+      }
+      result['currentPage'] = safePage + 1;
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety

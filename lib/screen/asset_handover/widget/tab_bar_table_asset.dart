@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handove
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_list_by_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
@@ -19,6 +20,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
   List<DieuDongTaiSanDto> dataAssetTransfer = [];
   UserInfoDTO? userInfo;
   int quyetDinhCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -39,10 +41,19 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
   }
 
   void _getDataAssetTransfer() {
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(
+      userInfo?.id ?? '',
+    );
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
             .where((element) => element.daBanGiao == false)
+            .where((element) {
+              return userInfo?.tenDangNhap == 'admin'
+                  ? true
+                  : element.idDonViGiao ==
+                      (nhanVien?.phongBanId ?? nhanVien?.boPhan);
+            })
             .toList() ??
         [];
     quyetDinhCount = dataAssetTransfer.length;
@@ -52,9 +63,10 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Container(
-        height: MediaQuery.of(context).size.height + 250,
-        decoration: BoxDecoration(
+        child: Container(
+          // Sửa: Loại bỏ +250 để tránh layout overflow, để Expanded tự điều chỉnh
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300, width: 1),
@@ -103,6 +115,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
                                   Text('Quyết định điều động'),
                                 ],
                               ),
+
                               Positioned(
                                 right: -10,
                                 top: -6,

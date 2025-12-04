@@ -171,6 +171,8 @@ previewDocumentHandover({
 
     // SigneInfo(
   ];
+
+  log('Detail Asset Handover: ${jsonEncode(itemsDetail)}');
   return showDialog(
     context: context,
     barrierDismissible: true,

@@ -76,6 +76,10 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerGiamDocKy = TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
+  late TextEditingController controllerDecisionNumber = TextEditingController();
+  late TextEditingController controllerDecisionLocation = TextEditingController();
+  late TextEditingController controllerDecisionDate = TextEditingController();
+  DateTime? ngayQuyetDinh;
 
   bool isEditing = false;
   UserInfoDTO? currentUser;
@@ -143,10 +147,12 @@ class _ToolAndSuppliesHandoverDetailState
   Future<void> _loadPdf(String path) async {
     try {
       final document = await PdfDocument.openFile(path);
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = document;
       });
     } catch (e) {
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = null;
       });
@@ -157,10 +163,12 @@ class _ToolAndSuppliesHandoverDetailState
   Future<void> _loadPdfFromBytes(Uint8List bytes) async {
     try {
       final document = await PdfDocument.openData(bytes);
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = document;
       });
     } catch (e) {
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = null;
       });
@@ -173,10 +181,12 @@ class _ToolAndSuppliesHandoverDetailState
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
       );
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = document;
       });
     } catch (e) {
+      if (!mounted) return; // Kiểm tra mounted trước khi setState
       setState(() {
         _document = null;
       });
@@ -450,6 +460,10 @@ class _ToolAndSuppliesHandoverDetailState
       controllerOrder.text = item?.lenhDieuDong ?? '';
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
+      controllerDecisionNumber.text = item?.soQuyetDinh ?? '';
+      controllerDecisionLocation.text = item?.diaDiemQuyetDinh ?? '';
+      ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
+      controllerDecisionDate.text = AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now());
 
       // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
       //   ngayBanGiao ?? DateTime.now(),
@@ -467,6 +481,10 @@ class _ToolAndSuppliesHandoverDetailState
       isEditing = true;
       controllerHandoverNumber.text = '';
       controllerDocumentName.text = '';
+      controllerDecisionNumber.text = '';
+      controllerDecisionLocation.text = '';
+      ngayQuyetDinh = null;
+      controllerDecisionDate.text = '';
     }
   }
 
@@ -507,6 +525,11 @@ class _ToolAndSuppliesHandoverDetailState
       ),
       "ngayTaoChungTu": AppUtility.formatFromISOString(
         controllerDocumentCreationDate.text,
+      ),
+      "soQuyetDinh": controllerDecisionNumber.text,
+      "diaDiemQuyetDinh": controllerDecisionLocation.text,
+      "ngayQuyetDinh": AppUtility.formatFromISOString(
+        controllerDecisionDate.text,
       ),
       "ngayTao": AppUtility.formatDateString(DateTime.now()),
       "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
@@ -821,6 +844,7 @@ class _ToolAndSuppliesHandoverDetailState
                 selectedFilePath: _selectedFilePath,
                 validationErrors: _validationErrors,
                 onFileSelected: (fileName, filePath, fileBytes) {
+                  if (!mounted) return; // Kiểm tra mounted trước khi setState
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
@@ -876,9 +900,11 @@ class _ToolAndSuppliesHandoverDetailState
                       // Chỉ map những item hợp lệ (có idCCDCVatTu và idDetaiAsset)
                       listDetailSubppliesHandover =
                           data
-                              .where((e) => 
-                                  e.idCCDCVatTu.isNotEmpty && 
-                                  e.idDetaiAsset.isNotEmpty)
+                              .where(
+                                (e) =>
+                                    e.idCCDCVatTu.isNotEmpty &&
+                                    e.idDetaiAsset.isNotEmpty,
+                              )
                               .map(
                                 (e) => DetailSubppliesHandoverDto(
                                   id: UUIDGenerator.generateWithFormat(
@@ -1067,6 +1093,41 @@ class _ToolAndSuppliesHandoverDetailState
             donViNhan = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CommonFormInput(
+          label: 'Số quyết định',
+          controller: controllerDecisionNumber,
+          isEditing: isEditing,
+          textContent: item?.soQuyetDinh ?? '',
+          fieldName: 'decisionNumber',
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CommonFormInput(
+          label: 'Địa điểm quyết định',
+          controller: controllerDecisionLocation,
+          isEditing: isEditing,
+          textContent: item?.diaDiemQuyetDinh ?? '',
+          fieldName: 'decisionLocation',
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CmFormDate(
+          label: 'Ngày quyết định',
+          controller: controllerDecisionDate,
+          isEditing: isEditing,
+          value: ngayQuyetDinh,
+          onChanged: (dt) {
+            setState(() {
+              ngayQuyetDinh = dt;
+            });
+            if (dt != null) {
+              controllerDecisionDate.text = AppUtility.formatDateString(dt);
+            }
+          },
+          validationErrors: _validationErrors,
+          fieldName: 'decisionDate',
           isRequired: true,
         ),
         CmFormDate(
@@ -1305,6 +1366,9 @@ class _ToolAndSuppliesHandoverDetailState
       nguoiTao: currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       active: true,
+      giamDocKy: isGiamDocConfirm,
+      idGiamDoc: nguoiKyGiamDoc?.id ?? '',
+      tenGiamDoc: nguoiKyGiamDoc?.hoTen ?? '',
       listSignatory:
           _additionalSignersDetailed
               .map(
@@ -1332,8 +1396,10 @@ class _ToolAndSuppliesHandoverDetailState
                 'idCCDCVatTu': d.idCCDCVatTu,
                 'soLuong': d.soLuong,
                 'idChiTietCCDCVatTu': d.idChiTietCCDCVatTu,
-                'idBanGiaoCCDCVatTu': d.idBanGiaoCCDCVatTu, // Sửa: dùng đúng field
-                'idChiTietDieuDong': d.idChiTietDieuDong ?? d.iddieudongccdcvattu,
+                'idBanGiaoCCDCVatTu':
+                    d.idBanGiaoCCDCVatTu, // Sửa: dùng đúng field
+                'idChiTietDieuDong':
+                    d.idChiTietDieuDong ?? d.iddieudongccdcvattu,
                 'iddieudongccdcvattu': d.iddieudongccdcvattu,
                 "ngayTao": d.ngayTao,
                 "ngayCapNhat": d.ngayCapNhat,
@@ -1501,7 +1567,8 @@ class _ToolAndSuppliesHandoverDetailState
                     "nguoiTao": d.nguoiTao,
                     "nguoiCapNhat": d.nguoiCapNhat,
                     "isActive": d.isActive,
-                    "active": d.isActive, // Thêm field active để tương thích với server
+                    "active":
+                        d.isActive, // Thêm field active để tương thích với server
                   },
                 )
                 .toList();
