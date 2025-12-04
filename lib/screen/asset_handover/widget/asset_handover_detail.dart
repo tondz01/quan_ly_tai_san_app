@@ -36,7 +36,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';

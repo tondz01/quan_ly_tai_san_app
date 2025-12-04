@@ -268,8 +268,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
-    controllerDropdownPage = TextEditingController(text: '10');
-    await onLoadDataAssetTransfer();
+    onLoadDataAssetTransfer();
 
     _body = Container();
     onLoadDataDropdown();

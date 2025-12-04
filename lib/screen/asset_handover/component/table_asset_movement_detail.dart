@@ -29,12 +29,27 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
   List<DropdownMenuItem<dynamic>> hienTrangItems = [];
   List<ChiTietDieuDongTaiSan> listDetailAssetMobilization = [];
   bool isExpanded = true;
+  
+  // Cache HienTrang lookup để tránh O(n) search mỗi lần render
+  late final Map<int, HienTrang> _hienTrangCache;
+  late final HienTrang _defaultHienTrang;
 
   @override
   void initState() {
     super.initState();
+    _initHienTrangCache();
     _initHienTrangItems();
     _syncDetailAssets();
+  }
+
+  /// Khởi tạo cache cho HienTrang lookup - O(1) thay vì O(n)
+  void _initHienTrangCache() {
+    _hienTrangCache = {
+      for (final ht in AppUtility.listHienTrang) ht.id: ht,
+    };
+    _defaultHienTrang = AppUtility.listHienTrang.isNotEmpty
+        ? AppUtility.listHienTrang.first
+        : HienTrang(id: 0, name: '');
   }
 
   /// Khởi tạo dropdown items cho HienTrang
@@ -206,37 +221,18 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   titleAlignment: TextAlign.center,
                   isEditable: true,
                   width: 50,
-                  // Hiển thị tên HienTrang để controller text được set đúng
-                  getValue: (item) {
-                    final hienTrang = AppUtility.listHienTrang.firstWhere(
-                      (ht) => ht.id == item.hienTrang,
-                      orElse: () => AppUtility.listHienTrang.first,
-                    );
-                    return hienTrang.name;
-                  },
-                  // Khi chọn HienTrang từ dropdown, cập nhật item.hienTrang với id của HienTrang được chọn
+                  // O(1) lookup từ cache thay vì O(n) firstWhere
+                  getValue: (item) => 
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
                   setValue: (item, value) {
                     if (value is! HienTrang) return;
                     item.hienTrang = value.id;
                   },
-                  // Sử dụng getValueWithIndex để trả về HienTrang object cho dropdown so sánh
-                  // Đảm bảo trả về cùng instance từ list để dropdown có thể so sánh đúng
-                  getValueWithIndex: (item, rowIndex) {
-                    try {
-                      final index = AppUtility.listHienTrang
-                          .indexWhere((ht) => ht.id == item.hienTrang);
-                      if (index >= 0) {
-                        return AppUtility.listHienTrang[index];
-                      }
-                    } catch (e) {
-                      // Fallback nếu có lỗi
-                    }
-                    return AppUtility.listHienTrang.isNotEmpty
-                        ? AppUtility.listHienTrang.first
-                        : null;
-                  },
+                  // O(1) lookup từ cache
+                  getValueWithIndex: (item, rowIndex) =>
+                      _hienTrangCache[item.hienTrang] ?? _defaultHienTrang,
                   sortValueGetter: (item) =>
-                      AppUtility.getHienTrang(item.hienTrang).name,
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
                   editor: EditableCellEditor.dropdown,
                   dropdownItems: hienTrangItems,
                 ),
@@ -248,7 +244,6 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   getValue: (item) => item.ghiChu,
                   setValue: (item, value) {},
                   sortValueGetter: (item) => item.ghiChu,
-                  isEditable: false,
                 ),
               ],
             ),
