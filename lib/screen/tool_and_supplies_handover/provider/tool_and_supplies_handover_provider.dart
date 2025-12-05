@@ -263,7 +263,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     container
         .read(tableToolAndSuppliesHandoverProvider.notifier)
         .filterByStatus(status);
-    onReloadDataPage(context);
+    // onReloadDataPage(context);
   }
 
   void _applyFilters() {

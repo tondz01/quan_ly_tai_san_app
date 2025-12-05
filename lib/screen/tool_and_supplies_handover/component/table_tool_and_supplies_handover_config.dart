@@ -221,7 +221,7 @@ class TableToolAndSuppliesHandoverConfig {
       case 2:
         return 'Hủy';
       case 3:
-        return 'Đã hủy';
+        return 'Hoàn thành';
       case 4:
         return 'Đã hủy';
       default:
