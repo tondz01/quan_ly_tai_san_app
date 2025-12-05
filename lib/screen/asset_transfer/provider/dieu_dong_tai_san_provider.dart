@@ -204,6 +204,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
     // Không gọi onDispose() ở đây để tránh mất dữ liệu
     // onDispose();
+    onGetDataAsset(context);
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
     _dataAsset = AccountHelper.instance.getAllAssets();
@@ -216,7 +217,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     controllerDropdownPage = TextEditingController(text: '10');
     getDataDropdown();
     if (_dataAsset == null || _dataAsset!.isEmpty) {
-      onGetDataAsset();
     }
 
     // getDataAll(context);
@@ -249,16 +249,21 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
   }
 
-  onGetDataAsset() async {
-    if (AccountHelper.instance.getAllAssets().isEmpty) {
-      final args = await AssetManagementRepository().getListAssetManagement(
-        'ct001',
-      );
-      await AccountHelper.instance.setListAsset(args['data'] ?? []);
-      _dataAsset = args['data'];
-    } else {
-      _dataAsset = AccountHelper.instance.getAllAssets();
-    }
+  onGetDataAsset(BuildContext context) async {
+    _isLoading = true;
+    _loadingMessage = 'Đang tải dữ liệu...';
+    // if (AccountHelper.instance.getAllAssets().isEmpty) {
+    //   final args = await AssetManagementRepository().getListAssetManagement(
+    //     'ct001',
+    //   );
+    //   await AccountHelper.instance.setListAsset(args['data'] ?? []);
+    //   _dataAsset = args['data'];
+    // } else {
+    //   _dataAsset = AccountHelper.instance.getAllAssets();
+    // }
+    context.read<DieuDongTaiSanBloc>().add(GetListAssetEvent(context, 'ct001'));
+    notifyListeners();
+
   }
 
   void onDispose() {
@@ -287,7 +292,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // _autoReloadTimer = null;
   }
 
-  onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+  onReloadDataPage(BuildContext context, [bool isRefresh = false]) {
     final container = ProviderScope.containerOf(context);
     container
         .read(tableAssetTransferProvider.notifier)
@@ -321,7 +326,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     //     SGLog.debug("AssetTransferProvider", "Lỗi tải dữ liệu tài sản: $e");
     //   }
     // }
-    onGetDataAsset();
+    // onGetDataAsset();
     // // Cập nhật dữ liệu từ cache
     // _dataAsset = AccountHelper.instance.getAllAssets();
 
@@ -405,6 +410,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _dataAsset = state.data;
     }
+    _isLoading = false;
+    _loadingMessage = '';
     notifyListeners();
   }
 
