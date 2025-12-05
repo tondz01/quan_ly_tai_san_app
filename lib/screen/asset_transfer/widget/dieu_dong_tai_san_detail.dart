@@ -1087,7 +1087,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       state.messageEditing = null;
       state.nvPhongGD =
           widget.provider.dataNhanVien
-              .where((e) => e.phongBanId == 'P21')
+              .where((e) => e.phongBanId == 'GD' || e.boPhan == 'GD' || e.phongBanId == 'P21' || e.boPhan == 'P21')
               .toList();
       state.listNhanVien = widget.provider.dataNhanVien;
       // Reset editing state

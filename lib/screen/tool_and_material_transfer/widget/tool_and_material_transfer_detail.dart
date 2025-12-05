@@ -313,7 +313,16 @@ class _ToolAndMaterialTransferDetailState
       isNew = item == null;
       listNhanVien = widget.provider.dataNhanVien;
 
-      nvPhongGD = listNhanVien.where((e) => e.phongBanId == 'P21').toList();
+      nvPhongGD =
+          listNhanVien
+              .where(
+                (e) =>
+                    e.phongBanId == 'GD' ||
+                    e.boPhan == 'GD' ||
+                    e.phongBanId == 'P21' ||
+                    e.boPhan == 'P21',
+              )
+              .toList();
       // Reset editing state
       isEditing = widget.isEditing;
       if (editable()) {
@@ -1150,7 +1159,8 @@ class _ToolAndMaterialTransferDetailState
                             final preservedId = initialByKey[key]?.id;
                             return DetailToolAndMaterialTransferDto(
                               id:
-                                  (preservedId != null && preservedId.isNotEmpty)
+                                  (preservedId != null &&
+                                          preservedId.isNotEmpty)
                                       ? preservedId
                                       : UUIDGenerator.generateWithFormat(
                                         'CTDD-****',
@@ -1182,7 +1192,9 @@ class _ToolAndMaterialTransferDetailState
                               soLuongDaBanGiao: 0,
                             );
                           }).toList();
-                      log("check listNewDetails: ${jsonEncode(listNewDetails)}");
+                      log(
+                        "check listNewDetails: ${jsonEncode(listNewDetails)}",
+                      );
                       if (listNewDetails.isNotEmpty) {
                         isShowPreview = true;
                       } else {
@@ -1224,7 +1236,7 @@ class _ToolAndMaterialTransferDetailState
 
   void _checkAndRefreshWidget() {
     if (!mounted) return;
-    
+
     if (widget.provider.item != item) {
       _refreshWidget();
     }
@@ -1296,7 +1308,6 @@ class _ToolAndMaterialTransferDetailState
       share: false,
       daBanGiao: false,
       byStep: isByStep,
-    
     );
   }
 
@@ -1407,7 +1418,7 @@ class _ToolAndMaterialTransferDetailState
       final request = _createToolAndMaterialTransRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       final requestSignatory = _createListSignatory();
-      
+
       widget.provider.saveAssetTransfer(
         context,
         request,

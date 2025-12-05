@@ -211,9 +211,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       listPhongBan = widget.provider.dataDepartment ?? [];
       listAssetTransfer =
           widget.provider.dataAssetTransfer
-                  ?.where((element) => element.trangThai == 3)
-                  .toList() ??
-              [];
+              ?.where((element) => element.trangThai == 3)
+              .toList() ??
+          [];
 
       if (item != null) {
         isDetail = true;
@@ -235,7 +235,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                           ),
                           idBanGiaoTaiSan: item?.id ?? '',
                           banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
-                          quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',
+                          quyetDinhDieuDongSo:
+                              dieuDongTaiSan?.soQuyetDinh ?? '',
                           idTaiSan: e.idTaiSan,
                           tenTaiSan: e.tenTaiSan,
                           donViTinh: e.donViTinh,
@@ -275,21 +276,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
         _additionalSignersDetailed =
             item?.listSignatory
-                    ?.map(
-                      (e) => AdditionalSignerData(
-                        department: widget.provider.dataDepartment?.firstWhere(
-                          (element) => element.id == e.idPhongBan,
-                          orElse: () => PhongBan(),
-                        ),
-                        employee: widget.provider.dataStaff?.firstWhere(
-                          (element) => element.id == e.idNguoiKy,
-                          orElse: () => NhanVien(),
-                        ),
-                        signed: e.trangThai == 1,
-                      ),
-                    )
-                    .toList() ??
-                [];
+                ?.map(
+                  (e) => AdditionalSignerData(
+                    department: widget.provider.dataDepartment?.firstWhere(
+                      (element) => element.id == e.idPhongBan,
+                      orElse: () => PhongBan(),
+                    ),
+                    employee: widget.provider.dataStaff?.firstWhere(
+                      (element) => element.id == e.idNguoiKy,
+                      orElse: () => NhanVien(),
+                    ),
+                    signed: e.trangThai == 1,
+                  ),
+                )
+                .toList() ??
+            [];
 
         // Snapshot ban đầu để so sánh thay đổi người ký
         _initialSignersDetailed = List<AdditionalSignerData>.from(
@@ -331,7 +332,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   )
                   .toList()
               : <DropdownMenuItem<NhanVien>>[];
- 
+
       itemsPhongBan =
           listPhongBan.isNotEmpty
               ? listPhongBan
@@ -1276,7 +1277,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           fieldName: 'giamDocXacNhan',
           items: [
             ...listNhanVien
-                .where((e) => e.phongBanId == 'GD' || e.boPhan == 'GD')
+                .where(
+                  (e) =>
+                      e.phongBanId == 'GD' ||
+                      e.boPhan == 'GD' ||
+                      e.phongBanId == 'P21' ||
+                      e.boPhan == 'P21',
+                )
                 .map(
                   (e) => DropdownMenuItem<NhanVien>(
                     value: e,
