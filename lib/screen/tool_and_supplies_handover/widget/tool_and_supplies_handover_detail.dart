@@ -77,7 +77,8 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
   late TextEditingController controllerDecisionNumber = TextEditingController();
-  late TextEditingController controllerDecisionLocation = TextEditingController();
+  late TextEditingController controllerDecisionLocation =
+      TextEditingController();
   late TextEditingController controllerDecisionDate = TextEditingController();
   DateTime? ngayQuyetDinh;
 
@@ -317,9 +318,15 @@ class _ToolAndSuppliesHandoverDetailState
       ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
       controllerDecisionNumber.text = item?.soQuyetDinh ?? '';
       controllerDecisionLocation.text = item?.diaDiemQuyetDinh ?? '';
-      controllerDecisionDate.text = AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now());
-      controllerTransferDate.text = AppUtility.formatDateString(ngayBanGiao ?? DateTime.now());
-      controllerDocumentCreationDate.text = AppUtility.formatDateString(ngayTaoChungTu ?? DateTime.now());
+      controllerDecisionDate.text = AppUtility.formatDateString(
+        ngayQuyetDinh ?? DateTime.now(),
+      );
+      controllerTransferDate.text = AppUtility.formatDateString(
+        ngayBanGiao ?? DateTime.now(),
+      );
+      controllerDocumentCreationDate.text = AppUtility.formatDateString(
+        ngayTaoChungTu ?? DateTime.now(),
+      );
 
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       initialDetails = item?.listDetailSubppliesHandover ?? [];
@@ -469,7 +476,9 @@ class _ToolAndSuppliesHandoverDetailState
       controllerDecisionNumber.text = item?.soQuyetDinh ?? '';
       controllerDecisionLocation.text = item?.diaDiemQuyetDinh ?? '';
       ngayQuyetDinh = AppUtility.parseDate(item?.ngayQuyetDinh ?? '');
-      controllerDecisionDate.text = AppUtility.formatDateString(ngayQuyetDinh ?? DateTime.now());
+      controllerDecisionDate.text = AppUtility.formatDateString(
+        ngayQuyetDinh ?? DateTime.now(),
+      );
 
       // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
       //   ngayBanGiao ?? DateTime.now(),
@@ -1163,7 +1172,9 @@ class _ToolAndSuppliesHandoverDetailState
               ngayTaoChungTu = dt;
             });
             if (dt != null) {
-              controllerDocumentCreationDate.text = AppUtility.formatDateString(dt);
+              controllerDocumentCreationDate.text = AppUtility.formatDateString(
+                dt,
+              );
             }
           },
           validationErrors: _validationErrors,
@@ -1316,7 +1327,13 @@ class _ToolAndSuppliesHandoverDetailState
           fieldName: 'giamDocXacNhan',
           items: [
             ...listNhanVien
-                .where((e) => e.phongBanId == 'GD' || e.boPhan == 'GD')
+                .where(
+                  (e) =>
+                      e.phongBanId == 'GD' ||
+                      e.boPhan == 'GD' ||
+                      e.phongBanId == 'P21' ||
+                      e.boPhan == 'P21',
+                )
                 .map(
                   (e) => DropdownMenuItem<NhanVien>(
                     value: e,
