@@ -22,7 +22,6 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/departme
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:table_base/core/themes/app_color.dart';
-import 'package:table_base/core/themes/app_icon_svg.dart';
 import 'package:table_base/widgets/box_search.dart';
 import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
 import 'package:table_base/widgets/table/models/column_definition.dart';
@@ -503,6 +502,8 @@ class _ToolAndSuppliesHandoverListState
                                 );
                               },
                               showActionsColumn: _showActionsColumn,
+                              onDelete: onDelete,
+                              blockDelete: (item) => !TableToolAndSuppliesHandoverConfig.isCheckShowDelete(item),
                               customActions: [
                                 CustomAction(
                                   tooltip: 'Xem',
@@ -511,12 +512,6 @@ class _ToolAndSuppliesHandoverListState
                                   onPressed: (item) async {
                                     onViewDocument(item);
                                   },
-                                ),
-                                CustomAction(
-                                  tooltip: 'Xóa',
-                                  iconPath: AppIconSvg.iconTrash2,
-                                  color: Colors.red,
-                                  onPressed: onDelete,
                                 ),
                               ],
                               actionsColumnWidth: 120,
@@ -646,7 +641,7 @@ class _ToolAndSuppliesHandoverListState
         onPressed: _openColumnConfigDialog,
       ),
       if (selectedItems.isNotEmpty &&
-          selectedItems.length < 2)
+          TableToolAndSuppliesHandoverConfig.canSign(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -663,7 +658,8 @@ class _ToolAndSuppliesHandoverListState
             }
           },
         ),
-      if (selectedItems.isNotEmpty)
+      if (selectedItems.isNotEmpty &&
+          TableToolAndSuppliesHandoverConfig.isCheckShowShare(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: "${'table.send'.tr} (${selectedItems.length})",
           iconPath: AppIconSvgPath.iconSend,

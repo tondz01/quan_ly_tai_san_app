@@ -87,7 +87,7 @@ class TableToolAndSuppliesHandoverTransferProvider
 
     try {
       final userInfo = AccountHelper.instance.getUserInfo();
-      final nhanVien = AccountHelper.instance.getNhanVienById(userInfo?.id ?? '');
+      final nhanVien = AccountHelper.instance.getNhanVienById(userInfo?.tenDangNhap ?? '');
       final idDonViGiao = nhanVien?.phongBanId ?? nhanVien?.boPhan ?? '';
       // Gọi API
       final response = await repository.getDataWithPagination(

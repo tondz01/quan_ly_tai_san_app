@@ -418,6 +418,7 @@ class _ToolAndMaterialTransferListState
                           },
                           // onEdit: (item) {},
                           onDelete: _onDelete,
+                          blockDelete: (item) => !TableToolAndMaterialTransferConfig.isCheckShowDelete(item),
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
@@ -732,7 +733,8 @@ class _ToolAndMaterialTransferListState
           _openColumnConfigDialog();
         },
       ),
-      if (listItemSelected.isNotEmpty && listItemSelected.length < 2)
+      if (listItemSelected.isNotEmpty &&
+          TableToolAndMaterialTransferConfig.canSign(listItemSelected))
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -749,7 +751,8 @@ class _ToolAndMaterialTransferListState
             );
           },
         ),
-      if (listItemSelected.isNotEmpty)
+      if (listItemSelected.isNotEmpty &&
+          TableToolAndMaterialTransferConfig.isCheckShowShare(listItemSelected))
         ResponsiveButtonData.fromButtonIcon(
           text: "${'table.send'.tr} (${listItemSelected.length})",
           iconPath: AppIconSvgPath.iconSend,

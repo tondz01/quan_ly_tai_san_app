@@ -171,7 +171,7 @@ prevDocumentCcdcHandover({
       title: 'Đại diện đơn vị bên nhận',
       hoTen: dieuDongCcdc?.tenGiamDoc ?? '',
       chucVu: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
-      donVi: getDonVi(dieuDongCcdc?.idGiamDoc ?? ''),
+      donVi: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
     ),
     // SigneInfo(
   ];

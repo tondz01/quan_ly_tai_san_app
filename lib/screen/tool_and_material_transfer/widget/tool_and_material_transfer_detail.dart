@@ -427,9 +427,7 @@ class _ToolAndMaterialTransferDetailState
             [];
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
-        controllerSoChungTu.text = UUIDGenerator.generateTimestampId(
-          prefix: 'SCT',
-        );
+        controllerSoChungTu.text = widget.provider.genID();
         controllerSubject.text = '';
         controllerDocumentName.text = '';
         controllerDeliveringUnit.text = '';
@@ -971,7 +969,7 @@ class _ToolAndMaterialTransferDetailState
                             ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -1012,10 +1010,11 @@ class _ToolAndMaterialTransferDetailState
                             ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllerDepartmentApproval.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
@@ -1027,7 +1026,6 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             nguoiKyCapPhong = value;
                           },
-                          isRequired: true,
                         ),
                         AdditionalSignersSelector(
                           addButtonText: "Thêm người ký",
@@ -1040,7 +1038,7 @@ class _ToolAndMaterialTransferDetailState
                             ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -1071,7 +1069,7 @@ class _ToolAndMaterialTransferDetailState
                             ...nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],

@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -67,7 +68,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   bool get isUpdateDetail => _isUpdateDetail;
   bool get isShowDetailDepartmentTree => _isShowDetailDepartmentTree;
   String get detailDiagramTitle => _detailDiagramTitle;
-  List<ThreadNode> get detailDiagramNodes => List.unmodifiable(_detailDiagramNodes);
+  List<ThreadNode> get detailDiagramNodes =>
+      List.unmodifiable(_detailDiagramNodes);
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -656,5 +658,61 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   onSetLoadingMessage(String? message) {
     _loadingMessage = message;
     notifyListeners();
+  }
+
+  String genID() {
+    final now = DateTime.now();
+    final year = now.year;
+    String code = "BGDCC";
+    String random = UUIDGenerator.generateRandomNumber(6);
+    return "$code-$year-$random";
+  }
+
+  /// Lọc danh sách AssetTransfer dựa trên quyền của người dùng
+  /// - Nếu người dùng thuộc phòng ban kho: lấy tất cả phiếu thuộc các phòng ban kho
+  /// - Nếu không: lọc theo phòng ban của người dùng
+  /// [isEditing] - Nếu false, trả về tất cả (không lọc)
+  List<ToolAndMaterialTransferDto> getFilteredAssetTransfer({
+    bool isEditing = false,
+  }) {
+    if (_dataAssetTransfer == null) return [];
+
+    final userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null) return [];
+
+    final nhanVien = AccountHelper.instance.getNhanVienById(
+      userInfo.tenDangNhap,
+    );
+    if (nhanVien == null) return [];
+
+    // Lấy tất cả các ID phòng ban kho
+    final idPhongBanKhoSet =
+        (_dataDepartment ?? [])
+            .where((element) => element.isKho == true)
+            .map((element) => element.id)
+            .whereType<String>()
+            .toSet();
+    // Kiểm tra xem nhân viên có thuộc phòng ban kho không
+    final isNhanVienKho =
+        nhanVien.phongBanId != null &&
+        idPhongBanKhoSet.contains(nhanVien.phongBanId);
+    return _dataAssetTransfer!.where((element) => element.trangThai == 3).where(
+      (element) {
+        if (isEditing) return true;
+
+        // Nếu nhân viên thuộc kho, lấy tất cả phiếu thuộc các phòng ban kho
+        if (isNhanVienKho) {
+          return idPhongBanKhoSet.contains(element.idDonViGiao) ||
+              idPhongBanKhoSet.contains(element.idDonViNhan);
+        }
+
+        // Nếu không phải kho, lọc theo phòng ban của nhân viên
+        final idDonViGiao = nhanVien.phongBanId ?? nhanVien.boPhan;
+        if (idDonViGiao == null || idDonViGiao.isEmpty) return false;
+
+        return element.idDonViGiao == idDonViGiao ||
+            element.idDonViNhan == idDonViGiao;
+      },
+    ).toList();
   }
 }

@@ -119,22 +119,30 @@ class _AccountListState extends State<AccountList> {
     }
 
     final String key = _columns[adjustedIndex].key;
+    final nhanVien = AccountHelper.instance.getNhanVienById(item.tenDangNhap);
     switch (key) {
-        case 'tenDangNhap':
+      case 'phongBan':
+        return AccountHelper.instance
+                .getDepartmentById(
+                  nhanVien?.phongBanId ?? nhanVien?.boPhan ?? '',
+                )
+                ?.tenPhongBan ??
+            '';
+      case 'tenDangNhap':
         return item.username ?? '';
-        case 'hoTen':
+      case 'hoTen':
         return item.hoTen;
-        case 'email':
+      case 'email':
         return item.email ?? '';
       case 'document': // Số điện thoại trong config
         return item.soDienThoai ?? '';
-        case 'ngayTao':
+      case 'ngayTao':
         return item.ngayTao ?? '';
-        case 'ngayCapNhat':
+      case 'ngayCapNhat':
         return item.ngayCapNhat ?? '';
-        case 'nguoiTao':
+      case 'nguoiTao':
         return widget.provider.getNameUser(item.tenDangNhap);
-        case 'nguoiCapNhat':
+      case 'nguoiCapNhat':
         return item.nguoiCapNhat;
       default:
         return null;
@@ -144,7 +152,7 @@ class _AccountListState extends State<AccountList> {
   Future<void> _openColumnConfigDialog() async {
     try {
       final apply = await showColumnConfigAndApply(
-      context: context,
+        context: context,
         allColumns: _allColumns,
         currentColumns: _columns,
         initialHiddenKeys: _hiddenKeys,
@@ -207,11 +215,11 @@ class _AccountListState extends State<AccountList> {
                         );
                         return Text(
                           'Danh sách account ($totalItems)',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
                         );
                       },
                     ),
@@ -241,21 +249,21 @@ class _AccountListState extends State<AccountList> {
                         foregroundColor: Colors.white,
                         onPressed: () {
                           final ids = listSelected.map((e) => e.id).toList();
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa tài khoản',
-                              message:
+                          showConfirmDialog(
+                            context,
+                            type: ConfirmType.delete,
+                            title: 'Xóa tài khoản',
+                            message:
                                 'Bạn có chắc muốn xóa ${listSelected.length} tài khoản',
                             highlight: listSelected.length.toString(),
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                context.read<LoginBloc>().add(
+                            cancelText: 'Không',
+                            confirmText: 'Xóa',
+                            onConfirm: () {
+                              context.read<LoginBloc>().add(
                                 DeleteUserBatchEvent(ids),
-                                );
-                              },
-                            );
+                              );
+                            },
+                          );
                         },
                       ),
                     ],
@@ -373,8 +381,8 @@ class _AccountListState extends State<AccountList> {
                     if (builder != null) return builder(item);
                     return null;
                   },
-              onRowTap: (item) {
-                // widget.provider.onChangeDetail(item);
+                  onRowTap: (item) {
+                    // widget.provider.onChangeDetail(item);
                   },
                   onDelete: (item) {
                     showConfirmDialog(

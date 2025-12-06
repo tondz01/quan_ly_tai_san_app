@@ -269,7 +269,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
             .map(
               (e) => DropdownMenuItem<NhanVien>(
                 value: e,
-                child: Text(e.hoTen ?? ''),
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
               ),
             )
             .toList();
@@ -346,9 +346,8 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                     : widget.itemsNhanVien;
             NhanVien? nhanVien = _signersData[index].employee;
             TextEditingController controller = _controllers[index];
-            controller.text = nhanVien?.hoTen ?? '';
-            _deptControllers[index].text =
-                _signersData[index].department?.tenPhongBan ?? '';
+            controller.text = '${nhanVien?.hoTen ?? ''} - ${nhanVien?.id ?? ''}';
+            _deptControllers[index].text = _signersData[index].department?.tenPhongBan ?? '';
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Column(

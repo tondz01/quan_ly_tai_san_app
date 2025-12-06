@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/home/component/popup_setting_expiration_time.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
@@ -24,6 +25,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:se_gay_components/common/sg_colors.dart' show SGAppColors;
 import 'package:se_gay_components/common/sg_popup_controller.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
 import 'models/menu_data.dart';
@@ -423,6 +425,21 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Widget _buildUserInfo(UserInfoDTO userInfo) {
+    String info = '';
+    if (userInfo.tenDangNhap == 'admin') {
+      info = 'Admin';
+    } else {
+      NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(userInfo.tenDangNhap);
+      info = '${nhanVien?.hoTen} - ${nhanVien?.id}';
+    }
+    return SGText(
+      text: info.toUpperCase(),
+      color: ColorValue.background,
+      size: 14,
+    );
+  }
+
   Widget _buildHeaderActionRight(UserInfoDTO userInfo) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -459,6 +476,9 @@ class _HomeState extends State<Home> {
             },
           ),
         ),
+        const SizedBox(width: 16),
+        _buildUserInfo(userInfo),
+        const SizedBox(width: 16),
         // Settings button
         PopupMenuButton<String>(
           tooltip: 'Quản lý hệ thống',

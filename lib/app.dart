@@ -11,10 +11,12 @@ import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
+import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -44,35 +46,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     // permissionSignService.stream.listen((data) {
     //   AccountHelper.refreshAllCounts();
     // });
-    AuthRepository().loadData('ct001');
-    _messageSub = ref.listenManual(messageLatestJsonProvider, (
-      previous,
-      next,
-    ) async {
-      if (next == null || next.isEmpty) return;
-      log('message [ref.listen] [App] Nhận realtime: $next');
-      if (AppUtility.userInList(
-        AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '',
-        next['id_need_to_do'] ?? '',
-      )) {
-        if (next['type_func'] == FunctionType.ASSET_TRANSFER) {
-          await AssetTransferRepository().getListDieuDongTaiSan();
-        } else if (next['type_func'] == FunctionType.ASSET_HANDOVER) {
-          await AssetHandoverRepository().getListAssetHandover();
-        } else if (next['type_func'] ==
-            FunctionType.TOOL_AND_MATERIAL_TRANSFER) {
-          await ToolAndMaterialTransferRepository()
-              .getAllToolAndMeterialTransfer(-1);
-        } else if (next['type_func'] ==
-            FunctionType.TOOL_AND_SUPPLIES_HANDOVER) {
-          await ToolAndSuppliesHandoverRepository()
-              .getListToolAndSuppliesHandover();
-        }
-        AccountHelper.refreshAllCounts();
-      } else {
-        log('[App] Bỏ qua realtime vì user không nằm trong danh sách cần xử lý');
-      }
-    });
+    _loadDataIfNeeded();
+    _setupRealtimeMessageListener();
     getDataAssetAndCCDC();
   }
 
@@ -117,18 +92,99 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     );
   }
 
-  // Future<void> _loadDataIfNeeded(UserInfoDTO userInfo) async {
-  //   log('message test: _loadDataIfNeeded');
-  //   if (userInfo.idCongTy.isNotEmpty) {
-  //     log('message test: _loadDataIfNeeded 2');
-  //     await AuthRepository().loadData(userInfo.idCongTy);
-  //   }
-  // }
+  /// Kiểm tra và load dữ liệu nếu chưa được load
+  /// Tránh gọi lại loadData nhiều lần khi reload trang
+  Future<void> _loadDataIfNeeded() async {
+    // Kiểm tra xem dữ liệu cơ bản đã được load chưa
+    final hasDepartment = AccountHelper.instance.getDepartment()?.isNotEmpty ?? false;
+    final hasNhanVien = AccountHelper.instance.getNhanVien()?.isNotEmpty ?? false;
+    
+    // Chỉ load nếu dữ liệu quan trọng chưa có
+    if (!hasDepartment || !hasNhanVien) {
+      log('message [App] Loading initial data...');
+      await AuthRepository().loadData('ct001');
+    } else {
+      log('message [App] Data already loaded, skipping loadData');
+    }
+  }
 
-  void getDataAssetAndCCDC() {
-    if (AccountHelper.instance.getAllAssets().isEmpty) {
+  /// Thiết lập listener cho realtime message
+  void _setupRealtimeMessageListener() {
+    _messageSub = ref.listenManual(
+      messageLatestJsonProvider,
+      (previous, next) async {
+        await _handleRealtimeMessage(next);
+      },
+    );
+  }
+
+  /// Xử lý realtime message và reload data tương ứng
+  Future<void> _handleRealtimeMessage(Map<String, dynamic>? message) async {
+    if (message == null || message.isEmpty) return;
+
+    log('message [ref.listen] [App] Nhận realtime: $message');
+
+    final userInfo = AccountHelper.instance.getUserInfo();
+    final userTenDangNhap = userInfo?.tenDangNhap ?? '';
+    final idNeedToDo = message['id_need_to_do'] ?? '';
+
+    // Kiểm tra xem user có trong danh sách cần xử lý không
+    if (!AppUtility.userInList(userTenDangNhap, idNeedToDo)) {
+      log('[App] Bỏ qua realtime vì user không nằm trong danh sách cần xử lý');
+      return;
+    }
+
+    // Xử lý reload data dựa trên type_func
+    final typeFunc = message['type_func'];
+    await _reloadDataByFunctionType(typeFunc);
+    
+    // Refresh counts sau khi reload
+    AccountHelper.refreshAllCounts();
+  }
+
+  /// Reload data dựa trên function type
+  Future<void> _reloadDataByFunctionType(dynamic typeFunc) async {
+    if (typeFunc == null) return;
+
+    // Chuyển đổi typeFunc sang int nếu là String
+    final int? functionType = typeFunc is int
+        ? typeFunc
+        : typeFunc is String
+            ? int.tryParse(typeFunc)
+            : null;
+
+    if (functionType == null) {
+      log('[App] Invalid function type: $typeFunc');
+      return;
+    }
+
+    switch (functionType) {
+      case FunctionType.ASSET_TRANSFER:
+        await AssetTransferRepository().getListDieuDongTaiSan();
+        break;
+      case FunctionType.ASSET_HANDOVER:
+        await AssetHandoverRepository().getListAssetHandover();
+        break;
+      case FunctionType.TOOL_AND_MATERIAL_TRANSFER:
+        await ToolAndMaterialTransferRepository()
+            .getAllToolAndMeterialTransfer(-1);
+        break;
+      case FunctionType.TOOL_AND_SUPPLIES_HANDOVER:
+        await ToolAndSuppliesHandoverRepository()
+            .getListToolAndSuppliesHandover();
+        break;
+      default:
+        log('[App] Unknown function type: $functionType');
+    }
+  }
+
+  Future<void> getDataAssetAndCCDC() async {
+    List<AssetManagementDto> listAsset = [];
+    listAsset = await AssetListCacheService().loadAssetList();
+    if (listAsset.isEmpty) {
       AssetManagementRepository().getListAssetManagement('ct001');
     }
+    // AssetListCacheService().loadAssetList();
 
     if (AccountHelper.instance.getAllCCDC().isEmpty) {
       ToolsAndSuppliesRepository().getListToolsAndSupplies('ct001');

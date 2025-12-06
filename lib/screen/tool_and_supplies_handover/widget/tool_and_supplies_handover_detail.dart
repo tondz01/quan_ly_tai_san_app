@@ -239,11 +239,9 @@ class _ToolAndSuppliesHandoverDetailState
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
-    listAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 3)
-            .toList() ??
-        [];
+    listAssetTransfer = widget.provider.getFilteredAssetTransfer(
+      isEditing: item != null || widget.isFindNew,
+    );
 
     itemsNhanVien =
         listNhanVien.isNotEmpty
@@ -388,15 +386,48 @@ class _ToolAndSuppliesHandoverDetailState
 
   void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
     listNhanVien = AccountHelper.instance.getNhanVien() ?? [];
-    listNhanVienDonViNhan =
-        listNhanVien
-            .where((element) => element.phongBanId == idDonViNhan)
-            .toList();
-    listNhanVienDonViGiao =
-        widget.provider.dataStaff
-            ?.where((element) => element.phongBanId == idDonViGiao)
-            .toList() ??
-        [];
+    // listNhanVienDonViNhan =
+    //     listNhanVien
+    //         .where((element) => element.phongBanId == idDonViNhan)
+    //         .toList();
+
+    final departments = widget.provider.dataDepartment ?? [];
+    final donViGiao = departments.where((e) => e.id == idDonViGiao).firstOrNull;
+    final donViNhan = departments.where((e) => e.id == idDonViNhan).firstOrNull;
+
+    if (donViNhan?.isKho == true) {
+      final idPhongBanKho =
+          departments
+              .where((element) => element.isKho == true)
+              .map((element) => element.id)
+              .toSet();
+      listNhanVienDonViNhan =
+          listNhanVien
+              .where((element) => idPhongBanKho.contains(element.phongBanId))
+              .toList();
+    } else {
+      listNhanVienDonViNhan =
+          listNhanVien
+              .where((element) => element.phongBanId == idDonViGiao)
+              .toList();
+    }
+    
+    if (donViGiao?.isKho == true) {
+      final idPhongBanKho =
+          departments
+              .where((element) => element.isKho == true)
+              .map((element) => element.id)
+              .toSet();
+      listNhanVienDonViGiao =
+          listNhanVien
+              .where((element) => idPhongBanKho.contains(element.phongBanId))
+              .toList();
+    } else {
+      listNhanVienDonViGiao =
+          listNhanVien
+              .where((element) => element.phongBanId == idDonViGiao)
+              .toList();
+    }
   }
 
   Map<String, bool> _validationErrors = {};
@@ -1235,7 +1266,7 @@ class _ToolAndSuppliesHandoverDetailState
             ...listNhanVienDonViGiao.map(
               (e) => DropdownMenuItem<NhanVien>(
                 value: e,
-                child: Text(e.hoTen ?? ''),
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
               ),
             ),
           ],
@@ -1271,7 +1302,7 @@ class _ToolAndSuppliesHandoverDetailState
             ...listNhanVienDonViNhan.map(
               (e) => DropdownMenuItem<NhanVien>(
                 value: e,
-                child: Text(e.hoTen ?? ''),
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
               ),
             ),
           ],
@@ -1337,7 +1368,7 @@ class _ToolAndSuppliesHandoverDetailState
                 .map(
                   (e) => DropdownMenuItem<NhanVien>(
                     value: e,
-                    child: Text(e.hoTen ?? ''),
+                    child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                   ),
                 ),
           ],

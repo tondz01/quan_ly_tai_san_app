@@ -175,6 +175,9 @@ class AssetHandoverRepository extends ApiBase {
           idNeedToDo: idNeedToDo,
         );
       });
+      print(
+        'message createAssetHandover listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
+      );
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
         data: listDetailAssetHandover.map((e) => e.toJson()).toList(),
@@ -220,6 +223,38 @@ class AssetHandoverRepository extends ApiBase {
       );
     }
 
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateDetailAssetHandover(
+    List<DetailAssetHandoverDto> listDetailAssetHandover,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await put(
+        "${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch",
+        data: listDetailAssetHandover.map((e) => e.toJson()).toList(),
+      );
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateDetailAssetHandover - AssetHandoverRepository: $e",
+      );
+    }
     return result;
   }
 
@@ -628,8 +663,9 @@ class AssetHandoverRepository extends ApiBase {
       String userid = userInfo?.tenDangNhap ?? 'admin';
       // Chỉ thêm tham số trangThai nếu không phải -1
       final trangThaiParam = trangThai == -1 ? '' : '&trangThai=$trangThai';
-      final url = '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid$trangThaiParam';
-      
+      final url =
+          '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid$trangThaiParam';
+
       final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

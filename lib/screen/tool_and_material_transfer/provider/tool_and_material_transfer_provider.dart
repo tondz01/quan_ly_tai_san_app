@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -225,7 +226,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _initData(context);
     // _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
-
   }
 
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
@@ -599,8 +599,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
-    log('[saveAssetTransfer] Starting - fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}');
-    
+    log(
+      '[saveAssetTransfer] Starting - fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}',
+    );
+
     // Lưu bloc reference trước khi upload để tránh lỗi khi context bị deactivated
     ToolAndMaterialTransferBloc? bloc;
     if (context.mounted) {
@@ -610,11 +612,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       log('[saveAssetTransfer] Context not mounted, cannot get bloc');
       return;
     }
-    
+
     // Only upload if we have a new file to upload
-    bool hasNewFile = (kIsWeb && fileName.isNotEmpty && fileBytes.isNotEmpty) ||
-                      (!kIsWeb && filePath.isNotEmpty);
-    
+    bool hasNewFile =
+        (kIsWeb && fileName.isNotEmpty && fileBytes.isNotEmpty) ||
+        (!kIsWeb && filePath.isNotEmpty);
+
     if (hasNewFile) {
       log('[saveAssetTransfer] Has new file, uploading...');
       Map<String, dynamic>? result = await uploadWordDocument(
@@ -623,9 +626,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         filePath,
         fileBytes,
       );
-      
+
       log('[saveAssetTransfer] Upload result: $result');
-      
+
       if (result == null) {
         log('[saveAssetTransfer] Upload failed, returning early');
         if (context.mounted) {
@@ -639,12 +642,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         notifyListeners();
         return;
       }
-      
+
       request.duongDanFile = result['filePath'] ?? '';
       request.tenFile = result['fileName'] ?? '';
-      log('[saveAssetTransfer] File uploaded successfully - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}');
+      log(
+        '[saveAssetTransfer] File uploaded successfully - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}',
+      );
     } else {
-      log('[saveAssetTransfer] No new file to upload, using existing file info');
+      log(
+        '[saveAssetTransfer] No new file to upload, using existing file info',
+      );
       // Use existing file info if available
       if (fileName.isNotEmpty) {
         request.tenFile = fileName;
@@ -658,12 +665,14 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       "AssetTransferProvider saveAssetTransfer",
       "Final request - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}",
     );
-    
+
     log('[saveAssetTransfer] Calling CreateToolAndMaterialTransferEvent');
     log('[saveAssetTransfer] Request: ${jsonEncode(request.toJson())}');
     log('[saveAssetTransfer] RequestDetail count: ${requestDetail.length}');
-    log('[saveAssetTransfer] RequestSignatory count: ${requestSignatory.length}');
-    
+    log(
+      '[saveAssetTransfer] RequestSignatory count: ${requestSignatory.length}',
+    );
+
     // Sử dụng bloc đã lưu trước khi upload
     // Context có thể đã bị deactivated sau upload, nhưng bloc vẫn hoạt động
     // Event vẫn cần context (mặc dù bloc không dùng), nên truyền context cũ
@@ -685,20 +694,26 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
-    log('[uploadWordDocument] Starting - kIsWeb: $kIsWeb, fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}');
-    
+    log(
+      '[uploadWordDocument] Starting - kIsWeb: $kIsWeb, fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}',
+    );
+
     if (kIsWeb) {
       if (fileName.isEmpty || (filePath.isEmpty && fileBytes.isEmpty)) {
-        log('[uploadWordDocument] Web: fileName or filePath/fileBytes is empty, returning null');
+        log(
+          '[uploadWordDocument] Web: fileName or filePath/fileBytes is empty, returning null',
+        );
         return null;
       }
     } else {
       if (filePath.isEmpty && fileBytes.isEmpty) {
-        log('[uploadWordDocument] Mobile: filePath and fileBytes are empty, returning null');
+        log(
+          '[uploadWordDocument] Mobile: filePath and fileBytes are empty, returning null',
+        );
         return null;
       }
     }
-    
+
     try {
       log('[uploadWordDocument] Calling repository upload method');
       final result =
@@ -708,10 +723,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                 fileBytes,
               )
               : await ToolAndMaterialTransferRepository().uploadFile(filePath);
-      
+
       log('[uploadWordDocument] Repository result: $result');
       final statusCode = result['status_code'] as int? ?? 0;
-      
+
       if (statusCode >= 200 && statusCode < 300) {
         log('[uploadWordDocument] Upload successful, statusCode: $statusCode');
         if (context.mounted) {
@@ -1000,5 +1015,18 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   onSetLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  String genID() {
+    final now = DateTime.now();
+    final year = now.year;
+    String code =
+        type == 1
+            ? "CPDC"
+            : type == 2
+            ? "DDDC"
+            : "THDC";
+    String random = UUIDGenerator.generateRandomNumber(6);
+    return "$code-$year-$random";
   }
 }

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -45,13 +46,24 @@ class AssetManagementRepository extends ApiBase {
         AssetManagementDto.fromJson,
       );
       log('message result: ${result['data'].length}');
+      
       // Lưu trữ dữ liệu vào bộ nhớ đệm
-      AccountHelper.instance.setListAsset(response.data);
-      if (AccountHelper.instance.getAllAssets().isEmpty) {
-        log("setCache [ASSET]: No assets cached in storage.");
+      // Extract raw list data and convert to List<Map<String, dynamic>> for cache
+      List<Map<String, dynamic>> dataForCache = _extractRawListData(response.data);
+      await AssetListCacheService.saveAssetList(dataForCache);
+      List<AssetManagementDto> listAsset = [];
+      // getAssetList() is async and should be awaited, and accessed statically
+      var assetListFromCache = await AssetListCacheService.getAssetList();
+      // assetListFromCache is likely List<Map<String, dynamic>>
+      listAsset = assetListFromCache
+          .map((item) => AssetManagementDto.fromJson(item))
+          .toList();
+
+      if (listAsset.isEmpty) {
+        print("setCache [ASSET]: No assets cached in storage.");
         result['message'] = "Không có dữ liệu tài sản trong bộ nhớ đệm";
       } else {
-        log("setCache [ASSET]: Assets data cached successfully.");
+        print("setCache [ASSET]: Assets data cached successfully. ${listAsset.length}");
         result['message'] = "Dữ liệu tài sản đã được lưu vào bộ nhớ đệm";
       }
     } catch (e) {
@@ -335,6 +347,44 @@ class AssetManagementRepository extends ApiBase {
     return status == Numeral.STATUS_CODE_SUCCESS ||
         status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
         status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+  }
+
+  // Helper method để extract raw list data từ response và convert thành List<Map<String, dynamic>>
+  List<Map<String, dynamic>> _extractRawListData(dynamic rawData) {
+    if (rawData == null) return [];
+    
+    List<dynamic>? listData;
+    
+    // Handle different response formats
+    if (rawData is List) {
+      listData = rawData;
+    } else if (rawData is Map) {
+      // Check for nested data in result.data format
+      if (rawData.containsKey('result') && 
+          rawData['result'] is Map && 
+          rawData['result'].containsKey('data') &&
+          rawData['result']['data'] is List) {
+        listData = rawData['result']['data'] as List;
+      } else if (rawData.containsKey('data') && rawData['data'] is List) {
+        listData = rawData['data'] as List;
+      }
+    }
+    
+    if (listData == null) return [];
+    
+    // Convert each item to Map<String, dynamic>
+    return listData
+        .map((item) {
+          if (item is Map<String, dynamic>) {
+            return item;
+          } else if (item is Map) {
+            return Map<String, dynamic>.from(item);
+          } else {
+            return <String, dynamic>{};
+          }
+        })
+        .where((map) => map.isNotEmpty)
+        .toList();
   }
 
   Future<Map<String, dynamic>> updateAsset(
