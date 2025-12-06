@@ -486,6 +486,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                           },
                           // onEdit: (item) {},
                           onDelete: _onDelete,
+                          blockDelete: (item) => !TabelAssetTransferConfig.isCheckShowDelete(item),
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
@@ -846,7 +847,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           _openColumnConfigDialog();
         },
       ),
-      if (selectedItems.isNotEmpty && selectedItems.length < 2)
+      if (selectedItems.isNotEmpty &&
+          TabelAssetTransferConfig.canSign(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -859,7 +861,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             _handleSignDocument(item, userInfo!, widget.provider);
           },
         ),
-      if (selectedItems.isNotEmpty)
+      if (selectedItems.isNotEmpty &&
+          TabelAssetTransferConfig.isCheckShowShare(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: "${'table.send'.tr} (${selectedItems.length})",
           iconPath: AppIconSvgPath.iconSend,

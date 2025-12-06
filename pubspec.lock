@@ -517,6 +517,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  idb_shim:
+    dependency: "direct main"
+    description:
+      name: idb_shim
+      sha256: "109ce57e7ae8a758e806c24669bf7809f0e4c0bc390159589819061ec2ca75c0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.6+2"
   image:
     dependency: transitive
     description:
@@ -830,6 +838,14 @@ packages:
       url: "https://github.com/congcuong207/SeGayComponent.git"
     source: git
     version: "1.0.0+1"
+  sembast:
+    dependency: transitive
+    description:
+      name: sembast
+      sha256: "7119cf6f79bd1d48c8ec7943f4facd96c15ab26823021ed0792a487c7cd34441"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.5+1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -936,7 +952,7 @@ packages:
     description:
       path: "."
       ref: "dev/new_table_expand"
-      resolved-ref: "80abeb8a616f9878cf8f5c1c23cce77624d42f91"
+      resolved-ref: "9706cef5ef42aba71416fd45cb507876a2d46a75"
       url: "https://github.com/chienpntb/table_base.git"
     source: git
     version: "1.0.0+1"

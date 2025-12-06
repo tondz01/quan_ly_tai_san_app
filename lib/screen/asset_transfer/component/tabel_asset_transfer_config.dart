@@ -381,4 +381,78 @@ class TabelAssetTransferConfig {
         return '';
     }
   }
+
+  /// Kiểm tra xem người dùng hiện tại có thể ký các mục đã chọn hay không
+  /// Chỉ có thể kiểm tra ký cho một mục duy nhất
+  /// Trả về true nếu có thể ký, false nếu không thể ký
+  static bool canSign(List<DieuDongTaiSanDto> items) {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null || items.length != 1) {
+      return false;
+    }
+
+    final item = items.first;
+    final signatureFlow = _buildSignatureFlow(item);
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+
+    if (currentIndex == -1 || signatureFlow[currentIndex]["signed"] == true) {
+      return false;
+    }
+
+    return signatureFlow.take(currentIndex).every((s) => s["signed"] == true);
+  }
+
+  static List<Map<String, dynamic>> _buildSignatureFlow(
+    DieuDongTaiSanDto item,
+  ) {
+    return [
+          if (item.nguoiLapPhieuKyNhay == true)
+            {"id": item.idNguoiKyNhay, "signed": item.trangThaiKyNhay == true},
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+          },
+          for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+            {
+              "id": item.listSignatory![i].idNguoiKy,
+              "signed": item.listSignatory![i].trangThai == 1,
+            },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+          },
+        ]
+        .where(
+          (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+        )
+        .toList();
+  }
+
+  static bool isCheckShowShare(List<DieuDongTaiSanDto> items) {
+    if (items.isEmpty) {
+      return false;
+    }
+    final hasSharedItems = items.any((e) => e.share == true);
+
+    if (hasSharedItems) {
+      return false;
+    }
+
+    return items.any((e) => e.share != true);
+  }
+
+  /// Kiểm tra xem có hiển thị nút xóa hay không
+  /// Trả về true nếu:
+  /// - Người dùng là admin, hoặc
+  /// - Trạng thái = 0 và người dùng là người tạo
+  static bool isCheckShowDelete(DieuDongTaiSanDto item) {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null) return false;
+
+    return userInfo.tenDangNhap == 'admin' ||
+        (item.trangThai == 0 && item.nguoiTao == userInfo.tenDangNhap);
+  }
 }

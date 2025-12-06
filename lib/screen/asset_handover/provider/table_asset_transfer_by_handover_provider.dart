@@ -133,11 +133,12 @@ class TableAssetTransferByHandoverProvider
     UserInfoDTO userInfo =
         AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
     NhanVien? nhanVien = AccountHelper.instance.getNhanVienById( 
-      userInfo.id,
+      userInfo.tenDangNhap,
     );
     String? idDepartment = '';
     if (userInfo.tenDangNhap != 'admin') {
       idDepartment = nhanVien?.phongBanId ?? nhanVien?.boPhan ?? '';
+      log('idDepartment: $idDepartment');
     }
 
     // Set loading cho API call

@@ -211,7 +211,9 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   titleAlignment: TextAlign.center,
                   width: 50,
                   getValue: (item) => item.soLuong,
-                  setValue: (item, value) {},
+                  setValue: (item, value) {
+                    item.soLuong = 1;
+                  },
                   sortValueGetter: (item) => item.soLuong,
                   isEditable: false,
                 ),
@@ -242,7 +244,9 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   titleAlignment: TextAlign.center,
                   width: 100,
                   getValue: (item) => item.ghiChu,
-                  setValue: (item, value) {},
+                  setValue: (item, value) {
+                    item.ghiChu = value;
+                  },
                   sortValueGetter: (item) => item.ghiChu,
                 ),
               ],

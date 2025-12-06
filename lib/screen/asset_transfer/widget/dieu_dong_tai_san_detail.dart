@@ -601,7 +601,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -649,7 +649,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -682,7 +682,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -714,7 +714,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ...state.nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
-                                child: Text(e.hoTen ?? ''),
+                                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                               ),
                             ),
                           ],
@@ -1209,7 +1209,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       } else {
         controllers
             .controllerSoChungTu
-            .text = UUIDGenerator.generateTimestampId(prefix: 'SCT-TS');
+            .text = widget.provider.genID();
         controllers.controllerSubject.text = '';
         controllers.controllerDocumentName.text = '';
         controllers.controllerDeliveringUnit.text = '';

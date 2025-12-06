@@ -9,8 +9,9 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -207,7 +208,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     onGetDataAsset(context);
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
-    _dataAsset = AccountHelper.instance.getAllAssets();
+    // _dataAsset = AccountHelper.instance.getAllAssets();
     // Khởi tạo các biến pagination
     totalEntries = 0;
     totalPages = 1;
@@ -216,8 +217,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     currentPage = 1;
     controllerDropdownPage = TextEditingController(text: '10');
     getDataDropdown();
-    if (_dataAsset == null || _dataAsset!.isEmpty) {
-    }
 
     // getDataAll(context);
 
@@ -252,6 +251,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   onGetDataAsset(BuildContext context) async {
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu...';
+    print('AssetListCacheService message onGetDataAsset');
     // if (AccountHelper.instance.getAllAssets().isEmpty) {
     //   final args = await AssetManagementRepository().getListAssetManagement(
     //     'ct001',
@@ -261,7 +261,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // } else {
     //   _dataAsset = AccountHelper.instance.getAllAssets();
     // }
-    context.read<DieuDongTaiSanBloc>().add(GetListAssetEvent(context, 'ct001'));
+    // context.read<DieuDongTaiSanBloc>().add(GetListAssetEvent(context, 'ct001'));
+    _dataAsset = await AssetListCacheService().loadAssetList();
+    print('AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}');
+    _isLoading = false;
+    _loadingMessage = '';
     notifyListeners();
 
   }
@@ -728,5 +732,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         idNeedToDo: idNeedToDo,
       );
     });
+  }
+
+  String genID(){
+    final now = DateTime.now();
+    final year = now.year;
+    String code = typeDieuDongTaiSan == 1 ? "CPTS" : typeDieuDongTaiSan == 2 ? "DDTS" : "THTS";
+    String random = UUIDGenerator.generateRandomNumber(6);
+    return "$code-$year-$random";
   }
 }

@@ -1,18 +1,30 @@
 import 'dart:math';
 
 class UUIDGenerator {
+  static const _charsNumber = '0123456789';
+  static final _rndNumber = Random();
   static const _chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   static final _rnd = Random();
 
   /// Sinh chuỗi random với độ dài [length]
   static String _randomString(int length) {
-    return String.fromCharCodes(
-      Iterable.generate(
-        length,
-        (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length)),
-      ),
-    );
+    return List.generate(
+      length,
+      (_) => _chars[_rnd.nextInt(_chars.length)],
+    ).join();
+  }
+
+  /// Sinh chuỗi random số với độ dài [length]
+  static String generateRandomNumber(int length) {
+    return List.generate(
+      length,
+      (_) => _charsNumber[_rndNumber.nextInt(_charsNumber.length)],
+    ).join();
+  }
+
+  static String generateID(String prefix, int length) {
+    return "$prefix-${generateRandom(length)}";
   }
 
   /// Sinh UUID theo format custom

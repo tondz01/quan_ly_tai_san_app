@@ -23,9 +23,7 @@ class TableToolAndSuppliesHandoverConfig {
           width: 150,
           flex: 1,
         ),
-        builder:
-            (item) =>
-                TableCellData(widget: Text(item.id ?? '')),
+        builder: (item) => TableCellData(widget: Text(item.id ?? '')),
       ),
       ColumnDefinition(
         config: TableColumnData.select(
@@ -98,7 +96,15 @@ class TableToolAndSuppliesHandoverConfig {
           width: 150,
           flex: 1,
         ),
-        builder: (item) => TableCellData(widget: Text(AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen?? '')),
+        builder:
+            (item) => TableCellData(
+              widget: Text(
+                AccountHelper.instance
+                        .getNhanVienById(item.nguoiTao ?? '')
+                        ?.hoTen ??
+                    '',
+              ),
+            ),
       ),
       ColumnDefinition(
         config: TableColumnData.select(
@@ -402,5 +408,81 @@ class TableToolAndSuppliesHandoverConfig {
         );
       },
     );
+  }
+
+  static bool isCheckShowShare(List<ToolAndSuppliesHandoverDto> items) {
+    if (items.isEmpty) {
+      return false;
+    }
+    final hasSharedItems = items.any((e) => e.share == true);
+
+    if (hasSharedItems) {
+      return false;
+    }
+
+    return items.any((e) => e.share != true);
+  }
+
+  /// Kiểm tra xem người dùng hiện tại có thể ký các mục đã chọn hay không
+  /// Chỉ có thể kiểm tra ký cho một mục duy nhất
+  /// Trả về true nếu có thể ký, false nếu không thể ký
+  static bool canSign(List<ToolAndSuppliesHandoverDto> items) {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null || items.length != 1) {
+      return false;
+    }
+
+    final item = items.first;
+    final signatureFlow = _buildSignatureFlow(item);
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+
+    if (currentIndex == -1 || signatureFlow[currentIndex]["signed"] == true) {
+      return false;
+    }
+
+    return signatureFlow.take(currentIndex).every((s) => s["signed"] == true);
+  }
+
+  static List<Map<String, dynamic>> _buildSignatureFlow(
+    ToolAndSuppliesHandoverDto item,
+  ) {
+    return [
+          {
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
+          },
+          {
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+          },
+          if (item.listSignatory?.isNotEmpty ?? false)
+            ...(item.listSignatory
+                    ?.map(
+                      (e) => {"id": e.idNguoiKy, "signed": e.trangThai == 1},
+                    )
+                    .toList() ??
+                []),
+          {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
+        ]
+        .where(
+          (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+        )
+        .map((step) => Map<String, dynamic>.from(step))
+        .toList();
+  }
+
+  /// Kiểm tra xem có hiển thị nút xóa hay không
+  /// Trả về true nếu:
+  /// - Người dùng là admin, hoặc
+  /// - Trạng thái = 0 và người dùng là người tạo
+  static bool isCheckShowDelete(ToolAndSuppliesHandoverDto item) {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null) return false;
+
+    return userInfo.tenDangNhap == 'admin' ||
+        (item.trangThai == 0 && item.nguoiTao == userInfo.tenDangNhap);
   }
 }

@@ -7,7 +7,6 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_transfer_by_handover_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -112,7 +111,9 @@ class _AssetTransferListByHandoverState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final container = riverpod.ProviderScope.containerOf(context);
-      container.read(tableAssetTransferByHandoverProvider.notifier).refreshData();
+      container
+          .read(tableAssetTransferByHandoverProvider.notifier)
+          .refreshData();
     });
   }
 
@@ -390,9 +391,7 @@ class _AssetTransferListByHandoverState
                           widget.provider.onChangeDetail(
                             context,
                             AssetHandoverDto(
-                              id: UUIDGenerator.generateWithFormat(
-                                'BG-************',
-                              ),
+                              id: widget.provider.genID(),
                               idCongTy: item.idCongTy,
                               banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
                               quyetDinhDieuDongSo: '',

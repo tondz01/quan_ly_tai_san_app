@@ -87,6 +87,45 @@ class AssetTransferRepository extends ApiBase {
 
     return result;
   }
+  Future<Map<String, dynamic>> getListDieuDongTaiSanByHandover() async {
+    List<DieuDongTaiSanDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.DIEU_DONG_TAI_SAN,
+        queryParameters: {'idcongty': 'ct001'},
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<DieuDongTaiSanDto> dieuDongTaiSans =
+          ResponseParser.parseToList<DieuDongTaiSanDto>(
+            response.data,
+            DieuDongTaiSanDto.fromJson,
+          );
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      await Future.wait(
+        dieuDongTaiSans.map((dieuDongTaiSan) async {
+          Map<String, dynamic> result = await getChiTietDieuDongTaiSan(
+            dieuDongTaiSan.id.toString(),
+          );
+          dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
+        }),
+      );
+      result['data'] = dieuDongTaiSans.where((e) => e.trangThai == 3).toList();
+    } catch (e) {
+      log("Error at getListDieuDongTaiSanByHandover - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
 
   Future<Map<String, dynamic>> createAssetTransfer(
     LenhDieuDongRequest request,
@@ -494,7 +533,7 @@ class AssetTransferRepository extends ApiBase {
           userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}&idDonViGiao=$idDepartment',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&userid=${idDepartment.isEmpty ? userid : ''}&trangThai=${trangThai == -1 ? '' : trangThai}&idDonViGiao=$idDepartment',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

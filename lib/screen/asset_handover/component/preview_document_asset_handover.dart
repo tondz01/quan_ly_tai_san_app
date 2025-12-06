@@ -146,6 +146,13 @@ previewDocumentHandover({
       chucVu: getChucVu(item.idDaiDienBenGiao ?? ''),
       donVi: getDonVi(item.idDaiDienBenGiao ?? ''),
     ),
+    SigneInfo(
+      idNhanVien: item.idDaiDienBenNhan ?? '',
+      title: 'Đại diện đơn vị bên nhận',
+      hoTen: item.tenDaiDienBenNhan ?? '',
+      chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
+      donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
+    ),
     for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
       SigneInfo(
         idNhanVien: item.listSignatory?[i].idNguoiKy ?? '',
@@ -155,18 +162,11 @@ previewDocumentHandover({
         donVi: getDonVi(item.listSignatory?[i].idNguoiKy ?? ''),
       ),
     SigneInfo(
-      idNhanVien: item.idDaiDienBenNhan ?? '',
-      title: 'Đại diện đơn vị bên nhận',
-      hoTen: item.tenDaiDienBenNhan ?? '',
-      chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
-      donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
-    ),
-    SigneInfo(
       idNhanVien: item.idGiamDoc ?? '',
       title: 'Giám đốc ký duyệt',
       hoTen: item.tenGiamDoc ?? '',
       chucVu: getChucVu(item.idGiamDoc ?? ''),
-      donVi: getDonVi(item.idGiamDoc ?? ''),
+      donVi: getChucVu(item.idGiamDoc ?? ''),
     ),
 
     // SigneInfo(

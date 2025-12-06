@@ -338,8 +338,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         },
       ),
       if (selectedItems.isNotEmpty &&
-          selectedItems.length < 2 &&
-          isShowSignButton(selectedItems.first))
+          TableAssetHandoverConfig.canSign(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -353,7 +352,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           },
         ),
 
-      if (selectedItems.isNotEmpty)
+      if (selectedItems.isNotEmpty &&
+          TableAssetHandoverConfig.isCheckShowShare(selectedItems))
         ResponsiveButtonData.fromButtonIcon(
           text: "${'table.send'.tr} (${selectedItems.length})",
           iconPath: AppIconSvgPath.iconSend,
@@ -600,6 +600,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 });
                               },
                               showActionsColumn: _showActionsColumn,
+                              onDelete: onDelete,
+                              blockDelete: (item) => !TableAssetHandoverConfig.isCheckShowDelete(item),
                               customActions: [
                                 CustomAction(
                                   tooltip: 'Xem',
@@ -609,12 +611,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                     onViewDocument(item);
                                   },
                                 ),
-                                CustomAction(
-                                  tooltip: 'Xóa',
-                                  iconPath: AppIconSvg.iconTrash2,
-                                  color: Colors.red,
-                                  onPressed: onDelete,
-                                ),
+                                // CustomAction(
+                                //   tooltip: 'Xóa',
+                                //   iconPath: AppIconSvg.iconTrash2,
+                                //   color: Colors.red,
+                                //   onPressed: onDelete,
+                                // ),
                               ],
                               actionsColumnWidth: 120,
                               maxHeight:

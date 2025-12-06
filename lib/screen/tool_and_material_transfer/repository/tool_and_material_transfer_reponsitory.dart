@@ -586,7 +586,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     try {
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${userInfo?.tenDangNhap ?? ''}&idDonViGiao=$idDonViBanGiao',
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${idDonViBanGiao.isEmpty ? userInfo?.tenDangNhap ?? '' : idDonViBanGiao}&idDonViGiao=$idDonViBanGiao',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

@@ -286,4 +286,9 @@ class NhanVien extends Equatable {
     kySo,
     savePin,
   ];
+
+  @override
+  String toString() {
+    return hoTen ?? '';
+  }
 }

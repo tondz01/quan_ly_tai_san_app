@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +15,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
@@ -28,7 +28,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+// import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -108,6 +108,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   List<NhanVien> listNhanVienDonViGiao = [];
   List<DieuDongTaiSanDto> listAssetTransfer = [];
   List<DetailAssetHandoverDto> listDetailAssetHandover = [];
+  List<DetailAssetHandoverDto> _originalListDetailAssetHandover = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
@@ -209,11 +210,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
       listNhanVien = widget.provider.dataStaff ?? [];
       listPhongBan = widget.provider.dataDepartment ?? [];
-      listAssetTransfer =
-          widget.provider.dataAssetTransfer
-              ?.where((element) => element.trangThai == 3)
-              .toList() ??
-          [];
+      listAssetTransfer = widget.provider.getFilteredAssetTransfer(
+        isEditing: item != null || widget.isFindNew,
+      );
+
 
       if (item != null) {
         isDetail = true;
@@ -256,6 +256,32 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         } else {
           listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
         }
+
+        // Lưu giá trị ban đầu để so sánh thay đổi
+        _originalListDetailAssetHandover =
+            listDetailAssetHandover
+                .map(
+                  (e) => DetailAssetHandoverDto(
+                    id: e.id,
+                    idBanGiaoTaiSan: e.idBanGiaoTaiSan,
+                    banGiaoTaiSan: e.banGiaoTaiSan,
+                    quyetDinhDieuDongSo: e.quyetDinhDieuDongSo,
+                    idTaiSan: e.idTaiSan,
+                    tenTaiSan: e.tenTaiSan,
+                    donViTinh: e.donViTinh,
+                    kyHieu: e.kyHieu,
+                    soKyHieu: e.soKyHieu,
+                    hienTrang: e.hienTrang,
+                    moTa: e.moTa,
+                    soLuong: e.soLuong,
+                    ngayTao: e.ngayTao,
+                    ngayCapNhat: e.ngayCapNhat,
+                    nguoiTao: e.nguoiTao,
+                    nguoiCapNhat: e.nguoiCapNhat,
+                    isActive: e.isActive,
+                  ),
+                )
+                .toList();
 
         isByStep = item?.byStep ?? false;
         nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
@@ -371,16 +397,47 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
-    listNhanVienDonViNhan =
-        widget.provider.dataStaff
-            ?.where((element) => element.phongBanId == idDonViNhan)
-            .toList() ??
-        [];
-    listNhanVienDonViGiao =
-        widget.provider.dataStaff
-            ?.where((element) => element.phongBanId == idDonViGiao)
-            .toList() ??
-        [];
+    // listNhanVienDonViNhan =
+    //     widget.provider.dataStaff
+    //         ?.where((element) => element.phongBanId == idDonViNhan)
+    //         .toList() ??
+    //     [];
+    final departments = widget.provider.dataDepartment ?? [];
+    final donViGiao = departments.where((e) => e.id == idDonViGiao).firstOrNull;
+    final donViNhan = departments.where((e) => e.id == idDonViNhan).firstOrNull;
+
+    if (donViNhan?.isKho == true) {
+      final idPhongBanKho =
+          departments
+              .where((element) => element.isKho == true)
+              .map((element) => element.id)
+              .toSet();
+      listNhanVienDonViNhan =
+          listNhanVien
+              .where((element) => idPhongBanKho.contains(element.phongBanId))
+              .toList();
+    } else {
+      listNhanVienDonViNhan =
+          listNhanVien
+              .where((element) => element.phongBanId == idDonViGiao)
+              .toList();
+    }
+    if (donViGiao?.isKho == true) {
+      final idPhongBanKho =
+          departments
+              .where((element) => element.isKho == true)
+              .map((element) => element.id)
+              .toSet();
+      listNhanVienDonViGiao =
+          listNhanVien
+              .where((element) => idPhongBanKho.contains(element.phongBanId))
+              .toList();
+    } else {
+      listNhanVienDonViGiao =
+          listNhanVien
+              .where((element) => element.phongBanId == idDonViGiao)
+              .toList();
+    }
   }
 
   Map<String, bool> _validationErrors = {};
@@ -476,7 +533,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       // controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
     } else {
       isEditing = true;
-      controllerHandoverNumber.text = '';
+      controllerHandoverNumber.text = widget.provider.genID();
       controllerDocumentName.text = '';
     }
   }
@@ -583,32 +640,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         ),
       );
     } else {
-      // Chỉ thực hiện CRUD khi cập nhật và có thay đổi trong listDetailAssetHandover
-      if (listDetailAssetHandover.isNotEmpty) {
-        _updateDetailAssetHandover(
-          listDetailAssetHandover
-              .map(
-                (e) => ChiTietDieuDongTaiSan(
-                  id: e.id ?? '',
-                  idDieuDongTaiSan: e.idBanGiaoTaiSan ?? '',
-                  soQuyetDinh: e.quyetDinhDieuDongSo ?? '',
-                  tenPhieu: e.banGiaoTaiSan ?? '',
-                  idTaiSan: e.idTaiSan ?? '',
-                  tenTaiSan: e.tenTaiSan ?? '',
-                  donViTinh: e.donViTinh ?? '',
-                  hienTrang: e.hienTrang ?? 0,
-                  soLuong: e.soLuong ?? 0,
-                  ghiChu: e.moTa ?? '',
-                  ngayTao: e.ngayTao ?? '',
-                  ngayCapNhat: e.ngayCapNhat ?? '',
-                  nguoiTao: e.nguoiTao ?? '',
-                  nguoiCapNhat: e.nguoiCapNhat ?? '',
-                  isActive: e.isActive ?? true,
-                ),
-              )
-              .toList(),
-        );
-      }
+      // Kiểm tra và cập nhật listDetailAssetHandover nếu có thay đổi
+      await _checkAndUpdateDetailAssetHandover();
 
       int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
       // Thêm dòng này - Cập nhật người ký nếu có thay đổi
@@ -914,6 +947,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                     donViTinh: e.donViTinh,
                                     hienTrang: e.hienTrang,
                                     soLuong: e.soLuong,
+                                    moTa: e.ghiChu,
                                     ngayTao: AppUtility.formatDateString(
                                       DateTime.now(),
                                     ),
@@ -928,7 +962,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                 .toList();
                         widget.provider.dataDetailAssetHandover =
                             listDetailAssetHandover;
-                        log(
+                        print(
                           'listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
                         );
                         getAssetHandoverPreview();
@@ -1185,7 +1219,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             ...listNhanVienDonViGiao.map(
               (e) => DropdownMenuItem<NhanVien>(
                 value: e,
-                child: Text(e.hoTen ?? ''),
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
               ),
             ),
           ],
@@ -1221,7 +1255,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             ...listNhanVienDonViNhan.map(
               (e) => DropdownMenuItem<NhanVien>(
                 value: e,
-                child: Text(e.hoTen ?? ''),
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
               ),
             ),
           ],
@@ -1287,7 +1321,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 .map(
                   (e) => DropdownMenuItem<NhanVien>(
                     value: e,
-                    child: Text(e.hoTen ?? ''),
+                    child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
                   ),
                 ),
           ],
@@ -1390,82 +1424,175 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     );
   }
 
-  void _updateDetailAssetHandover(List<ChiTietDieuDongTaiSan> newData) {
-    final currentList = item?.chiTietBanGiaoTaiSan ?? [];
-    final repository = AssetHandoverRepository();
-    final newList =
-        newData.map((newItem) {
-          final existing = currentList.firstWhere(
-            (h) => h.tenTaiSan == newItem.tenTaiSan,
-            orElse: () => DetailAssetHandoverDto(),
-          );
-          return DetailAssetHandoverDto(
-            id:
-                existing.id ??
-                UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
-            idBanGiaoTaiSan: item?.id ?? '',
-            banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
-            quyetDinhDieuDongSo: item?.quyetDinhDieuDongSo ?? '',
-            idTaiSan: newItem.idTaiSan,
-            tenTaiSan: newItem.tenTaiSan,
-            donViTinh: newItem.donViTinh,
-            kyHieu: existing.kyHieu,
-            soKyHieu: existing.soKyHieu,
-            hienTrang: newItem.hienTrang,
-            moTa: newItem.ghiChu,
-            soLuong: newItem.soLuong,
-            ngayTao:
-                existing.ngayTao ?? AppUtility.formatDateString(DateTime.now()),
-            ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
-            nguoiTao: existing.nguoiTao ?? currentUser?.tenDangNhap ?? '',
-            nguoiCapNhat: currentUser?.tenDangNhap ?? '',
-            isActive: newItem.isActive,
-          );
-        }).toList();
-
-    _performCRUDOperations(repository, currentList, newList);
-
-    listDetailAssetHandover = newList;
-    if (item != null) {
-      item!.chiTietBanGiaoTaiSan = newList;
-    }
-  }
-
-  void _performCRUDOperations(
-    AssetHandoverRepository repository,
-    List<DetailAssetHandoverDto> currentList,
-    List<DetailAssetHandoverDto> newList,
-  ) {
-    final itemsToAdd =
-        newList
-            .where(
-              (newItem) =>
-                  !currentList.any(
-                    (currentItem) => currentItem.id == newItem.id,
-                  ),
-            )
-            .toList();
-
-    final itemsToDelete =
-        currentList
-            .where(
-              (currentItem) =>
-                  !newList.any((newItem) => newItem.id == currentItem.id),
-            )
-            .toList();
-
-    // Thực hiện thêm mới
-    if (itemsToAdd.isNotEmpty) {
-      repository.createDetailHandoverAsset(itemsToAdd);
+  /// Kiểm tra xem listDetailAssetHandover có bị thay đổi không
+  bool _hasDetailAssetHandoverChanged() {
+    if (_originalListDetailAssetHandover.length !=
+        listDetailAssetHandover.length) {
+      return true;
     }
 
-    // Thực hiện xóa
-    for (final item in itemsToDelete) {
-      if (item.id != null) {
-        repository.deleteDetailHandoverCCDC(item.id!);
+    // So sánh từng phần tử dựa trên JSON để phát hiện thay đổi
+    for (int i = 0; i < listDetailAssetHandover.length; i++) {
+      final current = listDetailAssetHandover[i];
+      final original = _originalListDetailAssetHandover.firstWhere(
+        (e) => e.id == current.id,
+        orElse: () => DetailAssetHandoverDto(),
+      );
+
+      // Nếu không tìm thấy trong danh sách gốc hoặc có sự khác biệt
+      if (original.id == null ||
+          jsonEncode(current.toJson()) != jsonEncode(original.toJson())) {
+        return true;
       }
     }
+
+    return false;
   }
+
+  /// Cập nhật listDetailAssetHandover nếu có thay đổi
+  Future<void> _checkAndUpdateDetailAssetHandover() async {
+    if (!_hasDetailAssetHandoverChanged()) {
+      return;
+    }
+
+    final repository = AssetHandoverRepository();
+    final result = await repository.updateDetailAssetHandover(
+      listDetailAssetHandover,
+    );
+
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      // Cập nhật giá trị gốc sau khi update thành công
+      _originalListDetailAssetHandover =
+          listDetailAssetHandover
+              .map(
+                (e) => DetailAssetHandoverDto(
+                  id: e.id,
+                  idBanGiaoTaiSan: e.idBanGiaoTaiSan,
+                  banGiaoTaiSan: e.banGiaoTaiSan,
+                  quyetDinhDieuDongSo: e.quyetDinhDieuDongSo,
+                  idTaiSan: e.idTaiSan,
+                  tenTaiSan: e.tenTaiSan,
+                  donViTinh: e.donViTinh,
+                  kyHieu: e.kyHieu,
+                  soKyHieu: e.soKyHieu,
+                  hienTrang: e.hienTrang,
+                  moTa: e.moTa,
+                  soLuong: e.soLuong,
+                  ngayTao: e.ngayTao,
+                  ngayCapNhat: e.ngayCapNhat,
+                  nguoiTao: e.nguoiTao,
+                  nguoiCapNhat: e.nguoiCapNhat,
+                  isActive: e.isActive,
+                ),
+              )
+              .toList();
+    } else {
+      SGLog.error(
+        "AssetHandoverDetail",
+        "Error updating detail asset handover: ${result['status_code']}",
+      );
+    }
+  }
+
+  // void _updateDetailAssetHandover(List<ChiTietDieuDongTaiSan> newData) {
+  //   final currentList = item?.chiTietBanGiaoTaiSan ?? [];
+  //   final repository = AssetHandoverRepository();
+  //   final newList =
+  //       newData.map((newItem) {
+  //         final existing = currentList.firstWhere(
+  //           (h) => h.tenTaiSan == newItem.tenTaiSan,
+  //           orElse: () => DetailAssetHandoverDto(),
+  //         );
+  //         return DetailAssetHandoverDto(
+  //           id:
+  //               existing.id ??
+  //               UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
+  //           idBanGiaoTaiSan: item?.id ?? '',
+  //           banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
+  //           quyetDinhDieuDongSo: item?.quyetDinhDieuDongSo ?? '',
+  //           idTaiSan: newItem.idTaiSan,
+  //           tenTaiSan: newItem.tenTaiSan,
+  //           donViTinh: newItem.donViTinh,
+  //           kyHieu: existing.kyHieu,
+  //           soKyHieu: existing.soKyHieu,
+  //           hienTrang: newItem.hienTrang,
+  //           moTa: newItem.ghiChu,
+  //           soLuong: newItem.soLuong,
+  //           ngayTao:
+  //               existing.ngayTao ?? AppUtility.formatDateString(DateTime.now()),
+  //           ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+  //           nguoiTao: existing.nguoiTao ?? currentUser?.tenDangNhap ?? '',
+  //           nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+  //           isActive: newItem.isActive,
+  //         );
+  //       }).toList();
+
+  //   _performCRUDOperations(repository, currentList, newList);
+
+  //   listDetailAssetHandover = newList;
+  //   if (item != null) {
+  //     item!.chiTietBanGiaoTaiSan = newList;
+  //   }
+
+  //   // Cập nhật giá trị gốc sau khi thay đổi
+  //   _originalListDetailAssetHandover = newList
+  //       .map((e) => DetailAssetHandoverDto(
+  //             id: e.id,
+  //             idBanGiaoTaiSan: e.idBanGiaoTaiSan,
+  //             banGiaoTaiSan: e.banGiaoTaiSan,
+  //             quyetDinhDieuDongSo: e.quyetDinhDieuDongSo,
+  //             idTaiSan: e.idTaiSan,
+  //             tenTaiSan: e.tenTaiSan,
+  //             donViTinh: e.donViTinh,
+  //             kyHieu: e.kyHieu,
+  //             soKyHieu: e.soKyHieu,
+  //             hienTrang: e.hienTrang,
+  //             moTa: e.moTa,
+  //             soLuong: e.soLuong,
+  //             ngayTao: e.ngayTao,
+  //             ngayCapNhat: e.ngayCapNhat,
+  //             nguoiTao: e.nguoiTao,
+  //             nguoiCapNhat: e.nguoiCapNhat,
+  //             isActive: e.isActive,
+  //           ))
+  //       .toList();
+  // }
+
+  // void _performCRUDOperations(
+  //   AssetHandoverRepository repository,
+  //   List<DetailAssetHandoverDto> currentList,
+  //   List<DetailAssetHandoverDto> newList,
+  // ) {
+  //   final itemsToAdd =
+  //       newList
+  //           .where(
+  //             (newItem) =>
+  //                 !currentList.any(
+  //                   (currentItem) => currentItem.id == newItem.id,
+  //                 ),
+  //           )
+  //           .toList();
+
+  //   final itemsToDelete =
+  //       currentList
+  //           .where(
+  //             (currentItem) =>
+  //                 !newList.any((newItem) => newItem.id == currentItem.id),
+  //           )
+  //           .toList();
+
+  //   // Thực hiện thêm mới
+  //   if (itemsToAdd.isNotEmpty) {
+  //     repository.createDetailHandoverAsset(itemsToAdd);
+  //   }
+
+  //   // Thực hiện xóa
+  //   for (final item in itemsToDelete) {
+  //     if (item.id != null) {
+  //       repository.deleteDetailHandoverCCDC(item.id!);
+  //     }
+  //   }
+  // }
 
   onInitListDetailAssetHandover(Map<String, dynamic> request) {
     if (item != null) {

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 
 class AccountTableConfig {
+  
   static List<ColumnDefinition> getColumns(UserInfoDTO userInfo) {
     return [
       ColumnDefinition(
@@ -17,6 +19,21 @@ class AccountTableConfig {
         builder: (item) {
           return TableCellData(
             widget: Text(item.tenDangNhap ?? ''),
+          );
+        },
+      ),
+      ColumnDefinition(
+        config: TableColumnData.select(
+          name: 'Phòng ban',
+          key: 'phongBan',
+          width: 170,
+          flex: 1,
+          isFixed: false,
+        ),
+        builder: (item) {
+          final nhanVien = AccountHelper.instance.getNhanVienById(item.tenDangNhap);
+          return TableCellData(
+            widget: Text(AccountHelper.instance.getDepartmentById(nhanVien?.phongBanId ?? nhanVien?.boPhan ?? '')?.tenPhongBan ?? ''),
           );
         },
       ),
