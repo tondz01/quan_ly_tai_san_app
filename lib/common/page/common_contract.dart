@@ -149,19 +149,36 @@ class _CommonContractState extends State<CommonContract> {
     }
     try {
       String url = "";
-      if (loaiKy == 2) {
-        String name = widget.nhanVien?.chuKyThuong ?? "";
+      String primaryName = "";
+      String fallbackName = "";
 
-        url = widget.signatureList.firstWhere((e) => e.contains(name));
-      } else if (loaiKy == 1) {
-        String name = widget.nhanVien?.chuKyNhay ?? "";
-        url = widget.signatureList.firstWhere((e) => e.contains(name));
-      } else if (loaiKy == 4) {
-        String name = widget.nhanVien?.chuKyThuong ?? "";
-        url = widget.signatureList.firstWhere((e) => e.contains(name));
-      } else if (loaiKy == 5) {
-        String name = widget.nhanVien?.chuKyNhay ?? "";
-        url = widget.signatureList.firstWhere((e) => e.contains(name));
+      // Determine primary and fallback signature names based on loaiKy
+      if (loaiKy == 2 || loaiKy == 4) {
+        primaryName = widget.nhanVien?.chuKyThuong ?? "";
+        fallbackName =
+            widget.nhanVien?.chuKyNhay ??
+            ""; // Fallback to chuKyNhay if chuKyThuong is empty
+      } else if (loaiKy == 1 || loaiKy == 5) {
+        primaryName = widget.nhanVien?.chuKyNhay ?? "";
+        fallbackName =
+            widget.nhanVien?.chuKyThuong ??
+            ""; // Fallback to chuKyThuong if chuKyNhay is empty
+      }
+
+      // Try primary signature first
+      if (primaryName.isNotEmpty && primaryName != "null") {
+        url = widget.signatureList.firstWhere(
+          (e) => e.contains(primaryName),
+          orElse: () => "",
+        );
+      }
+
+      // If primary is empty, try fallback
+      if (url.isEmpty && fallbackName.isNotEmpty && fallbackName != "null") {
+        url = widget.signatureList.firstWhere(
+          (e) => e.contains(fallbackName),
+          orElse: () => "",
+        );
       }
       if (url.isEmpty) {
         if (mounted) {
@@ -244,12 +261,6 @@ class _CommonContractState extends State<CommonContract> {
   Future<void> _fillSignatures() async {
     if (widget.signatureList.isEmpty) return;
 
-    // Log toàn bộ dữ liệu API để debug
-    SGLog.info(
-      'Load signatures',
-      'API data: ${signatures.map((e) => e.toString()).join('\n')}',
-    );
-
     for (var sig in signatures) {
       // Load normalized coordinates (0-1 range) directly from API
       final double normalizedX = sig["x"]?.toDouble() ?? 0;
@@ -259,14 +270,29 @@ class _CommonContractState extends State<CommonContract> {
       final String? tenNguoiKy = sig["tenNguoiKy"]?.toString();
       final String? ngayKy = sig["ngayKy"]?.toString();
       String signatureUrl = "";
-      if (loaiKy == 1) {
-        signatureUrl = sig["chuKyNhay"].toString();
-      } else if (loaiKy == 2) {
-        signatureUrl = sig["chuKyThuong"].toString();
-      } else if (loaiKy == 4) {
-        signatureUrl = sig["chuKyThuong"].toString();
-      } else if (loaiKy == 5) {
-        signatureUrl = sig["chuKyNhay"].toString();
+      String rawUrlPrimary = "";
+      String rawUrlFallback = "";
+
+      // Determine primary and fallback URLs based on loaiKy
+      if (loaiKy == 1 || loaiKy == 5) {
+        // Primary: chuKyNhay, Fallback: chuKyThuong
+        rawUrlPrimary = sig["chuKyNhay"]?.toString() ?? "";
+        rawUrlFallback = sig["chuKyThuong"]?.toString() ?? "";
+      } else if (loaiKy == 2 || loaiKy == 4) {
+        // Primary: chuKyThuong, Fallback: chuKyNhay
+        rawUrlPrimary = sig["chuKyThuong"]?.toString() ?? "";
+        rawUrlFallback = sig["chuKyNhay"]?.toString() ?? "";
+      }
+
+      // Try primary first, then fallback
+      if (rawUrlPrimary.isNotEmpty && rawUrlPrimary != "null") {
+        signatureUrl = rawUrlPrimary;
+      } else if (rawUrlFallback.isNotEmpty && rawUrlFallback != "null") {
+        signatureUrl = rawUrlFallback;
+        SGLog.info(
+          'Load signature',
+          'Using fallback signature for user $idNguoiKy, loaiKy: $loaiKy',
+        );
       }
       if (loaiKy == 3 || loaiKy == 4 || loaiKy == 5) {
         setState(() {
@@ -305,10 +331,11 @@ class _CommonContractState extends State<CommonContract> {
         String? urlToUse = signatureUrl;
 
         // Nếu không có signatureUrl từ API, fallback về signatureList
-        if (urlToUse.isNotEmpty) {
+        if (urlToUse.isNotEmpty && urlToUse != "null") {
           try {
             urlToUse =
                 '${ApiConfig.getBaseURL()}/api/upload/download/$urlToUse';
+            print(urlToUse);
             final response = await http.get(Uri.parse(urlToUse));
             if (response.statusCode == 200) {
               // Với ký nháy/ký thường: chỉ hiển thị ảnh chữ ký
@@ -336,10 +363,54 @@ class _CommonContractState extends State<CommonContract> {
             );
           }
         } else {
+          // Fallback: try to load from widget.signatureList
           SGLog.warning(
             'Load signature',
-            'No signature URL found for user $idNguoiKy',
+            'No signature URL from API for user $idNguoiKy, trying fallback...',
           );
+
+          try {
+            String? fallbackName;
+            if (loaiKy == 1 || loaiKy == 5) {
+              fallbackName = sig["chuKyNhay"]?.toString();
+            } else if (loaiKy == 2 || loaiKy == 4) {
+              fallbackName = sig["chuKyThuong"]?.toString();
+            }
+
+            if (fallbackName != null &&
+                fallbackName.isNotEmpty &&
+                fallbackName != "null") {
+              final fallbackUrl = widget.signatureList.firstWhere(
+                (e) => e.contains(fallbackName!),
+                orElse: () => "",
+              );
+
+              if (fallbackUrl.isNotEmpty) {
+                final response = await http.get(Uri.parse(fallbackUrl));
+                if (response.statusCode == 200) {
+                  final double absoluteY = _toAbsoluteY(normalizedY);
+                  final double absoluteX = _toAbsoluteX(normalizedX);
+                  _addSignature(
+                    response.bodyBytes,
+                    loaiKy,
+                    absoluteY,
+                    absoluteX,
+                    false,
+                    isNew: false,
+                  );
+                  SGLog.info(
+                    'Load signature',
+                    'Loaded signature from fallback URL for user $idNguoiKy',
+                  );
+                }
+              }
+            }
+          } catch (e) {
+            SGLog.error(
+              'Load signature',
+              'Fallback load failed for user $idNguoiKy: $e',
+            );
+          }
         }
 
         // Log để debug
@@ -377,110 +448,103 @@ class _CommonContractState extends State<CommonContract> {
           state.setState(() => state.isSelected = false);
         }
       }
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 100));
 
-      // Xuất từng trang thành PDF page riêng biệt
-      for (int i = 0; i < _pageKeys.length; i++) {
-        final pageKey = _pageKeys[i];
-        // Scroll đến trang để đảm bảo nó được render (fix lỗi Local result has not been initialized)
-        if (pageKey.currentContext != null) {
-          await Scrollable.ensureVisible(
-            pageKey.currentContext!,
-            duration: const Duration(milliseconds: 100),
+      // Capture toàn bộ Stack bao gồm nội dung và chữ ký
+      final boundary =
+          _contractKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+
+      if (boundary != null) {
+        final double pixelRatio = kIsWeb ? 2.0 : 3.0;
+        final image = await boundary.toImage(pixelRatio: pixelRatio);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final pngBytes = byteData!.buffer.asUint8List();
+
+        // Tính toán kích thước
+        final imageWidth = image.width.toDouble();
+        final imageHeight = image.height.toDouble();
+
+        if (imageWidth.isNaN ||
+            imageHeight.isNaN ||
+            imageWidth <= 0 ||
+            imageHeight <= 0) {
+          throw Exception(
+            'Kích thước ảnh không hợp lệ: ${imageWidth}x$imageHeight',
           );
-          await Future.delayed(const Duration(milliseconds: 150));
         }
 
-        final boundary =
-            pageKey.currentContext?.findRenderObject()
-                as RenderRepaintBoundary?;
+        // Tính chiều cao mỗi trang A4
+        final pageHeight = REFERENCE_HEIGHT;
+        final totalPages = widget.contractPages.length;
 
-        if (boundary != null) {
-          final double pixelRatio = kIsWeb ? 1.5 : 2.0;
-          final image = await boundary.toImage(pixelRatio: pixelRatio);
-          final byteData = await image.toByteData(
-            format: ui.ImageByteFormat.png,
-          );
-          final pngBytes = byteData!.buffer.asUint8List();
+        // Tạo từng trang PDF
+        for (int i = 0; i < totalPages; i++) {
+          // Cắt phần ảnh cho trang này
+          final srcY = (i * pageHeight * pixelRatio).round();
+          final srcHeight = (pageHeight * pixelRatio).round();
 
-          // Kiểm tra kích thước ảnh
-          final imageWidth = image.width.toDouble();
-          final imageHeight = image.height.toDouble();
+          // Dùng toàn bộ ảnh đã capture nếu chỉ có 1 trang
+          if (totalPages == 1) {
+            pdf.addPage(
+              pw.Page(
+                pageFormat: PdfPageFormat.a4.portrait,
+                margin: pw.EdgeInsets.zero,
+                build:
+                    (context) => pw.SizedBox.expand(
+                      child: pw.FittedBox(
+                        fit: pw.BoxFit.fill,
+                        child: pw.Image(pw.MemoryImage(pngBytes)),
+                      ),
+                    ),
+              ),
+            );
+          } else {
+            // Nhiều trang: cần cắt ảnh theo từng trang
+            // Tạo recorder để cắt ảnh
+            final recorder = ui.PictureRecorder();
+            final canvas = Canvas(recorder);
 
-          if (imageWidth.isNaN ||
-              imageHeight.isNaN ||
-              imageWidth <= 0 ||
-              imageHeight <= 0) {
-            throw Exception(
-              'Kích thước ảnh không hợp lệ trang ${i + 1}: ${imageWidth}x$imageHeight',
+            // Vẽ phần ảnh cần thiết
+            final srcRect = Rect.fromLTWH(
+              0,
+              srcY.toDouble(),
+              imageWidth,
+              srcHeight.toDouble().clamp(0, imageHeight - srcY),
+            );
+            final dstRect = Rect.fromLTWH(
+              0,
+              0,
+              imageWidth,
+              srcHeight.toDouble().clamp(0, imageHeight - srcY),
+            );
+
+            canvas.drawImageRect(image, srcRect, dstRect, Paint());
+
+            final picture = recorder.endRecording();
+            final croppedImage = await picture.toImage(
+              imageWidth.round(),
+              srcHeight.clamp(0, (imageHeight - srcY).round()),
+            );
+            final croppedByteData = await croppedImage.toByteData(
+              format: ui.ImageByteFormat.png,
+            );
+            final croppedPngBytes = croppedByteData!.buffer.asUint8List();
+
+            pdf.addPage(
+              pw.Page(
+                pageFormat: PdfPageFormat.a4.portrait,
+                margin: pw.EdgeInsets.zero,
+                build:
+                    (context) => pw.SizedBox.expand(
+                      child: pw.FittedBox(
+                        fit: pw.BoxFit.fill,
+                        child: pw.Image(pw.MemoryImage(croppedPngBytes)),
+                      ),
+                    ),
+              ),
             );
           }
-
-          final imageProvider = pw.MemoryImage(pngBytes);
-
-          // Lọc chữ ký thuộc trang này (dựa trên vị trí Y)
-          final pageHeight = 800 * (297 / 210); // Chiều cao A4Canvas
-          final pageSignatures = <DraggableImage>[];
-
-          for (var img in images) {
-            final state =
-                (img.key as GlobalKey).currentState as _DraggableImageState?;
-            if (state != null) {
-              final signatureY = state.absoluteTop;
-              final startY = i * pageHeight;
-              final endY = (i + 1) * pageHeight;
-
-              // Kiểm tra chữ ký thuộc trang nào
-              if (signatureY >= startY && signatureY < endY) {
-                pageSignatures.add(img);
-              }
-            }
-          }
-
-          pdf.addPage(
-            pw.Page(
-              pageFormat: PdfPageFormat.a4.portrait,
-              margin: pw.EdgeInsets.zero,
-              build:
-                  (context) => pw.Stack(
-                    children: [
-                      // Nội dung trang
-                      pw.SizedBox.expand(
-                        child: pw.FittedBox(
-                          fit: pw.BoxFit.fill,
-                          child: pw.Image(imageProvider),
-                        ),
-                      ),
-                      // Thêm chữ ký vào đúng vị trí (nếu có)
-                      ...pageSignatures.map((img) {
-                        final state =
-                            (img.key as GlobalKey).currentState
-                                as _DraggableImageState?;
-                        if (state != null) {
-                          // Tính toán vị trí tương đối cho từng trang
-                          double relativeY =
-                              state.absoluteTop - (i * pageHeight);
-
-                          return pw.Positioned(
-                            top:
-                                (relativeY / pageHeight) *
-                                PdfPageFormat.a4.height,
-                            left:
-                                (state.absoluteLeft / 800) *
-                                PdfPageFormat.a4.width,
-                            child: pw.Container(
-                              width: 100 * state.scale,
-                              height: 60 * state.scale,
-                              child: pw.Image(pw.MemoryImage(img.bytes)),
-                            ),
-                          );
-                        }
-                        return pw.Container();
-                      }),
-                    ],
-                  ),
-            ),
-          );
         }
       }
 
@@ -1785,14 +1849,19 @@ class _DraggableImageState extends State<DraggableImage> {
                 right: -10,
                 child: InkWell(
                   onTap: () {
-                    context
-                        .findAncestorStateOfType<_CommonContractState>()
-                        ?.setState(() {
-                          context
-                              .findAncestorStateOfType<_CommonContractState>()
-                              ?.images
-                              .remove(widget);
+                    final state =
+                        context.findAncestorStateOfType<_CommonContractState>();
+                    if (state != null) {
+                      // Find index by matching key instead of reference
+                      final index = state.images.indexWhere(
+                        (img) => img.key == widget.key,
+                      );
+                      if (index != -1) {
+                        state.setState(() {
+                          state.images.removeAt(index);
                         });
+                      }
+                    }
                   },
                   child: Container(
                     width: 28,
