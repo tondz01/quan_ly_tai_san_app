@@ -1309,22 +1309,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   ? widget.provider.getNhanVien(idNhanVien: item!.idGiamDoc!)
                   : null,
           fieldName: 'giamDocXacNhan',
-          items: [
-            ...listNhanVien
-                .where(
-                  (e) =>
-                      e.phongBanId == 'GD' ||
-                      e.boPhan == 'GD' ||
-                      e.phongBanId == 'P21' ||
-                      e.boPhan == 'P21',
-                )
-                .map(
-                  (e) => DropdownMenuItem<NhanVien>(
-                    value: e,
-                    child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
-                  ),
-                ),
-          ],
+          items: AppUtility.getNhanVienLanhDao(
+            nhanViens: listNhanVien,
+            phongBans: listPhongBan,
+          ).map((e) => DropdownMenuItem<NhanVien>(
+                value: e,
+                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
+              )).toList(),
           onChanged: (value) {
             setState(() {
               nguoiKyGiamDoc = value;

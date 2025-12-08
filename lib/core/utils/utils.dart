@@ -5,6 +5,8 @@ import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class LyDoTang {
@@ -476,5 +478,37 @@ abstract class AppUtility {
             .toList();
 
     return list.contains(userId);
+  }
+
+  static String getIdPhongBanLD(List<PhongBan> phongBans) {
+    if (phongBans.isEmpty) return '';
+    String idPhongBanLanhDao = phongBans
+        .where((phongBan) => phongBan.isLanhDao == true)
+        .map((e) => e.id)
+        .join(',');
+
+    return idPhongBanLanhDao;
+  }
+
+  /// Lọc danh sách nhân viên thuộc các phòng ban lãnh đạo (isLanhDao == true)
+  /// [nhanViens] - Danh sách tất cả nhân viên
+  /// [phongBans] - Danh sách tất cả phòng ban
+  /// Returns: Danh sách nhân viên thuộc phòng ban lãnh đạo
+  static List<NhanVien> getNhanVienLanhDao({
+    required List<NhanVien> nhanViens,
+    required List<PhongBan> phongBans,
+  }) {
+    if (nhanViens.isEmpty || phongBans.isEmpty) return [];
+
+    final listIdLD = getIdPhongBanLD(phongBans)
+        .split(',')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+
+    if (listIdLD.isEmpty) return [];
+
+    return nhanViens
+        .where((e) => listIdLD.contains(e.phongBanId) || listIdLD.contains(e.boPhan))
+        .toList();
   }
 }

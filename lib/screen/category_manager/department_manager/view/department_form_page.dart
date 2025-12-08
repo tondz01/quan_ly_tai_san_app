@@ -29,6 +29,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   bool isEditing = false;
   bool isKho = false;
+  bool isLanhDao = false;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
     if (_data != null) {
       isEditing = false;
       isKho = _data?.isKho ?? false;
+      isLanhDao = _data?.isLanhDao ?? false;
     } else {
       isEditing = true;
     }
@@ -94,6 +96,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         idQuanLy: '',
         phongCapTren: _parentDepartment?.id ?? '',
         isKho: isKho,
+        isLanhDao: isLanhDao,
       );
       if (_data == null) {
         context.read<DepartmentBloc>().add(CreateDepartmentEvent(department));
@@ -200,6 +203,20 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             : (v) {
                               setState(() {
                                 isKho = v;
+                              });
+                            },
+                    isEditing: isEdit,
+                    isDisabled: isEdit,
+                  ),
+                  CommonCheckboxInput(
+                    label: 'Là phòng ban lãnh đạo',
+                    value: isLanhDao,
+                    onChanged:
+                        isEdit
+                            ? null
+                            : (v) {
+                              setState(() {
+                                isLanhDao = v;
                               });
                             },
                     isEditing: isEdit,

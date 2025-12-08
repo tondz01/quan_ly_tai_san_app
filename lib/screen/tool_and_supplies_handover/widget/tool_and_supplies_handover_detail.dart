@@ -430,6 +430,19 @@ class _ToolAndSuppliesHandoverDetailState
     }
   }
 
+  /// Xây dựng danh sách dropdown cho Giám đốc ký xác nhận
+  /// Lọc nhân viên thuộc các phòng ban lãnh đạo (isLanhDao == true)
+  List<DropdownMenuItem<NhanVien>> _buildItemsGiamDoc() {
+    return AppUtility.getNhanVienLanhDao(
+      nhanViens: listNhanVien,
+      phongBans: listPhongBan,
+    ).map((e) => DropdownMenuItem<NhanVien>(
+          value: e,
+          child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
+        ))
+        .toList();
+  }
+
   Map<String, bool> _validationErrors = {};
 
   bool _validateForm() {
@@ -1356,22 +1369,7 @@ class _ToolAndSuppliesHandoverDetailState
                   ? widget.provider.getNhanVien(idNhanVien: item!.idGiamDoc!)
                   : null,
           fieldName: 'giamDocXacNhan',
-          items: [
-            ...listNhanVien
-                .where(
-                  (e) =>
-                      e.phongBanId == 'GD' ||
-                      e.boPhan == 'GD' ||
-                      e.phongBanId == 'P21' ||
-                      e.boPhan == 'P21',
-                )
-                .map(
-                  (e) => DropdownMenuItem<NhanVien>(
-                    value: e,
-                    child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
-                  ),
-                ),
-          ],
+          items: _buildItemsGiamDoc(),
           onChanged: (value) {
             nguoiKyGiamDoc = value;
           },

@@ -357,15 +357,24 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onChangeDetailToolAndMaterialTransfer(
     ToolAndMaterialTransferDto? item,
   ) async {
-    // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _item = item;
+    _messageLoading = 'Đang tải dữ liệu...';
+    _isLoading = true;
     isShowInput = true;
     isShowCollapse = true;
-    if (item != null) {
-      _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
-      buildThreadNodes(item);
-    }
     notifyListeners();
+
+    try {
+      if (item != null && item.id != null) {
+        _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
+        buildThreadNodes(item);
+      }
+    } catch (e) {
+      log('Error in onChangeDetailToolAndMaterialTransfer: $e');
+      // Có thể hiển thị thông báo lỗi nếu cần
+    } finally {
+      onSetLoading(false);
+    }
   }
 
   getListToolAndMaterialTransferSuccess(
