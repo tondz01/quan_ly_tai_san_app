@@ -313,16 +313,10 @@ class _ToolAndMaterialTransferDetailState
       isNew = item == null;
       listNhanVien = widget.provider.dataNhanVien;
 
-      nvPhongGD =
-          listNhanVien
-              .where(
-                (e) =>
-                    e.phongBanId == 'GD' ||
-                    e.boPhan == 'GD' ||
-                    e.phongBanId == 'P21' ||
-                    e.boPhan == 'P21',
-              )
-              .toList();
+      nvPhongGD = AppUtility.getNhanVienLanhDao(
+        nhanViens: listNhanVien,
+        phongBans: widget.provider.dataPhongBan ?? [],
+      );
       // Reset editing state
       isEditing = widget.isEditing;
       if (editable()) {

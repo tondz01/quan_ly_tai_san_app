@@ -14,6 +14,7 @@ class PhongBan extends Equatable {
   final String? nguoiCapNhat;
   final bool? isActive;
   final bool? isKho;
+  final bool? isLanhDao;
 
   final String? ngayTao;
   final String? ngayCapNhat;
@@ -32,6 +33,7 @@ class PhongBan extends Equatable {
     this.ngayCapNhat,
     this.isActive,
     this.isKho,
+    this.isLanhDao,
   });
 
   factory PhongBan.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class PhongBan extends Equatable {
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
       isKho: json['isKho'],
+      isLanhDao: json['isLanhDao'],
     );
   }
 
@@ -77,6 +80,7 @@ class PhongBan extends Equatable {
       ),
       'isActive': isActive ?? DepartmentConstants.defaultIsActive,
       'isKho': isKho ?? false,
+      'isLanhDao': isLanhDao ?? false,
     };
   }
 
@@ -96,6 +100,7 @@ class PhongBan extends Equatable {
       'Tên phòng ban': _nullIfEmpty(tenPhongBan),
       'Mã phòng cấp trên': _nullIfEmpty(phongCapTren),
       'Là kho': isKho ?? false,
+      'Là phòng ban lãnh đạo': isLanhDao ?? false,
       'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
       'Ngày cập nhật': _nullIfEmpty(
         AppUtility.formatFromISOString(ngayCapNhat ?? ''),

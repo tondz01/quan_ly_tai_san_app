@@ -478,31 +478,50 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     bool isFindNew = false,
     bool isFindNewItem = false,
   }) async {
-    if (item != null) {
-      onSetLoadingMessage('Đang tải dữ liệu...');
-      _isLoading = true;
+    _setLoadingState(true, 'Đang tải dữ liệu...');
 
-      if (_dataCcdc == null) {
-        if (AccountHelper.instance.getAllCCDC().isEmpty) {
-          await AuthRepository().loadCCDCGroup('ct001').then((value) {
-            _dataCcdc = AccountHelper.instance.getAllCCDC();
-          });
-        } else {
-          _dataCcdc = AccountHelper.instance.getAllCCDC();
-        }
-      }
-      await getListOwnership(item.idDonViGiao ?? '').then((value) {
-        _item = item;
-      });
-      await onLoadDataAssetTransfer().then((value) {
-        isShowInput = true;
-        isShowCollapse = true;
-        _isUpdateDetail = true;
-        _isFindNew = isFindNew;
-        _isFindNewItem = isFindNewItem;
-        notifyListeners();
-      });
+    try {
+      // Load dữ liệu song song khi có thể
+      await Future.wait([
+        _ensureCcdcLoaded(),
+        _ensureAssetTransferLoaded(),
+        if (item != null) getListOwnership(item.idDonViGiao ?? ''),
+      ]);
+
+      _item = item;
+      _isShowInput = true;
+      _isShowCollapse = true;
+      _isUpdateDetail = true;
+      _isFindNew = isFindNew;
+      _isFindNewItem = isFindNewItem;
+    } catch (e) {
+      log('Error in onChangeDetail: $e');
+    } finally {
+      _setLoadingState(false);
     }
+  }
+
+  /// Helper: Set loading state với message tùy chọn
+  void _setLoadingState(bool isLoading, [String? message]) {
+    _isLoading = isLoading;
+    _loadingMessage = message;
+    notifyListeners();
+  }
+
+  /// Helper: Đảm bảo dữ liệu CCDC đã được load
+  Future<void> _ensureCcdcLoaded() async {
+    if (_dataCcdc != null && _dataCcdc!.isNotEmpty) return;
+
+    if (AccountHelper.instance.getAllCCDC().isEmpty) {
+      await AuthRepository().loadCCDCGroup('ct001');
+    }
+    _dataCcdc = AccountHelper.instance.getAllCCDC();
+  }
+
+  /// Helper: Đảm bảo dữ liệu AssetTransfer đã được load
+  Future<void> _ensureAssetTransferLoaded() async {
+    if (_dataAssetTransfer != null && _dataAssetTransfer!.isNotEmpty) return;
+    await onLoadDataAssetTransfer();
   }
 
   void updateItem(ToolAndSuppliesHandoverDto updatedItem) {
