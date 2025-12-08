@@ -175182,7 +175182,7 @@ r=A.as(n,150,n)
 q=A.a7(16)
 p=A.a([new A.bk(0,B.N,A.aR(13,B.n.u()>>>16&255,B.n.u()>>>8&255,B.n.u()&255),B.bJ,16)],t.V)
 o=t.p
-return A.i7(n,B.D1,new A.cn(B.af,n,B.ad,B.u,A.a([A.P(n,A.S(A.a([new A.akV("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bs(A.cM(A.P(n,new A.a09(new A.bWC(b,this.a),b.x,n),B.k,n,n,new A.a1(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9T,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a1(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hi(20,A.ao(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.0.1_08/12/2025_1",B.t),n,n,20,n,n,n)],o),n),n)},
+return A.i7(n,B.D1,new A.cn(B.af,n,B.ad,B.u,A.a([A.P(n,A.S(A.a([new A.akV("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bs(A.cM(A.P(n,new A.a09(new A.bWC(b,this.a),b.x,n),B.k,n,n,new A.a1(B.j,n,n,q,p,n,B.m),n,n,n,n,B.a9T,n,n,400),n,B.C,n,n,n,B.Z),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a1(n,s,n,n,n,n,B.m),n,n,n,n,n,n,n,n),A.hi(20,A.ao(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prd_0.0.2_08/12/2025_1",B.t),n,n,20,n,n,n)],o),n),n)},
 $C:"$3",
 $R:3,
 $S:1257}
