@@ -425,6 +425,9 @@ class ContractPage {
   static Widget toolAndMaterialTransferPage(
     ToolAndMaterialTransferDto toolAndMaterialTransferDto,
   ) {
+    if (AccountHelper.instance.getAllUnit().isEmpty) {
+      AuthRepository().loadUnit('ct001');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -459,22 +462,22 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Ký, mã hiệu quy cách",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
                   "Đơn vị tính",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Số lượng",
+                  "Số lượng có sẵn",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
                 tableHeader(
                   "Số lượng xuất kho",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Số lượng đã bàn giao",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -511,40 +514,35 @@ class ContractPage {
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .idCCDCVatTu,
-                      SettingPage.scale,
-                      SettingPage.textStyle,
-                    ),
-                    tableCell(
-                      toolAndMaterialTransferDto
-                              .detailToolAndMaterialTransfers![i]
-                              .donViTinh ??
+                      AccountHelper.instance
+                              .getUnitById(
+                                toolAndMaterialTransferDto
+                                    .detailToolAndMaterialTransfers![i]
+                                    .donViTinh ??
+                                    '',
+                              )
+                              ?.tenDonVi ??
                           '',
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .soLuong
-                          .toString(),
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuong.toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .soLuongXuat
-                          .toString(),
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongXuat.toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .ghiChu,
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongDaBanGiao.toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].ghiChu,
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
@@ -608,7 +606,7 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.soQuyetDinh ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayTaoChungTu ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.diaDiemQuyetDinh ?? ''}.",
           style: SettingPage.textStyle,
         ),
 
@@ -836,7 +834,7 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${banGiaoCCDCVatTu.soQuyetDinh ?? ''}, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến  ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayTaoChungTu ?? '')} , tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} , tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
           style: SettingPage.textStyle,
         ),
         SGText(

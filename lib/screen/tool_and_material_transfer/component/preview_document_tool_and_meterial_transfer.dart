@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:pdfrx/pdfrx.dart' as pdfrx;
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
@@ -89,10 +90,15 @@ previewDocumentToolAndMaterial({
           contractPages: [
             if (document != null)
               for (var index = 0; index < document.pages.length; index++)
-                PdfPageView(
-                  document: document,
-                  pageNumber: index + 1,
-                  alignment: Alignment.center,
+                A4Canvas(
+                  scale: 1.2,
+                  maxWidth: 800,
+                  maxHeight: 800 * (297 / 210),
+                  child: pdfrx.PdfPageView(
+                    document: document,
+                    pageNumber: index + 1,
+                    alignment: Alignment.center,
+                  ),
                 ),
             A4Canvas(
               marginsMm: const EdgeInsets.all(20),

@@ -408,7 +408,7 @@ class _ToolAndSuppliesHandoverDetailState
     } else {
       listNhanVienDonViNhan =
           listNhanVien
-              .where((element) => element.phongBanId == idDonViGiao)
+              .where((element) => element.phongBanId == idDonViNhan)
               .toList();
     }
     

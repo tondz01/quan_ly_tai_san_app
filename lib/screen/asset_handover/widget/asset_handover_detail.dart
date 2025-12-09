@@ -412,6 +412,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               .where((element) => element.isKho == true)
               .map((element) => element.id)
               .toSet();
+      SGLog.info("idPhongBanKho", "idPhongBanKho: $idPhongBanKho");
       listNhanVienDonViNhan =
           listNhanVien
               .where((element) => idPhongBanKho.contains(element.phongBanId))
@@ -419,7 +420,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     } else {
       listNhanVienDonViNhan =
           listNhanVien
-              .where((element) => element.phongBanId == idDonViGiao)
+              .where((element) => element.phongBanId == idDonViNhan)
               .toList();
     }
     if (donViGiao?.isKho == true) {
@@ -428,6 +429,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               .where((element) => element.isKho == true)
               .map((element) => element.id)
               .toSet();
+      SGLog.info("idPhongBanKho", "idPhongBanKho: $idPhongBanKho");
       listNhanVienDonViGiao =
           listNhanVien
               .where((element) => idPhongBanKho.contains(element.phongBanId))
