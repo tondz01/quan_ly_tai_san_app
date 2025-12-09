@@ -23,7 +23,7 @@ class Config {
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.0.2_08/12/2025',
+    defaultValue: '${environment}_0.0.3_08/12/2025',
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
@@ -40,49 +40,49 @@ class Config {
   }
 }
 
-void main() async {
-  // Bỏ dấu # trên web
-  if (kIsWeb) {
-    setPathUrlStrategy();
-  }
-
-  ApiConfig.setBaseURL(Config.baseUrl);
-  await GetStorage.init();
-  WidgetsFlutterBinding.ensureInitialized();
-  Intl.defaultLocale = 'vi_VN';
-  await initializeDateFormatting('vi');
-  await initializeDateFormatting('vi_VN');
-  await di.init();
-
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: "AIzaSyA1ao20BuCfBbjROooGzn_qbO8x3XJoFHU",
-      authDomain: "quanlyphuongtien-22dd4.firebaseapp.com",
-      databaseURL: "https://quanlyphuongtien-22dd4-default-rtdb.firebaseio.com",
-      projectId: "quanlyphuongtien-22dd4",
-      storageBucket: "quanlyphuongtien-22dd4.appspot.com",
-      messagingSenderId: "51589792579",
-      appId: "1:51589792579:web:23c1d200f54a3dcb5ba5f6",
-      measurementId: "G-MJ8V6TWTD6",
-    ),
-  );
-  FirebaseDatabase.instance;
-  Bloc.transformer = bloc_concurrency.sequential();
-  Bloc.observer = const AppBlocObserver();
-
-  // Thêm global error handler để bắt tất cả lỗi và hiển thị trong console
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-    if (kDebugMode) {
-      debugPrint('=== Flutter Error ===');
-      debugPrint('Exception: ${details.exception}');
-      debugPrint('Stack: ${details.stack}');
-    }
-  };
-
-  // Bắt tất cả unhandled exceptions trong zone
+void main() {
   runZonedGuarded(
-    () {
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      // Bỏ dấu # trên web
+      if (kIsWeb) {
+        setPathUrlStrategy();
+      }
+
+      ApiConfig.setBaseURL(Config.baseUrl);
+      await GetStorage.init();
+      Intl.defaultLocale = 'vi_VN';
+      await initializeDateFormatting('vi');
+      await initializeDateFormatting('vi_VN');
+      await di.init();
+
+      await Firebase.initializeApp(
+        options: FirebaseOptions(
+          apiKey: "AIzaSyA1ao20BuCfBbjROooGzn_qbO8x3XJoFHU",
+          authDomain: "quanlyphuongtien-22dd4.firebaseapp.com",
+          databaseURL: "https://quanlyphuongtien-22dd4-default-rtdb.firebaseio.com",
+          projectId: "quanlyphuongtien-22dd4",
+          storageBucket: "quanlyphuongtien-22dd4.appspot.com",
+          messagingSenderId: "51589792579",
+          appId: "1:51589792579:web:23c1d200f54a3dcb5ba5f6",
+          measurementId: "G-MJ8V6TWTD6",
+        ),
+      );
+      FirebaseDatabase.instance;
+      Bloc.transformer = bloc_concurrency.sequential();
+      Bloc.observer = const AppBlocObserver();
+
+      // Thêm global error handler để bắt tất cả lỗi và hiển thị trong console
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.presentError(details);
+        if (kDebugMode) {
+          debugPrint('=== Flutter Error ===');
+          debugPrint('Exception: ${details.exception}');
+          debugPrint('Stack: ${details.stack}');
+        }
+      };
+
       // Inicializar GetX
       Get.put(MyLocale());
       runApp(const ProviderScope(child: App()));
