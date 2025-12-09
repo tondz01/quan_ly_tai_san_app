@@ -149,6 +149,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   bool _isLoading = false;
   String _messageLoading = '';
+  int _detailRequestId = 0;
 
   set messageLoading(String value) {
     _messageLoading = value;
@@ -354,9 +355,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetailToolAndMaterialTransfer(
+  Future<void> onChangeDetailToolAndMaterialTransfer(
     ToolAndMaterialTransferDto? item,
   ) async {
+    final currentRequestId = ++_detailRequestId;
     _item = item;
     _messageLoading = 'Đang tải dữ liệu...';
     _isLoading = true;
@@ -366,14 +368,19 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
     try {
       if (item != null && item.id != null) {
-        _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
+        final details = await getListDetailTransferCCDC(item.id!);
+        if (currentRequestId != _detailRequestId) return;
+        _listDetailTransferCCDC = details;
         buildThreadNodes(item);
+        notifyListeners();
       }
     } catch (e) {
       log('Error in onChangeDetailToolAndMaterialTransfer: $e');
       // Có thể hiển thị thông báo lỗi nếu cần
     } finally {
-      onSetLoading(false);
+      if (currentRequestId == _detailRequestId) {
+        onSetLoading(false);
+      }
     }
   }
 
@@ -892,10 +899,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       // The repository already returns parsed DTOs, so we can cast directly
-      final list = rawData.cast<DetailSubppliesHandoverDto>();
-      _listDetailTransferCCDC = list;
-      notifyListeners();
-      return list;
+      return rawData.cast<DetailSubppliesHandoverDto>();
     } else {
       return [];
     }
