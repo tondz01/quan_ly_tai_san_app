@@ -138,20 +138,40 @@ previewDocumentHandover({
     return donVi?.tenPhongBan ?? '';
   }
 
+  bool isCheckKho(String idnhanvien) {
+    final nhanVien = AccountHelper.instance.getNhanVienById(idnhanvien);
+    final phongBan = AccountHelper.instance.getDepartmentById(
+      nhanVien?.phongBanId ?? '',
+    );
+    return phongBan?.isKho == true;
+  }
+
   List<SigneInfo> listSigneInfo = [
     SigneInfo(
       idNhanVien: item.idDaiDienBenGiao ?? '',
       title: 'Đại diện đơn vị bên giao',
       hoTen: item.tenDaiDienBenGiao ?? '',
       chucVu: getChucVu(item.idDaiDienBenGiao ?? ''),
-      donVi: getDonVi(item.idDaiDienBenGiao ?? ''),
+      donVi:
+          isCheckKho(item.idDaiDienBenGiao ?? '')
+              ? AccountHelper.instance
+                      .getDepartmentById(item.idDonViGiao ?? '')
+                      ?.tenPhongBan ??
+                  ''
+              : getDonVi(item.idDaiDienBenGiao ?? ''),
     ),
     SigneInfo(
       idNhanVien: item.idDaiDienBenNhan ?? '',
       title: 'Đại diện đơn vị bên nhận',
       hoTen: item.tenDaiDienBenNhan ?? '',
       chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
-      donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
+      donVi:
+          isCheckKho(item.idDaiDienBenNhan ?? '')
+              ? AccountHelper.instance
+                      .getDepartmentById(item.idDonViNhan ?? '')
+                      ?.tenPhongBan ??
+                  ''
+              : getDonVi(item.idDaiDienBenNhan ?? ''),
     ),
     for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
       SigneInfo(

@@ -135,6 +135,14 @@ prevDocumentCcdcHandover({
     return donVi?.tenPhongBan ?? '';
   }
 
+  bool isCheckKho(String idnhanvien) {
+    final nhanVien = AccountHelper.instance.getNhanVienById(idnhanvien);
+    final phongBan = AccountHelper.instance.getDepartmentById(
+      nhanVien?.phongBanId ?? '',
+    );
+    return phongBan?.isKho == true;
+  }
+
   List<SigneInfo> listSigneInfo = [
     // SigneInfo(
     //   idNhanVien: dieuDongCcdc?.idDaiDienBenGiao ?? '',
@@ -148,14 +156,26 @@ prevDocumentCcdcHandover({
       title: 'Đại diện đơn vị bên giao',
       hoTen: dieuDongCcdc?.tenDaiDienBenGiao ?? '',
       chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
-      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+      donVi:
+          isCheckKho(dieuDongCcdc?.idDaiDienBenGiao ?? '')
+              ? AccountHelper.instance
+                      .getDepartmentById(dieuDongCcdc?.idDonViGiao ?? '')
+                      ?.tenPhongBan ??
+                  ''
+              : getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
     ),
     SigneInfo(
       idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
       title: 'Đại diện đơn vị bên nhận',
       hoTen: dieuDongCcdc?.tenDaiDienBenNhan ?? '',
       chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
-      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
+      donVi:
+          isCheckKho(dieuDongCcdc?.idDaiDienBenNhan ?? '')
+              ? AccountHelper.instance
+                      .getDepartmentById(dieuDongCcdc?.idDonViNhan ?? '')
+                      ?.tenPhongBan ??
+                  ''
+              : getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
     ),
     for (int i = 0; i < (dieuDongCcdc?.listSignatory?.length ?? 0); i++)
       SigneInfo(
@@ -168,7 +188,7 @@ prevDocumentCcdcHandover({
 
     SigneInfo(
       idNhanVien: dieuDongCcdc?.idGiamDoc ?? '',
-      title: 'Đại diện đơn vị bên nhận',
+      title: 'Giám đốc ký duyệt',
       hoTen: dieuDongCcdc?.tenGiamDoc ?? '',
       chucVu: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
       donVi: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
@@ -176,21 +196,19 @@ prevDocumentCcdcHandover({
     // SigneInfo(
   ];
   List<DetailSubppliesHandoverDto> listDetailSubppliesHandover =
-      (dieuDongCcdc?.listDetailSubppliesHandover ?? [])
-          .map(
-            (e) {
-              final foundDetail = item.detailToolAndMaterialTransfers
-                  ?.where((element) => element.id == e.idChiTietDieuDong)
-                  .firstOrNull;
-              
-              return e.copyWith(
-                chiTietDieuDongCCDCVatTuDTO: foundDetail != null
-                    ? foundDetail.copyWith(soLuong: e.soLuong)
-                    : e.chiTietDieuDongCCDCVatTuDTO,
-              );
-            },
-          )
-          .toList();
+      (dieuDongCcdc?.listDetailSubppliesHandover ?? []).map((e) {
+        final foundDetail =
+            item.detailToolAndMaterialTransfers
+                ?.where((element) => element.id == e.idChiTietDieuDong)
+                .firstOrNull;
+
+        return e.copyWith(
+          chiTietDieuDongCCDCVatTuDTO:
+              foundDetail != null
+                  ? foundDetail.copyWith(soLuong: e.soLuong)
+                  : e.chiTietDieuDongCCDCVatTuDTO,
+        );
+      }).toList();
   return showDialog(
     context: context,
     barrierDismissible: true,
