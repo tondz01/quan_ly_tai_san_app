@@ -425,6 +425,9 @@ class ContractPage {
   static Widget toolAndMaterialTransferPage(
     ToolAndMaterialTransferDto toolAndMaterialTransferDto,
   ) {
+    if (AccountHelper.instance.getAllUnit().isEmpty) {
+      AuthRepository().loadUnit('ct001');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -459,22 +462,22 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Ký, mã hiệu quy cách",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
                   "Đơn vị tính",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Số lượng",
+                  "Số lượng có sẵn",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
                 tableHeader(
                   "Số lượng xuất kho",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Số lượng đã bàn giao",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -511,40 +514,35 @@ class ContractPage {
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .idCCDCVatTu,
-                      SettingPage.scale,
-                      SettingPage.textStyle,
-                    ),
-                    tableCell(
-                      toolAndMaterialTransferDto
-                              .detailToolAndMaterialTransfers![i]
-                              .donViTinh ??
+                      AccountHelper.instance
+                              .getUnitById(
+                                toolAndMaterialTransferDto
+                                    .detailToolAndMaterialTransfers![i]
+                                    .donViTinh ??
+                                    '',
+                              )
+                              ?.tenDonVi ??
                           '',
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .soLuong
-                          .toString(),
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuong.toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .soLuongXuat
-                          .toString(),
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongXuat.toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto
-                          .detailToolAndMaterialTransfers![i]
-                          .ghiChu,
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongDaBanGiao.toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].ghiChu,
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
