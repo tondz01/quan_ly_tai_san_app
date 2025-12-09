@@ -23,22 +23,23 @@ class LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isLoading) return child;
     return Stack(
       children: [
         child,
-        // Chặn toàn bộ tương tác phía sau
-        ModalBarrier(
-          color: Colors.black.withOpacity(0.4),
-          dismissible: false,
-        ),
-        // Nội dung loading ở trung tâm
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: true,
-            child: Center(child: _LoadingContent(message: message)),
+        if (isLoading) ...[
+          // Chặn toàn bộ tương tác phía sau
+          ModalBarrier(
+            color: Colors.black.withOpacity(0.4),
+            dismissible: false,
           ),
-        ),
+          // Nội dung loading ở trung tâm
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: Center(child: _LoadingContent(message: message)),
+            ),
+          ),
+        ],
       ],
     );
   }
