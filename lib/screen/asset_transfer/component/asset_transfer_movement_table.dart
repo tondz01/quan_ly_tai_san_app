@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -31,6 +32,7 @@ class AssetTransferMovementTable extends StatefulWidget {
 class _AssetTransferMovementTableState
     extends State<AssetTransferMovementTable> {
   late List<ChiTietDieuDongTaiSan> movementDetails;
+  List<DropdownMenuItem<dynamic>> hienTrangItems = [];
   late List<AssetManagementDto> listAsset;
   final repo = ChiTietDieuDongTaiSanRepository();
   final GlobalKey<SgEditableTableState<AssetManagementDto>> _tableKey =
@@ -40,9 +42,15 @@ class _AssetTransferMovementTableState
     widget.onDataChanged?.call(List.from(listAsset));
   }
 
+  // Cache HienTrang lookup để tránh O(n) search mỗi lần render
+  late final Map<int, HienTrang> _hienTrangCache;
+  late final HienTrang _defaultHienTrang;
+
   @override
   void initState() {
     super.initState();
+    _initHienTrangCache();
+    _initHienTrangItems();
     if (widget.initialDetails.isNotEmpty) {
       listAsset = getAssetsByChildAssets(
         widget.allAssets,
@@ -52,6 +60,28 @@ class _AssetTransferMovementTableState
       listAsset = [];
     }
     movementDetails = List.from(widget.initialDetails);
+  }
+
+    /// Khởi tạo cache cho HienTrang lookup - O(1) thay vì O(n)
+  void _initHienTrangCache() {
+    _hienTrangCache = {
+      for (final ht in AppUtility.listHienTrang) ht.id: ht,
+    };
+    _defaultHienTrang = AppUtility.listHienTrang.isNotEmpty
+        ? AppUtility.listHienTrang.first
+        : HienTrang(id: 0, name: '');
+  }
+
+  /// Khởi tạo dropdown items cho HienTrang
+  void _initHienTrangItems() {
+    hienTrangItems = AppUtility.listHienTrang
+        .map(
+          (hienTrang) => DropdownMenuItem<dynamic>(
+            value: hienTrang,
+            child: Text(hienTrang.name),
+          ),
+        )
+        .toList();
   }
 
   @override
@@ -212,15 +242,26 @@ class _AssetTransferMovementTableState
                 isEditable: false,
               ),
               SgEditableColumn<AssetManagementDto>(
-                field: 'tinh_trang',
-                title: 'Tình trạng kỹ thuật',
-                titleAlignment: TextAlign.center,
-                width: 100,
-                getValue: (item) => getHienTrang(item.hienTrang ?? -1),
-                setValue: (item, value) => item.hienTrang = value,
-                sortValueGetter: (item) => getHienTrang(item.hienTrang ?? -1),
-                isEditable: false,
-              ),
+                  field: 'condition',
+                  title: 'Tình trạng kỹ thuật',
+                  titleAlignment: TextAlign.center,
+                  isEditable: true,
+                  width: 50,
+                  // O(1) lookup từ cache thay vì O(n) firstWhere
+                  getValue: (item) => 
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
+                  setValue: (item, value) {
+                    if (value is! HienTrang) return;
+                    item.hienTrang = value.id;
+                  },
+                  // O(1) lookup từ cache
+                  getValueWithIndex: (item, rowIndex) =>
+                      _hienTrangCache[item.hienTrang] ?? _defaultHienTrang,
+                  sortValueGetter: (item) =>
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
+                  editor: EditableCellEditor.dropdown,
+                  dropdownItems: hienTrangItems,
+                ),
               SgEditableColumn<AssetManagementDto>(
                 field: 'ghi_chu',
                 title: 'Ghi chú',
@@ -229,7 +270,6 @@ class _AssetTransferMovementTableState
                 getValue: (item) => item.ghiChu,
                 setValue: (item, value) => item.ghiChu = value,
                 sortValueGetter: (item) => item.ghiChu,
-                isEditable: false,
               ),
             ],
           ),

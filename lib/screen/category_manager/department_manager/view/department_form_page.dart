@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/component/department_constants.dart';
@@ -29,7 +30,19 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   bool isEditing = false;
   bool isKho = false;
+  bool typeKhoCP = false;
+  bool typeKhoTH = false;
   bool isLanhDao = false;
+
+  int get typeKho {
+    if (typeKhoCP) {
+      return 1;
+    } else if (typeKhoTH) {
+      return 2;
+    } else {
+      return 0;
+    }
+  }
 
   @override
   void initState() {
@@ -51,15 +64,16 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
       isEditing = false;
       isKho = _data?.isKho ?? false;
       isLanhDao = _data?.isLanhDao ?? false;
+      onGetTypeKho(_data?.loaiKho ?? 0);
     } else {
       isEditing = true;
+      onGetTypeKho(0);
     }
     _departmentIdController = TextEditingController(text: _data?.id ?? '');
 
     _departmentNameController = TextEditingController(
       text: _data?.tenPhongBan ?? '',
     );
-
     // try {
     //   _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
     //     (group) => group.id == _data?.idNhomDonVi,
@@ -96,6 +110,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         idQuanLy: '',
         phongCapTren: _parentDepartment?.id ?? '',
         isKho: isKho,
+        loaiKho: typeKho,
         isLanhDao: isLanhDao,
       );
       if (_data == null) {
@@ -208,6 +223,45 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                     isEditing: isEdit,
                     isDisabled: isEdit,
                   ),
+
+                  const SizedBox(width: 32),
+                  if (isKho) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 93),
+                      child: CommonCheckboxInput(
+                        label: 'Kho cấp phát',
+                        labelWidth: 100,
+                        value: typeKhoCP,
+                        sizePadding: 5,
+                        onChanged:
+                            isEdit
+                                ? null
+                                : (v) {
+                                  onChangeTypeKho(v, 1);
+                                },
+                        isEditing: isEdit,
+                        isDisabled: isEdit,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 93),
+                      child: CommonCheckboxInput(
+                        label: 'Kho thu hồi',
+                        labelWidth: 100,
+                        value: typeKhoTH,
+                        sizePadding: 5,
+                        onChanged:
+                            isEdit
+                                ? null
+                                : (v) {
+                                  onChangeTypeKho(v, 2);
+                                },
+                        isEditing: isEdit,
+                        isDisabled: isEdit,
+                      ),
+                    ),
+                  ],
                   CommonCheckboxInput(
                     label: 'Là phòng ban lãnh đạo',
                     value: isLanhDao,
@@ -268,6 +322,32 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
             });
           },
         );
+  }
+
+  onChangeTypeKho(bool? value, int type) {
+    setState(() {
+      if (type == LoaiKho.capPhat.value) {
+        typeKhoCP = value ?? false;
+        typeKhoTH = false;
+      } else if (type == LoaiKho.thuHoi.value) {
+        typeKhoTH = value ?? false;
+        typeKhoCP = false;
+      }
+    });
+  }
+
+  onGetTypeKho(int type) {
+    setState(() {
+      if (type == LoaiKho.capPhat.value) {
+        typeKhoCP = true;
+      } else if (type == LoaiKho.thuHoi.value) {
+        typeKhoTH = true;
+      } else {
+        typeKhoCP = false;
+        typeKhoTH = false;
+      }
+    });
+    print('Type kho: $type - CP: $typeKhoCP - TH: $typeKhoTH');
   }
 }
 

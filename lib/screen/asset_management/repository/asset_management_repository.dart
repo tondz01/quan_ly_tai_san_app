@@ -666,7 +666,7 @@ class AssetManagementRepository extends ApiBase {
       result['totalItems'] = paginationData['totalItems'];
       result['groupCounts'] = paginationData['groupCounts'];
     } catch (e) {
-      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+      log("Error at getDataWithPagination - AssetManagementRepository: $e");
     }
 
     return result;

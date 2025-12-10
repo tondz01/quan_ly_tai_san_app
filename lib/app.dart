@@ -37,6 +37,16 @@ class App extends ConsumerStatefulWidget {
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   final permissionSignService = PermissionSignService();
   late ProviderSubscription<Map<String, dynamic>?> _messageSub;
+  
+  // Static flags để tránh gọi lại nhiều lần khi reload trang (web)
+  static bool _isDataLoaded = false;
+  static bool _isInitialDataLoaded = false;
+  static bool _isListenerSetup = false;
+  
+  // Debounce cho realtime message
+  static DateTime? _lastMessageTime;
+  static const _debounceMs = 500; // 500ms debounce
+  
   @override
   void initState() {
     super.initState();
@@ -48,7 +58,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     // });
     _loadDataIfNeeded();
     _setupRealtimeMessageListener();
-    getDataAssetAndCCDC();
+    _getDataAssetAndCCDCIfNeeded();
   }
 
   @override
@@ -95,6 +105,12 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   /// Kiểm tra và load dữ liệu nếu chưa được load
   /// Tránh gọi lại loadData nhiều lần khi reload trang
   Future<void> _loadDataIfNeeded() async {
+    // Đã load rồi thì bỏ qua (static flag giữ qua reload trên web)
+    if (_isInitialDataLoaded) {
+      log('message [App] Initial data already loaded (static flag), skipping...');
+      return;
+    }
+    
     // Kiểm tra xem dữ liệu cơ bản đã được load chưa
     final hasDepartment = AccountHelper.instance.getDepartment()?.isNotEmpty ?? false;
     final hasNhanVien = AccountHelper.instance.getNhanVien()?.isNotEmpty ?? false;
@@ -106,10 +122,19 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     } else {
       log('message [App] Data already loaded, skipping loadData');
     }
+    
+    _isInitialDataLoaded = true;
   }
 
   /// Thiết lập listener cho realtime message
   void _setupRealtimeMessageListener() {
+    // Đã setup rồi thì bỏ qua
+    if (_isListenerSetup) {
+      log('message [App] Realtime listener already setup, skipping...');
+      return;
+    }
+    _isListenerSetup = true;
+    
     _messageSub = ref.listenManual(
       messageLatestJsonProvider,
       (previous, next) async {
@@ -121,6 +146,17 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   /// Xử lý realtime message và reload data tương ứng
   Future<void> _handleRealtimeMessage(Map<String, dynamic>? message) async {
     if (message == null || message.isEmpty) return;
+
+    // Debounce: bỏ qua nếu message đến quá nhanh
+    final now = DateTime.now();
+    if (_lastMessageTime != null) {
+      final diff = now.difference(_lastMessageTime!).inMilliseconds;
+      if (diff < _debounceMs) {
+        log('[App] Debounce: bỏ qua message (chỉ $diff ms từ message trước)');
+        return;
+      }
+    }
+    _lastMessageTime = now;
 
     log('message [ref.listen] [App] Nhận realtime: $message');
 
@@ -176,6 +212,17 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       default:
         log('[App] Unknown function type: $functionType');
     }
+  }
+
+  Future<void> _getDataAssetAndCCDCIfNeeded() async {
+    // Nếu đã load rồi thì bỏ qua
+    if (_isDataLoaded) {
+      log('message [App] Asset & CCDC data already loaded, skipping...');
+      return;
+    }
+    
+    _isDataLoaded = true;
+    await getDataAssetAndCCDC();
   }
 
   Future<void> getDataAssetAndCCDC() async {

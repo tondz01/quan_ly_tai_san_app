@@ -52,6 +52,11 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
   // Lưu valueGetter để filter offline
   dynamic Function(DieuDongTaiSanDto item, int columnIndex)? _localValueGetter;
 
+  // === CHỐNG GỌI API LIÊN TỤC ===
+  bool _isApiLoading = false; // Flag đang gọi API
+  DateTime? _lastApiCallTime; // Thời gian gọi API lần cuối
+  static const _apiDebounceMs = 300; // Debounce 300ms
+
   TableAssetTransferProvider(this.repository);
 
   // FIXED: Signature đúng với named parameters
@@ -100,6 +105,26 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
     int trangThai, [
     bool isRefresh = true,
   ]) async {
+    // === CHỐNG GỌI API LIÊN TỤC ===
+    // Nếu đang gọi API thì bỏ qua
+    if (_isApiLoading) {
+      log('loadDataFromApi: SKIPPED - API đang loading');
+      return;
+    }
+    
+    // Debounce: bỏ qua nếu gọi quá nhanh (< 300ms)
+    final now = DateTime.now();
+    if (_lastApiCallTime != null) {
+      final diff = now.difference(_lastApiCallTime!).inMilliseconds;
+      if (diff < _apiDebounceMs) {
+        log('loadDataFromApi: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)');
+        return;
+      }
+    }
+    
+    _isApiLoading = true;
+    _lastApiCallTime = now;
+    
     log(
       'loadDataFromApi AssetTransfer: page=$page -- type=$type -- trangThai=$trangThai -- isRefresh=$isRefresh',
     );
@@ -157,6 +182,8 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
         errorMessage: 'Lỗi tải dữ liệu: $error',
         currentPageData: [],
       );
+    } finally {
+      _isApiLoading = false; // Reset flag sau khi hoàn thành
     }
   }
 

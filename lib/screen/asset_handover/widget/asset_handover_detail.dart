@@ -964,9 +964,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                 .toList();
                         widget.provider.dataDetailAssetHandover =
                             listDetailAssetHandover;
-                        print(
-                          'listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
-                        );
                         getAssetHandoverPreview();
                       });
                     },

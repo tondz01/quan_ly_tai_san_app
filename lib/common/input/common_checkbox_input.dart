@@ -13,6 +13,7 @@ class CommonCheckboxInput extends StatelessWidget {
   final double checkboxSize;
   final Color? activeColor;
   final Color? checkColor;
+  final double? sizePadding;
   final EdgeInsetsGeometry? padding;
 
   const CommonCheckboxInput({
@@ -27,6 +28,7 @@ class CommonCheckboxInput extends StatelessWidget {
     this.activeColor,
     this.checkColor,
     this.padding,
+    this.sizePadding,
   });
 
   @override
@@ -46,7 +48,7 @@ class CommonCheckboxInput extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 18),
+          SizedBox(width: sizePadding ?? 18),
           SgCheckbox(
             value: value,
             onChanged: onChanged,
