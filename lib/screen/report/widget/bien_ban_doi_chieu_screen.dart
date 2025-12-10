@@ -13,6 +13,8 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu_page.dart';
 import '../../asset_transfer/component/config_view_asset_transfer.dart';
 import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class BienBanDoiChieuScreen extends StatefulWidget {
   final String idCongty;
@@ -27,6 +29,8 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
   final AssetHandoverRepository _repo = AssetHandoverRepository();
   List<AssetHandoverDto> _list = [];
   bool _isLoading = true;
+  bool _isExporting = false;
+  final GlobalKey _repaintKey = GlobalKey();
   late HomeScrollController _scrollController;
 
   void _onScrollStateChanged() {
@@ -54,6 +58,29 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
       _list = (result['data'] as List).cast<AssetHandoverDto>();
       _isLoading = false;
     });
+  }
+
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+
+    try {
+      await ScreenshotToExcelService.exportReportToExcel(
+        repaintKey: _repaintKey,
+        reportTitle: 'Bao_Cao_Doi_Chieu_Kiem_Ke',
+      );
+
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
   }
 
   String _formatDate(String? date) {
@@ -112,24 +139,26 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
                   scrollDirection: Axis.vertical,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
+                    child: RepaintBoundary(
+                      key: _repaintKey,
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1,
                           ),
-                        ],
-                      ),
-                      child: Column(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
                         children: [
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -164,7 +193,12 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
                                     ),
                                   ],
                                 ),
-                                // FindByStateAssetHandover(provider: widget.provider),
+                                // Hidden per user request: Excel export button
+                                // IconButton(
+                                //   icon: Icon(Icons.table_chart, color: Colors.green),
+                                //   tooltip: 'Xuất Excel',
+                                //   onPressed: _isExporting ? null : _exportToExcel,
+                                // ),
                               ],
                             ),
                           ),
@@ -216,6 +250,7 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
                             ),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   ),

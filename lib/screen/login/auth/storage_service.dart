@@ -30,10 +30,33 @@ class StorageService {
           // Leave some headroom under the typical 5MB limit
           const maxBytes = 4 * 1024 * 1024; // 4MB
           if (encodedBytes > maxBytes) {
-            // Skip caching oversized payloads on web to avoid quota errors
-            // Consider server-side pagination or lighter caches for these keys
-            print('WARNING: StorageService.write skipped for key "$key" - data too large: ${(encodedBytes / 1024 / 1024).toStringAsFixed(2)}MB (max: ${(maxBytes / 1024 / 1024).toStringAsFixed(2)}MB)');
-            return;
+            // IMPROVED: Try to free up space by removing old/large keys
+            print('WARNING: Data too large for key "$key": ${(encodedBytes / 1024 / 1024).toStringAsFixed(2)}MB');
+
+            // Strategy 1: Clear old heavy keys first
+            final heavyKeys = [
+              StorageKey.ASSETS,
+              StorageKey.CCDC_VT,
+              StorageKey.ASSET_TRANSFER,
+              StorageKey.ASSET_HANDOVER,
+            ];
+
+            for (var heavyKey in heavyKeys) {
+              if (heavyKey != key && storage.hasData(heavyKey)) {
+                print('Clearing heavy key "$heavyKey" to free up space');
+                await storage.remove(heavyKey);
+              }
+            }
+
+            // Strategy 2: Try writing again
+            try {
+              await storage.write(key, value);
+              print('✓ Successfully wrote "$key" after clearing space');
+              return;
+            } catch (retryError) {
+              print('✗ Still failed after cleanup. Data will not be cached for "$key"');
+              return;
+            }
           } else {
             print('StorageService.write: key "$key" - size: ${(encodedBytes / 1024 / 1024).toStringAsFixed(2)}MB');
           }
@@ -45,10 +68,38 @@ class StorageService {
       await storage.write(key, value);
       print('StorageService.write: Successfully wrote key "$key"');
     } catch (e) {
-      // Best-effort fallback: ignore quota errors to keep app running
-      // Optionally, you can erase specific heavy keys before retrying
-      // For stability, just swallow here
-      print('ERROR: StorageService.write failed for key "$key": $e');
+      // Quota exceeded error - try emergency cleanup
+      if (e.toString().contains('QuotaExceededError') ||
+          e.toString().contains('quota') ||
+          e.toString().contains('QUOTA')) {
+        print('QUOTA EXCEEDED: Attempting emergency cleanup...');
+
+        // Emergency: Clear ALL cache except user data
+        final criticalKeys = [
+          StorageKey.USER_INFO,
+          StorageKey.AUTH_INFO,
+          StorageKey.TOKEN,
+          StorageKey.REMEMBER_LOGIN,
+        ];
+
+        // Get all keys and clear non-critical ones
+        final allKeys = storage.getKeys();
+        for (var existingKey in allKeys) {
+          if (!criticalKeys.contains(existingKey)) {
+            await storage.remove(existingKey);
+          }
+        }
+
+        print('Emergency cleanup done. Trying write again...');
+        try {
+          await storage.write(key, value);
+          print('✓ Write successful after emergency cleanup');
+        } catch (finalError) {
+          print('✗ FINAL FAILURE: Cannot write "$key" even after cleanup: $finalError');
+        }
+      } else {
+        print('ERROR: StorageService.write failed for key "$key": $e');
+      }
     }
   }
 

@@ -80,6 +80,8 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_dotenv: ^6.0.0
   syncfusion_flutter_xlsio: ^29.2.11
+  syncfusion_flutter_datagrid: ^29.2.11
+  syncfusion_flutter_core: ^29.2.11
   firebase_database: ^12.1.0
   firebase_core: ^4.2.1
   idb_shim: ^2.6.6+2

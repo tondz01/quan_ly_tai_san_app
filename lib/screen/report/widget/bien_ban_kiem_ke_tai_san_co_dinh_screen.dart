@@ -5,6 +5,8 @@ import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart
 import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_tai_san_co_dinh_page.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class BienBanKiemKeTaiSanCoDinhScreen extends StatefulWidget {
   final String idDonVi;
@@ -27,6 +29,8 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     extends State<BienBanKiemKeTaiSanCoDinhScreen> {
   List<TaiSanCoDinhDto> _taiSanCoDinhList = [];
   bool _isLoading = true;
+  bool _isExporting = false;
+  final GlobalKey _repaintKey = GlobalKey();
   String? _error;
 
   @override
@@ -66,6 +70,30 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     }
   }
 
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+
+    try {
+      await ScreenshotToExcelService.exportReportToExcel(
+        repaintKey: _repaintKey,
+        reportTitle: 'Bao_Cao_05_TSCD',
+      );
+
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
+      }
+    } catch (e) {
+      SGLog.error("BienBanKiemKeTaiSanCoDinhScreen", "Lỗi xuất Excel: $e");
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
   Future<void> _exportToPDF() async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,6 +120,12 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
             icon: const Icon(Icons.picture_as_pdf),
             onPressed: _exportToPDF,
           ),
+          // Hidden per user request: Excel export button
+          // IconButton(
+          //   icon: const Icon(Icons.table_chart),
+          //   tooltip: 'Xuất Excel',
+          //   onPressed: _isExporting ? null : _exportToExcel,
+          // ),
         ],
       ),
       body:
@@ -115,10 +149,13 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
               ? const Center(child: Text('Không có dữ liệu'))
               : SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: BienBanKiemKeTaiSanCoDinhPage(
-                  taiSanCoDinhList: _taiSanCoDinhList,
-                  denNgay: widget.denNgay,
-                  tenDonVi: widget.tenDonVi,
+                child: RepaintBoundary(
+                  key: _repaintKey,
+                  child: BienBanKiemKeTaiSanCoDinhPage(
+                    taiSanCoDinhList: _taiSanCoDinhList,
+                    denNgay: widget.denNgay,
+                    tenDonVi: widget.tenDonVi,
+                  ),
                 ),
               ),
     );

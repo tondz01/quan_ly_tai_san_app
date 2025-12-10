@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:pdf/pdf.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/report_page_wrapper_multipage.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -18,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/report/views/mau_so_01.page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -69,6 +71,30 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     controllerImportDate.dispose();
     controllerDonVi.dispose();
     super.dispose();
+  }
+
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+
+    try {
+      await ScreenshotToExcelService.exportMultiPageReportToExcel(
+        repaintKeys: _pageKeys,
+        reportTitle: 'Mau_So_01',
+      );
+
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
+      }
+    } catch (e) {
+      SGLog.error('MauSo01Screen', 'Lỗi xuất Excel: $e');
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
   }
 
   Future<void> _exportToPdf() async {
@@ -273,163 +299,61 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
   @override
   Widget build(BuildContext context) {
     double sizeWidth = MediaQuery.of(context).size.width;
-    return Stack(
-      children: [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SizedBox(
-              width: 1400,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          SGText(
-                            text: 'Biên bản kiểm kê CCDC',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Divider(),
-                          CmFormDate(
-                            label: 'Ngày kiểm kê',
-                            controller: controllerImportDate,
-                            isEditing: true,
-                            fieldName: 'importDate',
-                            onChanged: (date) {
-                              setState(() {});
-                            },
-                          ),
-                          CmFormDropdownObject<PhongBan>(
-                            label: 'Đơn vị',
-                            controller: controllerDonVi,
-                            isEditing: true,
-                            items: [
-                              ...listPhongBan.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.tenPhongBan ?? ''),
-                                ),
-                              ),
-                            ],
-                            fieldName: 'tPDonVi',
-                            value: donVi,
-                            onChanged: (value) {
-                              setState(() {
-                                donVi = value;
-                              });
-                            },
-                          ),
-                          Divider(),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  onloadViewPage();
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    'Lấy dữ liệu',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                              Expanded(child: SizedBox.shrink()),
-                              GestureDetector(
-                                onTap: () {
-                                  _exportToPdf();
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.picture_as_pdf,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: () {
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) async {
-                                    await ReportProvider().exportToPdfAndPrint(
-                                      _pageKeys,
-                                      context,
-                                      () {},
-                                    );
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.print,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              return true; // Xử lý scroll event bình thường
-                            },
-                            child: SingleChildScrollView(
-                              physics:
-                                  _scrollController.isParentScrolling
-                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                              scrollDirection: Axis.vertical,
-                              child: Column(
+    return ReportPageWrapperMultipage(
+      title: 'Mẫu số-01',
+      isLoading: _isLoading,
+      isExporting: _isExporting,
+      scrollPhysics: _scrollController.isParentScrolling
+          ? const NeverScrollableScrollPhysics()
+          : const BouncingScrollPhysics(),
+      filterWidgets: [
+        CmFormDate(
+          label: 'Ngày kiểm kê',
+          controller: controllerImportDate,
+          isEditing: true,
+          fieldName: 'importDate',
+          onChanged: (date) {
+            setState(() {});
+          },
+        ),
+        CmFormDropdownObject<PhongBan>(
+          label: 'Đơn vị',
+          controller: controllerDonVi,
+          isEditing: true,
+          items: [
+            ...listPhongBan.map(
+              (e) => DropdownMenuItem(
+                value: e,
+                child: Text(e.tenPhongBan ?? ''),
+              ),
+            ),
+          ],
+          fieldName: 'tPDonVi',
+          value: donVi,
+          onChanged: (value) {
+            setState(() {
+              donVi = value;
+            });
+          },
+        ),
+      ],
+      onLoadData: onloadViewPage,
+      onExportPdf: _exportToPdf,
+      // onExportExcel: _exportToExcel, // Hidden per user request
+      onPrint: () {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await ReportProvider().exportToPdfAndPrint(
+            _pageKeys,
+            context,
+            () {},
+          );
+        });
+      },
+      content: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          return true;
+        },
+        child: Column(
                                 children: [
                                   if (_listPages.isEmpty)
                                     RepaintBoundary(
@@ -601,39 +525,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                     }),
                                 ],
                               ),
-                            ),
-                          ),
-
-                          if (_isLoading)
-                            Positioned.fill(
-                              child: Container(
-                                color: Colors.black54,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        if (_isExporting)
-          Container(
-            width: double.maxFinite,
-            height: double.maxFinite,
-            color: Colors.black54,
-            child: Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-          ),
-      ],
+      ),
     );
   }
 

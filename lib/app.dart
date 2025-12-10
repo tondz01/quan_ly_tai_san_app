@@ -36,16 +36,19 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   final permissionSignService = PermissionSignService();
-  late ProviderSubscription<Map<String, dynamic>?> _messageSub;
+  ProviderSubscription<Map<String, dynamic>?>? _messageSub;
   
   // Static flags để tránh gọi lại nhiều lần khi reload trang (web)
   static bool _isDataLoaded = false;
   static bool _isInitialDataLoaded = false;
   static bool _isListenerSetup = false;
   
-  // Debounce cho realtime message
+  // Throttle cho realtime message - tăng từ 500ms lên 2000ms
   static DateTime? _lastMessageTime;
-  static const _debounceMs = 500; // 500ms debounce
+  static const _throttleMs = 2000; // 2 giây throttle
+
+  // Track pending messages để skip duplicates
+  static final Set<String> _pendingMessages = {};
   
   @override
   void initState() {
@@ -63,7 +66,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _messageSub.close();
+    _messageSub?.close();
     super.dispose();
   }
 
@@ -147,35 +150,53 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   Future<void> _handleRealtimeMessage(Map<String, dynamic>? message) async {
     if (message == null || message.isEmpty) return;
 
-    // Debounce: bỏ qua nếu message đến quá nhanh
+    // Throttle: bỏ qua nếu message đến quá nhanh (tăng từ 500ms lên 2s)
     final now = DateTime.now();
     if (_lastMessageTime != null) {
       final diff = now.difference(_lastMessageTime!).inMilliseconds;
-      if (diff < _debounceMs) {
-        log('[App] Debounce: bỏ qua message (chỉ $diff ms từ message trước)');
+      if (diff < _throttleMs) {
+        log('[App] Throttle: bỏ qua message (chỉ $diff ms từ message trước, cần $_throttleMs ms)');
         return;
       }
     }
-    _lastMessageTime = now;
 
-    log('message [ref.listen] [App] Nhận realtime: $message');
-
-    final userInfo = AccountHelper.instance.getUserInfo();
-    final userTenDangNhap = userInfo?.tenDangNhap ?? '';
+    // Tạo message key để detect duplicates
+    final typeFunc = message['type_func'];
     final idNeedToDo = message['id_need_to_do'] ?? '';
+    final messageKey = '$typeFunc-$idNeedToDo';
 
-    // Kiểm tra xem user có trong danh sách cần xử lý không
-    if (!AppUtility.userInList(userTenDangNhap, idNeedToDo)) {
-      log('[App] Bỏ qua realtime vì user không nằm trong danh sách cần xử lý');
+    // Skip nếu đang xử lý message tương tự
+    if (_pendingMessages.contains(messageKey)) {
+      log('[App] Skip duplicate message: $messageKey');
       return;
     }
 
-    // Xử lý reload data dựa trên type_func
-    final typeFunc = message['type_func'];
-    await _reloadDataByFunctionType(typeFunc);
-    
-    // Refresh counts sau khi reload
-    AccountHelper.refreshAllCounts();
+    _lastMessageTime = now;
+    _pendingMessages.add(messageKey);
+
+    try {
+      log('message [ref.listen] [App] Nhận realtime: $message');
+
+      final userInfo = AccountHelper.instance.getUserInfo();
+      final userTenDangNhap = userInfo?.tenDangNhap ?? '';
+
+      // Kiểm tra xem user có trong danh sách cần xử lý không
+      if (!AppUtility.userInList(userTenDangNhap, idNeedToDo)) {
+        log('[App] Bỏ qua realtime vì user không nằm trong danh sách cần xử lý');
+        return;
+      }
+
+      // Xử lý reload data dựa trên type_func (không await để không block)
+      await _reloadDataByFunctionType(typeFunc);
+
+      // Refresh counts sau khi reload - chỉ gọi 1 lần
+      AccountHelper.refreshAllCounts();
+    } finally {
+      // Remove from pending sau 1 giây để allow retry nếu cần
+      Future.delayed(const Duration(seconds: 1), () {
+        _pendingMessages.remove(messageKey);
+      });
+    }
   }
 
   /// Reload data dựa trên function type
