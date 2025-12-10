@@ -327,7 +327,8 @@ class ReportProvider {
             key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
         if (boundary == null) continue;
 
-        final image = await boundary.toImage(pixelRatio: 1.0);
+        // Tăng pixelRatio để chữ rõ hơn (2.0 = gấp đôi độ phân giải)
+        final image = await boundary.toImage(pixelRatio: 2.0);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
 
@@ -341,23 +342,18 @@ class ReportProvider {
         }
 
         final imageProvider = pw.MemoryImage(pngBytes);
-        final aspectRatio = imageWidth / imageHeight;
-        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
 
+        // Fit image vào A4 mà không bị nén quá mức
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4.portrait,
-            margin: const pw.EdgeInsets.all(20),
+            margin: const pw.EdgeInsets.all(10), // Giảm margin để có nhiều không gian hơn
             build: (context) {
-              if (aspectRatio > a4AspectRatio) {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-                );
-              } else {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-                );
-              }
+              return pw.Image(
+                imageProvider,
+                fit: pw.BoxFit.contain, // Giữ tỷ lệ và fit vào trang
+                alignment: pw.Alignment.topCenter,
+              );
             },
           ),
         );
@@ -405,7 +401,8 @@ class ReportProvider {
             key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
         if (boundary == null) continue;
 
-        final image = await boundary.toImage(pixelRatio: 1.0);
+        // Tăng pixelRatio để chữ rõ hơn (2.0 = gấp đôi độ phân giải)
+        final image = await boundary.toImage(pixelRatio: 2.0);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
 
@@ -419,23 +416,18 @@ class ReportProvider {
         }
 
         final imageProvider = pw.MemoryImage(pngBytes);
-        final aspectRatio = imageWidth / imageHeight;
-        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
 
+        // Fit image vào A4 mà không bị nén quá mức
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4,
-            margin: const pw.EdgeInsets.all(20),
+            margin: const pw.EdgeInsets.all(10), // Giảm margin để có nhiều không gian hơn
             build: (context) {
-              if (aspectRatio > a4AspectRatio) {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-                );
-              } else {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-                );
-              }
+              return pw.Image(
+                imageProvider,
+                fit: pw.BoxFit.contain, // Giữ tỷ lệ và fit vào trang
+                alignment: pw.Alignment.topCenter,
+              );
             },
           ),
         );

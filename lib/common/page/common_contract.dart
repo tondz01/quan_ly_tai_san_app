@@ -277,11 +277,11 @@ class _CommonContractState extends State<CommonContract> {
       if (loaiKy == 1 || loaiKy == 5) {
         // Primary: chuKyNhay, Fallback: chuKyThuong
         rawUrlPrimary = sig["chuKyNhay"]?.toString() ?? "";
-        rawUrlFallback = sig["chuKyThuong"]?.toString() ?? "";
+        rawUrlFallback = rawUrlPrimary;
       } else if (loaiKy == 2 || loaiKy == 4) {
         // Primary: chuKyThuong, Fallback: chuKyNhay
         rawUrlPrimary = sig["chuKyThuong"]?.toString() ?? "";
-        rawUrlFallback = sig["chuKyNhay"]?.toString() ?? "";
+        rawUrlFallback = rawUrlPrimary;
       }
 
       // Try primary first, then fallback
@@ -478,7 +478,8 @@ class _CommonContractState extends State<CommonContract> {
         // Tính chiều cao thực tế của mỗi trang bằng cách đo từ render box
         double actualPageHeight = REFERENCE_HEIGHT;
         if (_pageKeys.isNotEmpty) {
-          final firstPageBox = _pageKeys[0].currentContext?.findRenderObject() as RenderBox?;
+          final firstPageBox =
+              _pageKeys[0].currentContext?.findRenderObject() as RenderBox?;
           if (firstPageBox != null) {
             actualPageHeight = firstPageBox.size.height;
           }
@@ -512,7 +513,10 @@ class _CommonContractState extends State<CommonContract> {
           for (int i = 0; i < totalPages; i++) {
             final srcY = (i * pageHeightInPixels).round();
             final srcHeight = pageHeightInPixels.round();
-            final actualSrcHeight = srcHeight.clamp(0, (imageHeight - srcY).round());
+            final actualSrcHeight = srcHeight.clamp(
+              0,
+              (imageHeight - srcY).round(),
+            );
 
             if (actualSrcHeight <= 0) continue;
 
@@ -842,11 +846,11 @@ class _CommonContractState extends State<CommonContract> {
         setState(() {
           signatureValue = result['signatureValue'] ?? '';
         });
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(
+        //     context,
+        //   ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
+        // }
       } else {
         SGLog.error('Ký', 'HTTP ${response.statusCode}: ${response.body}');
         if (mounted) {
@@ -964,11 +968,11 @@ class _CommonContractState extends State<CommonContract> {
         setState(() {
           signatureValue = result['signatureValue'] ?? '';
         });
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(
+        //     context,
+        //   ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
+        // }
       } else {
         SGLog.error('Ký', 'HTTP ${response.statusCode}: ${response.body}');
         if (mounted) {
@@ -1056,11 +1060,11 @@ class _CommonContractState extends State<CommonContract> {
         setState(() {
           signatureValue = result['signatureValue'] ?? '';
         });
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
-        }
+        // if (mounted) {
+        //   ScaffoldMessenger.of(
+        //     context,
+        //   ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
+        // }
       } else {
         SGLog.error('Ký', 'HTTP ${response.statusCode}: ${response.body}');
         if (mounted) {

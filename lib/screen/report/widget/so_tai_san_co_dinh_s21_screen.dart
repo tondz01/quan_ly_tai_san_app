@@ -13,13 +13,13 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/khau_hao_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_s21_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
 
 class MauSo21Screen extends StatefulWidget {
   const MauSo21Screen({super.key});
@@ -41,26 +41,46 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   List<KhauHaoTaiSanDto> listKhauHaoTaiSan = [];
   bool _isLoading = false;
   bool _isExporting = false;
-  late HomeScrollController _scrollController;
-
-  void _onScrollStateChanged() {
-    // setState(() {});
-  }
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _scrollController = HomeScrollController();
-    _scrollController.addListener(_onScrollStateChanged);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScrollStateChanged);
     controllerImportDate.dispose();
     controllerLoaiTaiSan.dispose();
     super.dispose();
+  }
+
+  Future<void> _exportToExcel() async {
+    setState(() => _isExporting = true);
+
+    try {
+      await ScreenshotToExcelService.exportReportToExcel(
+        repaintKey: _repaintKey,
+        reportTitle: 'Mau_So_21',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Xuất Excel thành công!')),
+        );
+      }
+    } catch (e) {
+      SGLog.error('MauSo21Screen', 'Lỗi xuất Excel: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi xuất Excel: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
   }
 
   Future<void> _exportToPdf() async {
@@ -360,6 +380,22 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                     ),
                                   ),
                                 ),
+                                // Hidden per user request: Excel export button
+                                // const SizedBox(width: 8),
+                                // GestureDetector(
+                                //   onTap: _isExporting ? null : _exportToExcel,
+                                //   child: Container(
+                                //     padding: const EdgeInsets.all(8.0),
+                                //     decoration: BoxDecoration(
+                                //       color: Colors.green,
+                                //       borderRadius: BorderRadius.circular(8),
+                                //     ),
+                                //     child: const Icon(
+                                //       Icons.table_chart,
+                                //       color: Colors.white,
+                                //     ),
+                                //   ),
+                                // ),
                                 const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
@@ -418,10 +454,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                         child: Stack(
                           children: [
                             SingleChildScrollView(
-                              physics:
-                                  _scrollController.isParentScrolling
-                                      ? const NeverScrollableScrollPhysics()
-                                      : const BouncingScrollPhysics(),
+                              physics: const BouncingScrollPhysics(),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: RepaintBoundary(
