@@ -122,7 +122,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
   List<DropdownMenuItem<PhongBan>> _itemsDVGiao = [];
-  List<DropdownMenuItem<PhongBan>> _itemsDVNhan= [];
+  List<DropdownMenuItem<PhongBan>> _itemsDVNhan = [];
   // List status
   // late List<ListStatus> _listStatus;
 
@@ -271,14 +271,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       return;
     }
     _isLoadingAsset = true;
-    
+
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu...';
     print('AssetListCacheService message onGetDataAsset');
-    
+
     try {
       _dataAsset = await AssetListCacheService().loadAssetList();
-      print('AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}');
+      print(
+        'AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}',
+      );
     } catch (e) {
       log('onGetDataAsset error: $e');
     } finally {
@@ -440,41 +442,62 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    
+
     // Tạo dropdown item một lần để tái sử dụng
-    DropdownMenuItem<PhongBan> toDropdownItem(PhongBan e) => 
+    DropdownMenuItem<PhongBan> toDropdownItem(PhongBan e) =>
         DropdownMenuItem<PhongBan>(value: e, child: Text(e.tenPhongBan ?? ''));
 
     // Phòng ban (không phải kho)
-    _itemsDDPhongBan = _dataPhongBan
-        ?.where((e) => e.isKho != true)
-        .map(toDropdownItem)
-        .toList() ?? [];
+    _itemsDDPhongBan =
+        _dataPhongBan
+            ?.where((e) => e.isKho != true)
+            .map(toDropdownItem)
+            .toList() ??
+        [];
 
     // Đơn vị giao: Kho cấp phát (type=1) hoặc Phòng ban thường (type!=1)
     final isCapPhat = typeDieuDongTaiSan == 1;
     // Đơn vị nhận: Kho thu hồi (type=3) hoặc Phòng ban thường (type!=3)
     final isThuHoi = typeDieuDongTaiSan == 3;
 
-    _itemsDVGiao = _dataPhongBan
-        ?.where((e) => isCapPhat 
-            ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoCapPhat)
-            : e.isKho == false)
-        .map(toDropdownItem)
-        .toList() ?? [];
+    _itemsDVGiao =
+        _dataPhongBan
+            ?.where(
+              (e) =>
+                  isCapPhat
+                      ? (e.isKho == true &&
+                          LoaiKho.fromValue(e.loaiKho).isKhoCapPhat)
+                      : e.isKho == false,
+            )
+            .map(toDropdownItem)
+            .toList() ??
+        [];
 
-    _itemsDVNhan = _dataPhongBan
-    ?.where((e) => isThuHoi
-        ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoThuHoi)
-        : e.isKho == false)
-    .map(toDropdownItem)
-    .toList() ?? [];
+    _itemsDVNhan =
+        _dataPhongBan
+            ?.where(
+              (e) =>
+                  isThuHoi
+                      ? (e.isKho == true &&
+                          LoaiKho.fromValue(e.loaiKho).isKhoThuHoi)
+                      : e.isKho == false,
+            )
+            .map(toDropdownItem)
+            .toList() ??
+        [];
     // Nhân viên
     _dataNhanVien = AccountHelper.instance.getNhanVien();
-    _itemsDDNhanVien = _dataNhanVien
-        ?.map((e) => DropdownMenuItem<NhanVien>(value: e, child: Text(e.hoTen ?? '')))
-        .toList() ?? [];
-    
+    _itemsDDNhanVien =
+        _dataNhanVien
+            ?.map(
+              (e) => DropdownMenuItem<NhanVien>(
+                value: e,
+                child: Text(e.hoTen ?? ''),
+              ),
+            )
+            .toList() ??
+        [];
+
     notifyListeners();
   }
 
@@ -715,6 +738,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _batchUpdate(() {
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _dataAsset = result['data'];
+        if (typeDieuDongTaiSan == 1) {
+          _dataAsset =
+              _dataAsset
+                  ?.where((element) => element.idDonViHienThoi == '')
+                  .toList();
+        }
         _isLoading = false;
         _loadingMessage = 'Đang tải dữ liệu...';
       } else {
@@ -742,10 +771,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     });
   }
 
-  String genID(){
+  String genID() {
     final now = DateTime.now();
     final year = now.year;
-    String code = typeDieuDongTaiSan == 1 ? "CPTS" : typeDieuDongTaiSan == 2 ? "DDTS" : "THTS";
+    String code =
+        typeDieuDongTaiSan == 1
+            ? "CPTS"
+            : typeDieuDongTaiSan == 2
+            ? "DDTS"
+            : "THTS";
     String random = UUIDGenerator.generateRandomNumber(6);
     return "$code-$year-$random";
   }
