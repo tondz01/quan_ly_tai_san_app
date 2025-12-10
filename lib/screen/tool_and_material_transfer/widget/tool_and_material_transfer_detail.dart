@@ -842,7 +842,7 @@ class _ToolAndMaterialTransferDetailState
                           controller: controllerDeliveringUnit,
                           isEditing: isEditing,
                           value: donViGiao,
-                          items: widget.provider.itemsDDPhongBanKho,
+                          items: widget.provider.itemsDVGiao,
                           defaultValue:
                               controllerDeliveringUnit.text.isNotEmpty
                                   ? widget.provider.getPhongBanByID(
@@ -872,9 +872,9 @@ class _ToolAndMaterialTransferDetailState
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
                           controller: controllerReceivingUnit,
-                          isEditing: widget.type == 3 ? false : isEditing,
+                          isEditing: isEditing,
                           value: donViNhan,
-                          items: widget.provider.itemsDDPhongBan,
+                          items: widget.provider.itemsDVNhan,
                           defaultValue:
                               controllerReceivingUnit.text.isNotEmpty
                                   ? widget.provider.getPhongBanByID(

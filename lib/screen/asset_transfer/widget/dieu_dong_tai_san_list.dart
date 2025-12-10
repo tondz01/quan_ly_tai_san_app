@@ -93,7 +93,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     if (selected != null) {
       _buildDetailDepartmentTree(selected!);
     }
-    _callGetListAssetHandover();
+    // _callGetListAssetHandover();
     _definitions = TabelAssetTransferConfig.getColumns(
       userInfo ?? UserInfoDTO.empty(),
     );
@@ -699,25 +699,25 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     );
   }
 
-  void _callGetListAssetHandover() {
-    try {
-      final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(
-          context,
-          widget.typeAssetTransfer,
-          widget.idCongTy,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  // void _callGetListAssetHandover() {
+  //   try {
+  //     final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
+  //     assetHandoverBloc.add(
+  //       GetListDieuDongTaiSanEvent(
+  //         context,
+  //         widget.typeAssetTransfer,
+  //         widget.idCongTy,
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   void _handleSignDocument(
     DieuDongTaiSanDto item,

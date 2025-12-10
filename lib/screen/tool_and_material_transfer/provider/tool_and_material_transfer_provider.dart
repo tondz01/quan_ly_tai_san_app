@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
@@ -64,7 +65,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get listDetailTransferCCDC => _listDetailTransferCCDC;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
-  get itemsDDPhongBanKho => _itemsDDPhongBanKho;
+  get itemsDVGiao => _itemsDVGiao;
+  get itemsDVNhan => _itemsDVNhan;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
   String get messageLoading => _messageLoading;
@@ -118,7 +120,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   int currentPage = 1;
 
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
-  List<DropdownMenuItem<PhongBan>> _itemsDDPhongBanKho = [];
+  List<DropdownMenuItem<PhongBan>> _itemsDVGiao = [];
+  List<DropdownMenuItem<PhongBan>> _itemsDVNhan = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
 
   // List status
@@ -277,44 +280,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onReloadDataToolAndMaterialTransfer() async {
-    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
-        await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(
-          type,
-        );
-    _data = toolAndMaterialTransfers;
-    _data =
-        _data
-          ?..where((element) => element.loai == type)
-              .where(
-                (item) =>
-                    item.share == true ||
-                    item.nguoiTao == userInfo?.tenDangNhap,
-              )
-              .where((item) {
-                final idSignatureGroup =
-                    [
-                      item.nguoiTao,
-                      item.idNguoiKyNhay,
-                      item.idTrinhDuyetCapPhong,
-                      item.idTrinhDuyetGiamDoc,
-                      if (item.listSignatory != null)
-                        ...item.listSignatory!.map((e) => e.idNguoiKy),
-                    ].whereType<String>().toList();
-
-                final inGroup = idSignatureGroup
-                    .map((e) => e.toLowerCase())
-                    .contains(userInfo.tenDangNhap.toLowerCase());
-                return inGroup;
-              })
-              .toList();
-    _filteredData = List.from(_data!);
-    // if (_data != null) {
-    //   // refreshCountSign(_data!);
-    // }
-    notifyListeners();
-  }
-
   void onDispose() {
     _data = null;
     _error = null;
@@ -325,8 +290,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _filterStatus[FilterStatus.all] = true;
     _listOwnershipUnit = [];
 
-    // _autoReloadTimer?.cancel();
-    // _autoReloadTimer = null;
   }
 
   // void getDataAll(BuildContext context) {
@@ -375,7 +338,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      log('Error in onChangeDetailToolAndMaterialTransfer: $e');
+      SGLog.debug('[onChangeDetail]','Error in onChangeDetailToolAndMaterialTransfer: $e');
       // Có thể hiển thị thông báo lỗi nếu cần
     } finally {
       if (currentRequestId == _detailRequestId) {
@@ -434,50 +397,35 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    // if(_dataPhongBan == null){
-    //   AuthRepository().loadUserDepartments('ct001');
-    //   _dataPhongBan = AccountHelper.instance.getDepartment();
-    // }
-    _itemsDDPhongBan =
-        _dataPhongBan
-            ?.where((element) => element.isKho != true)
-            .map(
-              (element) => DropdownMenuItem<PhongBan>(
-                value: element,
-                child: Text(element.tenPhongBan ?? ''),
-              ),
-            )
-            .toList() ??
-        [];
+    // Tạo dropdown item một lần để tái sử dụng
+    DropdownMenuItem<PhongBan> toDropdownItem(PhongBan e) => 
+        DropdownMenuItem<PhongBan>(value: e, child: Text(e.tenPhongBan ?? ''));
 
-    if (type == 1) {
-      List<PhongBan> dataDVGiao =
-          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
-          [];
-      _itemsDDPhongBanKho =
-          dataDVGiao
-              .map(
-                (element) => DropdownMenuItem<PhongBan>(
-                  value: element,
-                  child: Text(element.tenPhongBan ?? ''),
-                ),
-              )
-              .toList();
-    } else {
-      List<PhongBan> dataDV =
-          _dataPhongBan?.where((element) => element.isKho == false).toList() ??
-          [];
+    // Phòng ban (không phải kho)
+    _itemsDDPhongBan = _dataPhongBan
+        ?.where((e) => e.isKho != true)
+        .map(toDropdownItem)
+        .toList() ?? [];
 
-      _itemsDDPhongBanKho =
-          dataDV
-              .map(
-                (element) => DropdownMenuItem<PhongBan>(
-                  value: element,
-                  child: Text(element.tenPhongBan ?? ''),
-                ),
-              )
-              .toList();
-    }
+    // Đơn vị giao: Kho cấp phát (type=1) hoặc Phòng ban thường (type!=1)
+    final isCapPhat = type == 1;
+    // Đơn vị nhận: Kho thu hồi (type=3) hoặc Phòng ban thường (type!=3)
+    final isThuHoi = type == 3;
+
+    _itemsDVGiao = _dataPhongBan
+        ?.where((e) => isCapPhat 
+            ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoCapPhat)
+            : e.isKho == false)
+        .map(toDropdownItem)
+        .toList() ?? [];
+
+    _itemsDVNhan = _dataPhongBan
+    ?.where((e) => isThuHoi
+        ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoThuHoi)
+        : e.isKho == false)
+    .map(toDropdownItem)
+    .toList() ?? [];
+    // Nhân viên
     _dataNhanVien = AccountHelper.instance.getNhanVien();
     _itemsDDNhanVien = [
       for (var element in _dataNhanVien!)
@@ -498,38 +446,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     }
     notifyListeners();
   }
-
-  // getDataDropdownSuccess(
-  //   BuildContext context,
-  //   GetDataDropdownSuccessState state,
-  // ) {
-  //   _error = null;
-  //   if (state.dataPb.isEmpty) {
-  //     _dataPhongBan = [];
-  //   } else {
-  //     _dataPhongBan = state.dataPb;
-  //     _itemsDDPhongBan = [
-  //       for (var element in _dataPhongBan!)
-  //         DropdownMenuItem<PhongBan>(
-  //           value: element,
-  //           child: Text(element.tenPhongBan ?? ''),
-  //         ),
-  //     ];
-  //   }
-  //   if (state.dataNv.isEmpty) {
-  //     _dataNhanVien = [];
-  //   } else {
-  //     _dataNhanVien = state.dataNv;
-  //     _itemsDDNhanVien = [
-  //       for (var element in _dataNhanVien!)
-  //         DropdownMenuItem<NhanVien>(
-  //           value: element,
-  //           child: Text(element.hoTen ?? ''),
-  //         ),
-  //     ];
-  //   }
-  //   notifyListeners();
-  // }
 
   void createDieuDongSuccess(
     BuildContext context,
@@ -615,10 +531,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
-    log(
-      '[saveAssetTransfer] Starting - fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}',
-    );
-
     // Lưu bloc reference trước khi upload để tránh lỗi khi context bị deactivated
     ToolAndMaterialTransferBloc? bloc;
     if (context.mounted) {
@@ -635,7 +547,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         (!kIsWeb && filePath.isNotEmpty);
 
     if (hasNewFile) {
-      log('[saveAssetTransfer] Has new file, uploading...');
       Map<String, dynamic>? result = await uploadWordDocument(
         context,
         fileName,
@@ -643,10 +554,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         fileBytes,
       );
 
-      log('[saveAssetTransfer] Upload result: $result');
-
       if (result == null) {
-        log('[saveAssetTransfer] Upload failed, returning early');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -661,13 +569,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
       request.duongDanFile = result['filePath'] ?? '';
       request.tenFile = result['fileName'] ?? '';
-      log(
-        '[saveAssetTransfer] File uploaded successfully - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}',
-      );
     } else {
-      log(
-        '[saveAssetTransfer] No new file to upload, using existing file info',
-      );
       // Use existing file info if available
       if (fileName.isNotEmpty) {
         request.tenFile = fileName;
@@ -682,25 +584,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       "Final request - fileName: ${request.tenFile}, filePath: ${request.duongDanFile}",
     );
 
-    log('[saveAssetTransfer] Calling CreateToolAndMaterialTransferEvent');
-    log('[saveAssetTransfer] Request: ${jsonEncode(request.toJson())}');
-    log('[saveAssetTransfer] RequestDetail count: ${requestDetail.length}');
-    log(
-      '[saveAssetTransfer] RequestSignatory count: ${requestSignatory.length}',
-    );
-
     // Sử dụng bloc đã lưu trước khi upload
     // Context có thể đã bị deactivated sau upload, nhưng bloc vẫn hoạt động
     // Event vẫn cần context (mặc dù bloc không dùng), nên truyền context cũ
     bloc.add(
       CreateToolAndMaterialTransferEvent(
-        context, // Context có thể đã deactivated nhưng bloc không dùng nó
         request,
         requestDetail,
         requestSignatory,
       ),
     );
-    log('[saveAssetTransfer] Event dispatched successfully');
     notifyListeners();
   }
 
@@ -710,10 +603,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String filePath,
     Uint8List fileBytes,
   ) async {
-    log(
-      '[uploadWordDocument] Starting - kIsWeb: $kIsWeb, fileName: $fileName, filePath: $filePath, fileBytes length: ${fileBytes.length}',
-    );
-
     if (kIsWeb) {
       if (fileName.isEmpty || (filePath.isEmpty && fileBytes.isEmpty)) {
         log(
@@ -731,7 +620,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     }
 
     try {
-      log('[uploadWordDocument] Calling repository upload method');
       final result =
           kIsWeb
               ? await ToolAndMaterialTransferRepository().uploadFileBytes(
@@ -740,11 +628,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               )
               : await ToolAndMaterialTransferRepository().uploadFile(filePath);
 
-      log('[uploadWordDocument] Repository result: $result');
       final statusCode = result['status_code'] as int? ?? 0;
 
       if (statusCode >= 200 && statusCode < 300) {
-        log('[uploadWordDocument] Upload successful, statusCode: $statusCode');
         if (context.mounted) {
           // ScaffoldMessenger.of(context).showSnackBar(
           //   SnackBar(
@@ -755,7 +641,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         }
         return result['data'];
       } else {
-        log('[uploadWordDocument] Upload failed, statusCode: $statusCode');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -767,7 +652,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         return null;
       }
     } catch (e) {
-      log('[uploadWordDocument] Exception: $e');
       SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

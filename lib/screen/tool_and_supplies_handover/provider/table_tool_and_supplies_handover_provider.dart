@@ -50,6 +50,11 @@ class TableToolAndSuppliesHandoverProvider
   dynamic Function(ToolAndSuppliesHandoverDto item, int columnIndex)?
   _localValueGetter;
 
+  // === CHỐNG GỌI API LIÊN TỤC ===
+  bool _isApiLoading = false; // Flag đang gọi API
+  DateTime? _lastApiCallTime; // Thời gian gọi API lần cuối
+  static const _apiDebounceMs = 300; // Debounce 300ms
+
   TableToolAndSuppliesHandoverProvider(this.repository);
 
   @override
@@ -94,6 +99,26 @@ class TableToolAndSuppliesHandoverProvider
     int trangThai, [
     bool isRefresh = true,
   ]) async {
+    // === CHỐNG GỌI API LIÊN TỤC ===
+    // Nếu đang gọi API thì bỏ qua
+    if (_isApiLoading) {
+      log('loadDataFromApi ToolAndSuppliesHandover: SKIPPED - API đang loading');
+      return;
+    }
+    
+    // Debounce: bỏ qua nếu gọi quá nhanh (< 300ms)
+    final now = DateTime.now();
+    if (_lastApiCallTime != null) {
+      final diff = now.difference(_lastApiCallTime!).inMilliseconds;
+      if (diff < _apiDebounceMs) {
+        log('loadDataFromApi ToolAndSuppliesHandover: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)');
+        return;
+      }
+    }
+    
+    _isApiLoading = true;
+    _lastApiCallTime = now;
+    
     log(
       'loadDataFromApi ToolAndSuppliesHandover: page=$page -- trangThai=$trangThai -- isRefresh=$isRefresh',
     );
@@ -150,6 +175,8 @@ class TableToolAndSuppliesHandoverProvider
         errorMessage: 'Lỗi tải dữ liệu: $error',
         currentPageData: [],
       );
+    } finally {
+      _isApiLoading = false; // Reset flag sau khi hoàn thành
     }
   }
 

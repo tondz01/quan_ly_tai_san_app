@@ -103,15 +103,10 @@ class ToolAndMaterialTransferBloc
     CreateToolAndMaterialTransferEvent event,
     Emitter emit,
   ) async {
-    log('[Bloc] _createLenhDieuDong START');
-    log('[Bloc] Request ID: ${event.request.id}');
-    log('[Bloc] RequestDetail count: ${event.requestDetail.length}');
-    log('[Bloc] RequestSignatory count: ${event.requestSignatory.length}');
     
     emit(ToolAndMaterialTransferInitialState());
     emit(ToolAndMaterialTransferLoadingState());
     
-    log('[Bloc] Calling repository.createToolAndMaterialTransfer');
     Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
         .createToolAndMaterialTransfer(
           event.request,
@@ -119,15 +114,12 @@ class ToolAndMaterialTransferBloc
           event.requestSignatory,
         );
     
-    log('[Bloc] Repository returned - status_code: ${result['status_code']}');
     emit(ToolAndMaterialTransferLoadingDismissState());
     
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      log('[Bloc] Create successful, emitting CreateDieuDongSuccessState');
       emit(CreateDieuDongSuccessState());
     } else {
       String msg = "Lỗi khi tạo lệnh điều động";
-      log('[Bloc] Create failed - code: ${result['status_code']}, message: $msg');
       emit(
         CreateDieuDongFailedState(
           title: "notice",

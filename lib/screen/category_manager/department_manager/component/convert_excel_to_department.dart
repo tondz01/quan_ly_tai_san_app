@@ -76,13 +76,14 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "phongCapTren": AppUtility.s(row[2]?.value),
           // ignore: unrelated_type_equality_checks
           "isKho": row[3]?.value == true || row[3]?.value == 'TRUE',
+          "loaiKho": int.tryParse(row[4]?.value?.toString() ?? '0') ?? 0,
           // ignore: unrelated_type_equality_checks
-          "isLanhDao": row[4]?.value == true || row[4]?.value == 'TRUE',
+          "isLanhDao": row[5]?.value == true || row[5]?.value == 'TRUE',
           "ngayTao": AppUtility.formatFromISOString(
-            row[5]?.value?.toString() ?? DateTime.now().toIso8601String(),
+            row[6]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "ngayCapNhat": AppUtility.formatFromISOString(
-            row[6]?.value?.toString() ?? DateTime.now().toIso8601String(),
+            row[7]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
@@ -117,12 +118,13 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "idCongTy": "ct001",
           "phongCapTren": cell(row, 2),
           "isKho": cell(row, 3) == true || cell(row, 3) == 'TRUE',
-          "isLanhDao": cell(row, 4) == true || cell(row, 4) == 'TRUE',
+          "loaiKho": int.tryParse(cell(row, 4)?.toString() ?? '0') ?? 0,
+          "isLanhDao": cell(row, 5) == true || cell(row, 5) == 'TRUE',
           "ngayTao": AppUtility.formatFromISOString(
-            cell(row, 5) ?? DateTime.now().toIso8601String(),
+            cell(row, 6) ?? DateTime.now().toIso8601String(),
           ),
           "ngayCapNhat": AppUtility.formatFromISOString(
-            cell(row, 6) ?? DateTime.now().toIso8601String(),
+            cell(row, 7) ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,

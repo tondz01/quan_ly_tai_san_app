@@ -51,7 +51,11 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
   dynamic Function(AssetHandoverDto item, int columnIndex)? _localValueGetter;
 
   bool _isInitialized = false;
-  bool _isLoading = false;
+  
+  // === CHỐNG GỌI API LIÊN TỤC ===
+  bool _isApiLoading = false; // Flag đang gọi API
+  DateTime? _lastApiCallTime; // Thời gian gọi API lần cuối
+  static const _apiDebounceMs = 300; // Debounce 300ms
 
   @override
   void initialize({
@@ -99,12 +103,26 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
     int trangThai, [
     bool isRefresh = true,
   ]) async {
-    // Tránh gọi API đồng thời nhiều lần
-    if (_isLoading) {
+    // === CHỐNG GỌI API LIÊN TỤC ===
+    // Nếu đang gọi API thì bỏ qua
+    if (_isApiLoading) {
+      log('loadDataFromApi AssetHandover: SKIPPED - API đang loading');
       return;
     }
+    
+    // Debounce: bỏ qua nếu gọi quá nhanh (< 300ms)
+    final now = DateTime.now();
+    if (_lastApiCallTime != null) {
+      final diff = now.difference(_lastApiCallTime!).inMilliseconds;
+      if (diff < _apiDebounceMs) {
+        log('loadDataFromApi AssetHandover: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)');
+        return;
+      }
+    }
+    
+    _isApiLoading = true;
+    _lastApiCallTime = now;
     _currentTrangThai = trangThai;
-    _isLoading = true;
 
     // Set loading cho API call
     if (isRefresh) {
@@ -159,7 +177,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
         currentPageData: [],
       );
     } finally {
-      _isLoading = false;
+      _isApiLoading = false; // Reset flag sau khi hoàn thành
     }
   }
 

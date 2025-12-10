@@ -492,9 +492,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
                           controller: controllers.controllerReceivingUnit,
-                          isEditing: widget.type == 3 ? false : state.isEditing,
+                          isEditing: state.isEditing,
                           value: state.donViNhan,
-                          items: widget.provider.itemsDDPhongBan,
+                          items: widget.provider.itemsDVNhan,
                           isRequired: true,
                           defaultValue:
                               controllers
@@ -967,6 +967,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             idTaiSan: e.idTaiSan,
             soLuong: e.soLuong,
             ghiChu: e.ghiChu,
+            hienTrang: e.hienTrang.toString(),
             ngayTao: AppUtility.formatDateString(DateTime.now()),
             ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
             nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
@@ -1228,8 +1229,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.selectedFileName = null;
         state.selectedFilePath = null;
         state.donViGiao = null;
-        state.donViNhan =
-            widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
+        // state.donViNhan =
+        //     widget.type == 3 ? widget.provider.getPhongBanByID("kth") : null;
         NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
           (e) => e.id == widget.provider.userInfo?.tenDangNhap,
           orElse: () => NhanVien(),

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
@@ -57,6 +58,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDVGiao => _itemsDVGiao;
+  get itemsDVNhan => _itemsDVNhan;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
   get loadingMessage => _loadingMessage;
@@ -111,6 +113,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
   List<DropdownMenuItem<PhongBan>> _itemsDVGiao = [];
+  List<DropdownMenuItem<PhongBan>> _itemsDVNhan= [];
   // List status
   // late List<ListStatus> _listStatus;
 
@@ -122,6 +125,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   bool _isLoading = false;
+  bool _isLoadingAsset = false; // Flag chống gọi onGetDataAsset nhiều lần
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
@@ -249,25 +253,28 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   onGetDataAsset(BuildContext context) async {
+    // Chống gọi nhiều lần liên tiếp
+    if (_isLoadingAsset) {
+      log('onGetDataAsset: SKIPPED - đang loading');
+      return;
+    }
+    _isLoadingAsset = true;
+    
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu...';
     print('AssetListCacheService message onGetDataAsset');
-    // if (AccountHelper.instance.getAllAssets().isEmpty) {
-    //   final args = await AssetManagementRepository().getListAssetManagement(
-    //     'ct001',
-    //   );
-    //   await AccountHelper.instance.setListAsset(args['data'] ?? []);
-    //   _dataAsset = args['data'];
-    // } else {
-    //   _dataAsset = AccountHelper.instance.getAllAssets();
-    // }
-    // context.read<DieuDongTaiSanBloc>().add(GetListAssetEvent(context, 'ct001'));
-    _dataAsset = await AssetListCacheService().loadAssetList();
-    print('AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}');
-    _isLoading = false;
-    _loadingMessage = '';
-    notifyListeners();
-
+    
+    try {
+      _dataAsset = await AssetListCacheService().loadAssetList();
+      print('AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}');
+    } catch (e) {
+      log('onGetDataAsset error: $e');
+    } finally {
+      _isLoading = false;
+      _loadingMessage = '';
+      _isLoadingAsset = false;
+      notifyListeners();
+    }
   }
 
   void onDispose() {
@@ -421,58 +428,41 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    _itemsDDPhongBan =
-        _dataPhongBan
-            ?.where((element) => element.isKho != true)
-            .map(
-              (element) => DropdownMenuItem<PhongBan>(
-                value: element,
-                child: Text(element.tenPhongBan ?? ''),
-              ),
-            )
-            .toList() ??
-        [];
+    
+    // Tạo dropdown item một lần để tái sử dụng
+    DropdownMenuItem<PhongBan> toDropdownItem(PhongBan e) => 
+        DropdownMenuItem<PhongBan>(value: e, child: Text(e.tenPhongBan ?? ''));
 
-    if (typeDieuDongTaiSan == 1) {
-      List<PhongBan> dataDVGiao =
-          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
-          [];
-      log(
-        'message dataDVGiao: ${dataDVGiao.length} -- ${_dataPhongBan?.length}',
-      );
-      _itemsDVGiao =
-          dataDVGiao
-              .map(
-                (element) => DropdownMenuItem<PhongBan>(
-                  value: element,
-                  child: Text(element.tenPhongBan ?? ''),
-                ),
-              )
-              .toList();
-    } else {
-      List<PhongBan> dataDV =
-          _dataPhongBan?.where((element) => element.isKho == false).toList() ??
-          [];
+    // Phòng ban (không phải kho)
+    _itemsDDPhongBan = _dataPhongBan
+        ?.where((e) => e.isKho != true)
+        .map(toDropdownItem)
+        .toList() ?? [];
 
-      _itemsDVGiao =
-          dataDV
-              .map(
-                (element) => DropdownMenuItem<PhongBan>(
-                  value: element,
-                  child: Text(element.tenPhongBan ?? ''),
-                ),
-              )
-              .toList();
-    }
+    // Đơn vị giao: Kho cấp phát (type=1) hoặc Phòng ban thường (type!=1)
+    final isCapPhat = typeDieuDongTaiSan == 1;
+    // Đơn vị nhận: Kho thu hồi (type=3) hoặc Phòng ban thường (type!=3)
+    final isThuHoi = typeDieuDongTaiSan == 3;
 
+    _itemsDVGiao = _dataPhongBan
+        ?.where((e) => isCapPhat 
+            ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoCapPhat)
+            : e.isKho == false)
+        .map(toDropdownItem)
+        .toList() ?? [];
+
+    _itemsDVNhan = _dataPhongBan
+    ?.where((e) => isThuHoi
+        ? (e.isKho == true && LoaiKho.fromValue(e.loaiKho).isKhoThuHoi)
+        : e.isKho == false)
+    .map(toDropdownItem)
+    .toList() ?? [];
+    // Nhân viên
     _dataNhanVien = AccountHelper.instance.getNhanVien();
-    _itemsDDNhanVien = [
-      for (var element in _dataNhanVien!)
-        DropdownMenuItem<NhanVien>(
-          value: element,
-          child: Text(element.hoTen ?? ''),
-        ),
-    ];
+    _itemsDDNhanVien = _dataNhanVien
+        ?.map((e) => DropdownMenuItem<NhanVien>(value: e, child: Text(e.hoTen ?? '')))
+        .toList() ?? [];
+    
     notifyListeners();
   }
 

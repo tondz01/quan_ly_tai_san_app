@@ -46,20 +46,18 @@ class GetListAssetEvent extends ToolAndMaterialTransferEvent {
 
 //TẠO BẢN ĐIỀU ĐỘNG
 class CreateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
-  final BuildContext context;
   final ToolAndMaterialTransferRequest request;
   final List<ChiTietBanGiaoRequest> requestDetail;
   final List<SignatoryDto> requestSignatory;
 
   const CreateToolAndMaterialTransferEvent(
-    this.context,
     this.request,
     this.requestDetail,
     this.requestSignatory,
   );
 
   @override
-  List<Object> get props => [context, request, requestDetail, requestSignatory];
+  List<Object> get props => [request, requestDetail, requestSignatory];
 }
 
 class UpdateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {

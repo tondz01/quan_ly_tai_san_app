@@ -4,6 +4,7 @@ class ChiTietDieuDongRequest {
   final String idTaiSan;
   final int soLuong;
   final String ghiChu;
+  final String hienTrang;
   final String ngayTao;
   final String ngayCapNhat;
   final String nguoiTao;
@@ -16,6 +17,7 @@ class ChiTietDieuDongRequest {
     required this.idTaiSan,
     required this.soLuong,
     required this.ghiChu,
+    required this.hienTrang,
     required this.ngayTao,
     required this.ngayCapNhat,
     required this.nguoiTao,
@@ -42,6 +44,7 @@ class ChiTietDieuDongRequest {
       idTaiSan: json['idTaiSan'] ?? '',
       soLuong: parseInt(json['soLuong']),
       ghiChu: json['ghiChu'] ?? '',
+      hienTrang: json['hienTrang'] ?? '',
       ngayTao: json['ngayTao'] ?? '',
       ngayCapNhat: json['ngayCapNhat'] ?? '',
       nguoiTao: json['nguoiTao'] ?? '',
@@ -57,6 +60,7 @@ class ChiTietDieuDongRequest {
       'idTaiSan': idTaiSan,
       'soLuong': soLuong,
       'ghiChu': ghiChu,
+      'hienTrang': hienTrang,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
@@ -71,6 +75,7 @@ class ChiTietDieuDongRequest {
     String? idTaiSan,
     int? soLuong,
     String? ghiChu,
+    String? hienTrang,
     String? ngayTao,
     String? ngayCapNhat,
     String? nguoiTao,
@@ -83,6 +88,7 @@ class ChiTietDieuDongRequest {
       idTaiSan: idTaiSan ?? this.idTaiSan,
       soLuong: soLuong ?? this.soLuong,
       ghiChu: ghiChu ?? this.ghiChu,
+      hienTrang: hienTrang ?? this.hienTrang,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
