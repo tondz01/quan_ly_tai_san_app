@@ -154,10 +154,15 @@ previewDocumentView({
           contractPages: [
             if (document != null)
               for (var index = 0; index < document.pages.length; index++)
-                pdfrx.PdfPageView(
-                  document: document,
-                  pageNumber: index + 1,
-                  alignment: Alignment.center,
+                A4Canvas(
+                  scale: 1.2,
+                  maxWidth: 800,
+                  maxHeight: 800 * (297 / 210),
+                  child: pdfrx.PdfPageView(
+                    document: document,
+                    pageNumber: index + 1,
+                    alignment: Alignment.center,
+                  ),
                 ),
             A4Canvas(
               marginsMm: const EdgeInsets.all(20),

@@ -70,9 +70,9 @@ class _CommonContractState extends State<CommonContract> {
   int _selectedSigningType =
       2; // 1: Ký nháy, 2: Ký thường, 3: Ký số ký hiệu, 4: Ký số hình ảnh
 
-  // Reference dimensions for coordinate normalization (A4 size)
+  // Reference dimensions for coordinate normalization (A4 size: 210mm x 297mm)
   static const double REFERENCE_WIDTH = 800;
-  static const double REFERENCE_HEIGHT = 800 * (294 / 210);
+  static const double REFERENCE_HEIGHT = 800 * (297 / 210);
 
   // Coordinate conversion helpers
   double _toNormalizedX(double absoluteX) {
@@ -450,7 +450,7 @@ class _CommonContractState extends State<CommonContract> {
       }
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Capture toàn bộ Stack bao gồm nội dung và chữ ký
+      // Capture toàn bộ Stack bao gồm nội dung VÀ chữ ký
       final boundary =
           _contractKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;
@@ -461,7 +461,6 @@ class _CommonContractState extends State<CommonContract> {
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
 
-        // Tính toán kích thước
         final imageWidth = image.width.toDouble();
         final imageHeight = image.height.toDouble();
 
@@ -474,49 +473,64 @@ class _CommonContractState extends State<CommonContract> {
           );
         }
 
-        // Tính chiều cao mỗi trang A4
-        final pageHeight = REFERENCE_HEIGHT;
         final totalPages = widget.contractPages.length;
 
-        // Tạo từng trang PDF
-        for (int i = 0; i < totalPages; i++) {
-          // Cắt phần ảnh cho trang này
-          final srcY = (i * pageHeight * pixelRatio).round();
-          final srcHeight = (pageHeight * pixelRatio).round();
+        // Tính chiều cao thực tế của mỗi trang bằng cách đo từ render box
+        double actualPageHeight = REFERENCE_HEIGHT;
+        if (_pageKeys.isNotEmpty) {
+          final firstPageBox = _pageKeys[0].currentContext?.findRenderObject() as RenderBox?;
+          if (firstPageBox != null) {
+            actualPageHeight = firstPageBox.size.height;
+          }
+        }
 
-          // Dùng toàn bộ ảnh đã capture nếu chỉ có 1 trang
-          if (totalPages == 1) {
-            pdf.addPage(
-              pw.Page(
-                pageFormat: PdfPageFormat.a4.portrait,
-                margin: pw.EdgeInsets.zero,
-                build:
-                    (context) => pw.SizedBox.expand(
-                      child: pw.FittedBox(
-                        fit: pw.BoxFit.fill,
-                        child: pw.Image(pw.MemoryImage(pngBytes)),
-                      ),
+        if (totalPages == 1) {
+          // Chỉ 1 trang: scale vừa A4
+          final imageAspectRatio = imageWidth / imageHeight;
+          final pageFormat =
+              imageAspectRatio > 1.0
+                  ? PdfPageFormat.a4.landscape
+                  : PdfPageFormat.a4.portrait;
+
+          pdf.addPage(
+            pw.Page(
+              pageFormat: pageFormat,
+              margin: pw.EdgeInsets.zero,
+              build:
+                  (context) => pw.Center(
+                    child: pw.FittedBox(
+                      fit: pw.BoxFit.contain,
+                      child: pw.Image(pw.MemoryImage(pngBytes)),
                     ),
-              ),
-            );
-          } else {
-            // Nhiều trang: cần cắt ảnh theo từng trang
-            // Tạo recorder để cắt ảnh
+                  ),
+            ),
+          );
+        } else {
+          // Nhiều trang: cắt theo chiều cao thực tế của mỗi trang
+          final pageHeightInPixels = actualPageHeight * pixelRatio;
+
+          for (int i = 0; i < totalPages; i++) {
+            final srcY = (i * pageHeightInPixels).round();
+            final srcHeight = pageHeightInPixels.round();
+            final actualSrcHeight = srcHeight.clamp(0, (imageHeight - srcY).round());
+
+            if (actualSrcHeight <= 0) continue;
+
+            // Cắt ảnh cho trang này
             final recorder = ui.PictureRecorder();
             final canvas = Canvas(recorder);
 
-            // Vẽ phần ảnh cần thiết
             final srcRect = Rect.fromLTWH(
               0,
               srcY.toDouble(),
               imageWidth,
-              srcHeight.toDouble().clamp(0, imageHeight - srcY),
+              actualSrcHeight.toDouble(),
             );
             final dstRect = Rect.fromLTWH(
               0,
               0,
               imageWidth,
-              srcHeight.toDouble().clamp(0, imageHeight - srcY),
+              actualSrcHeight.toDouble(),
             );
 
             canvas.drawImageRect(image, srcRect, dstRect, Paint());
@@ -524,21 +538,28 @@ class _CommonContractState extends State<CommonContract> {
             final picture = recorder.endRecording();
             final croppedImage = await picture.toImage(
               imageWidth.round(),
-              srcHeight.clamp(0, (imageHeight - srcY).round()),
+              actualSrcHeight,
             );
             final croppedByteData = await croppedImage.toByteData(
               format: ui.ImageByteFormat.png,
             );
             final croppedPngBytes = croppedByteData!.buffer.asUint8List();
 
+            // Tính tỷ lệ của ảnh đã cắt
+            final croppedAspectRatio = imageWidth / actualSrcHeight;
+            final pageFormat =
+                croppedAspectRatio > 1.0
+                    ? PdfPageFormat.a4.landscape
+                    : PdfPageFormat.a4.portrait;
+
             pdf.addPage(
               pw.Page(
-                pageFormat: PdfPageFormat.a4.portrait,
+                pageFormat: pageFormat,
                 margin: pw.EdgeInsets.zero,
                 build:
-                    (context) => pw.SizedBox.expand(
+                    (context) => pw.Center(
                       child: pw.FittedBox(
-                        fit: pw.BoxFit.fill,
+                        fit: pw.BoxFit.contain,
                         child: pw.Image(pw.MemoryImage(croppedPngBytes)),
                       ),
                     ),

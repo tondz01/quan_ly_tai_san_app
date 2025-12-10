@@ -310,10 +310,15 @@ prevDocumentCcdcDecisionHandover({
           contractPages: [
             if (document != null)
               for (var index = 0; index < document.pages.length; index++)
-                PdfPageView(
-                  document: document,
-                  pageNumber: index + 1,
-                  alignment: Alignment.center,
+                A4Canvas(
+                  scale: 1.2,
+                  maxWidth: 800,
+                  maxHeight: 800 * (297 / 210),
+                  child: PdfPageView(
+                    document: document,
+                    pageNumber: index + 1,
+                    alignment: Alignment.center,
+                  ),
                 ),
           ],
           signatureList: [],
