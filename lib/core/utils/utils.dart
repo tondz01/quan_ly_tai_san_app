@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -488,6 +489,14 @@ abstract class AppUtility {
         .join(',');
 
     return idPhongBanLanhDao;
+  }
+  static String getIDPhongBanKho(List<PhongBan> phongBans, int typeKho) {
+    if (phongBans.isEmpty) return '';
+    String idPhongBanKho = phongBans
+        .where((phongBan) => phongBan.isKho == true && LoaiKho.fromValue(phongBan.loaiKho).isKhoCapPhat)
+        .map((e) => e.id)
+        .join(',');
+    return idPhongBanKho;
   }
 
   /// Lọc danh sách nhân viên thuộc các phòng ban lãnh đạo (isLanhDao == true)

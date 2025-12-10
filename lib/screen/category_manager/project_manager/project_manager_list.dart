@@ -55,7 +55,6 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
     'project_code',
     'project_name',
     'note',
-    'status',
     'effectiveness',
     'actions',
   ];
@@ -85,8 +84,6 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
         return item.tenDuAn;
       case 'note':
         return item.ghiChu;
-      case 'status':
-        return (item.isActive ?? true) ? 'Hoạt động' : 'Không hoạt động';
       case 'effectiveness':
         return (item.hieuLuc ?? false) ? 'Có hiệu lực' : 'Không hiệu lực';
       default:

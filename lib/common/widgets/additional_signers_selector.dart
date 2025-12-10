@@ -333,6 +333,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
             ),
           ),
         ),
+        const SizedBox(height: 10),
         Column(
           children: List.generate(_signersData.length, (index) {
             final dept =
@@ -444,21 +445,21 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
 
                   const SizedBox(width: 8),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CommonCheckboxInput(
-                          label: '${widget.labelSigned} ${index + 1} đã ký',
-                          value: _signersData[index].signed,
-                          isEditing: widget.isEditing,
-                          isDisabled: true,
-                          onChanged: (newValue) {
-                            // Disabled; giữ giá trị để hiển thị, không thay đổi
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: CommonCheckboxInput(
+                  //         label: '${widget.labelSigned} ${index + 1} đã ký',
+                  //         value: _signersData[index].signed,
+                  //         isEditing: widget.isEditing,
+                  //         isDisabled: true,
+                  //         onChanged: (newValue) {
+                  //           // Disabled; giữ giá trị để hiển thị, không thay đổi
+                  //         },
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             );

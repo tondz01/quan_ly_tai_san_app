@@ -15,7 +15,7 @@ class TableDepartmentConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id ?? ''));
+          return TableCellData(widget: Text(item.id ?? '',textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -27,7 +27,7 @@ class TableDepartmentConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenPhongBan ?? ''));
+          return TableCellData(widget: Text(item.tenPhongBan ?? '',textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -43,7 +43,7 @@ class TableDepartmentConfig {
               ((AccountHelper.instance.getNhanVien() ?? const [])
                   .where((e) => e.phongBanId == item.id)
                   .length);
-          return TableCellData(widget: Text(count.toString()));
+          return TableCellData(widget: Text(count.toString(), textAlign: TextAlign.center));
         },
       ),
       // ColumnDefinition(
@@ -58,40 +58,6 @@ class TableDepartmentConfig {
       //     return TableCellData(widget: Text(item.phongCapTren ?? ''));
       //   },
       // ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Trạng thái',
-          key: 'status',
-          width: 100,
-          flex: 1,
-          isFixed: false,
-        ),
-        builder: (item) {
-          return TableCellData(
-            widget: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color:
-                    (item.isActive ?? true)
-                        ? Colors.green.shade100
-                        : Colors.red.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                (item.isActive ?? true) ? 'Hoạt động' : 'Không hoạt động',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      (item.isActive ?? true)
-                          ? Colors.green.shade700
-                          : Colors.red.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
     ];
   }
 }

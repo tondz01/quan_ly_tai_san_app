@@ -226,7 +226,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   };
 
   void onInit(BuildContext context, int type) {
-    type = type;
+    this.type = type;
     _initData(context);
     // _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
@@ -246,7 +246,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   }
 
   void refreshData(BuildContext context, int type) {
-    type = type;
+    this.type = type;
     _data = null;
     _dataPage = null;
     _item = null;
