@@ -16,7 +16,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id ?? ''));
+          return TableCellData(widget: Text(item.id ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -28,7 +28,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.hoTen ?? ''));
+          return TableCellData(widget: Text(item.hoTen ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -40,7 +40,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.diDong ?? ''));
+          return TableCellData(widget: Text(item.diDong ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -52,7 +52,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.emailCongViec ?? ''));
+          return TableCellData(widget: Text(item.emailCongViec ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -64,7 +64,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenPhongBan ?? ''));
+          return TableCellData(widget: Text(item.tenPhongBan ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -76,7 +76,7 @@ class TableStaffConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenChucVu ?? ''));
+          return TableCellData(widget: Text(item.tenChucVu ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -110,6 +110,7 @@ class TableStaffConfig {
 
   static Widget showStatusDocument(int status, String text) {
     return Container(
+      alignment: Alignment.center,
       constraints: const BoxConstraints(maxHeight: 48.0),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
@@ -128,6 +129,7 @@ class TableStaffConfig {
         child: SGText(
           text: text,
           size: 12,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontWeight: FontWeight.w500,
             color: Colors.white,

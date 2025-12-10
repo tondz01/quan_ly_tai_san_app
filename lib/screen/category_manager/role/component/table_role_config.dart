@@ -16,7 +16,7 @@ class TableRoleConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id));
+          return TableCellData(widget: Text(item.id, textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -28,7 +28,7 @@ class TableRoleConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenChucVu));
+          return TableCellData(widget: Text(item.tenChucVu, textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(

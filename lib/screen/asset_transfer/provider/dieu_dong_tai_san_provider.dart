@@ -697,6 +697,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       _dataAsset = result['data'];
+      if(typeDieuDongTaiSan == 1){
+        _dataAsset = _dataAsset?.where((element) => element.idDonViHienThoi == '').toList();
+      }
       _isLoading = false;
       _loadingMessage = 'Đang tải dữ liệu...';
     } else {

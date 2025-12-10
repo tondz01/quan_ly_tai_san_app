@@ -184,7 +184,7 @@ class AuthRepository extends ApiBase {
             (rawNhanVien as List<dynamic>)
                 .map((e) => NhanVien.fromJson(e as Map<String, dynamic>))
                 .toList();
-
+        AccountHelper.instance.clearNhanVien();
         AccountHelper.instance.setNhanVien(nhanVienList);
         SGLog.info('_loadData', 'loadUserEmployee');
       }

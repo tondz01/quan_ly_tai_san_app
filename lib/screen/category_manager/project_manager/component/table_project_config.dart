@@ -15,7 +15,7 @@ class TableProjectConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id ?? ''));
+          return TableCellData(widget: Text(item.id ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -27,7 +27,7 @@ class TableProjectConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenDuAn ?? ''));
+          return TableCellData(widget: Text(item.tenDuAn ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -47,40 +47,7 @@ class TableProjectConfig {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 2,
                 style: TextStyle(fontSize: 12),
-              ),
-            ),
-          );
-        },
-      ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Trạng thái',
-          key: 'status',
-          width: 120,
-          flex: 1,
-          isFixed: false,
-        ),
-        builder: (item) {
-          return TableCellData(
-            widget: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color:
-                    (item.isActive ?? true)
-                        ? Colors.green.shade100
-                        : Colors.red.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                (item.isActive ?? true) ? 'Hoạt động' : 'Không hoạt động',
-                style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      (item.isActive ?? true)
-                          ? Colors.green.shade700
-                          : Colors.red.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
+                textAlign: TextAlign.center,
               ),
             ),
           );
@@ -107,6 +74,7 @@ class TableProjectConfig {
               ),
               child: Text(
                 (item.hieuLuc ?? false) ? 'Có hiệu lực' : 'Không hiệu lực',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
                   color:

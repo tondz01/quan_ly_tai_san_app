@@ -1130,7 +1130,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.idDonViDeNghi ?? '',
         );
         assetByDepartment = widget.provider.dataAsset ?? [];
-
         //load list staff by department
         state.listStaffByDepartment =
             widget.provider.dataNhanVien
@@ -1208,9 +1207,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             [];
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
-        controllers
-            .controllerSoChungTu
-            .text = widget.provider.genID();
+        controllers.controllerSoChungTu.text = widget.provider.genID();
         controllers.controllerSubject.text = '';
         controllers.controllerDocumentName.text = '';
         controllers.controllerDeliveringUnit.text = '';
