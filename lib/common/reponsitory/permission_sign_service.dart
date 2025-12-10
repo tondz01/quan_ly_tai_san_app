@@ -9,11 +9,22 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class PermissionSignService {
   Timer? _timer;
-  final _controller = StreamController<Map<String, dynamic>>.broadcast();
+  StreamController<Map<String, dynamic>>? _controller;
+  bool _isRunning = false;
 
-  Stream<Map<String, dynamic>> get stream => _controller.stream;
+  Stream<Map<String, dynamic>>? get stream => _controller?.stream;
 
   void startCheckingPermission() {
+    // Prevent multiple timers
+    if (_isRunning) {
+      SGLog.debug('PermissionSignService', 'Already running, skipping start');
+      return;
+    }
+
+    _isRunning = true;
+    _controller ??= StreamController<Map<String, dynamic>>.broadcast();
+
+    _timer?.cancel(); // Cancel existing timer if any
     _timer = Timer.periodic(const Duration(seconds: 15), (_) async {
       try {
         if (AccountHelper.instance.getUserInfo() == null ||
@@ -35,9 +46,15 @@ class PermissionSignService {
 
   void reloadData(Future<void> Function() callback) {
     _timer?.cancel(); // Hủy timer cũ trước khi tạo mới
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+
+    if (!_isRunning) {
+      _isRunning = true;
+      _controller ??= StreamController<Map<String, dynamic>>.broadcast();
+    }
+
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) async {
       try {
-        callback();
+        await callback();
       } catch (e) {
         SGLog.error('PermissionSignService', 'Lỗi call API: $e');
       }
@@ -46,6 +63,17 @@ class PermissionSignService {
 
   void stop() {
     _timer?.cancel();
-    _controller.close();
+    _timer = null;
+
+    if (_controller != null && !_controller!.isClosed) {
+      _controller!.close();
+    }
+    _controller = null;
+    _isRunning = false;
+  }
+
+  // Helper method to ensure proper cleanup
+  void dispose() {
+    stop();
   }
 }

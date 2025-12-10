@@ -12,7 +12,7 @@ class AppRouteConf {
   GoRouter get router => _router;
   late final _router = GoRouter(
     initialLocation: AppRoute.login.path,
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: false, // Disable in production for performance
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
       GoRoute(

@@ -87,6 +87,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Helper để batch multiple updates
+  bool _isBatching = false;
+  void _batchUpdate(void Function() updates) {
+    _isBatching = true;
+    updates();
+    _isBatching = false;
+    notifyListeners();
+  }
+
   String? get error => _error;
   String? get subScreen => _subScreen;
 
@@ -141,28 +150,31 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   // Timer? _autoReloadTimer;
 
   set subScreen(String? value) {
+    if (_subScreen == value) return;
     _subScreen = value;
-    notifyListeners();
+    if (!_isBatching) notifyListeners();
   }
 
   set isShowInput(bool value) {
+    if (_isShowInput == value) return;
     _isShowInput = value;
-    notifyListeners();
+    if (!_isBatching) notifyListeners();
   }
 
   set isShowCollapse(bool value) {
+    if (_isShowCollapse == value) return;
     _isShowCollapse = value;
-    notifyListeners();
+    if (!_isBatching) notifyListeners();
   }
 
   set dataPage(List<DieuDongTaiSanDto>? value) {
     _dataPage = value;
-    notifyListeners();
+    if (!_isBatching) notifyListeners();
   }
 
   void changeIsShowPreview(DieuDongTaiSanDto? itemPreview) {
     _itemPreview = itemPreview;
-    notifyListeners();
+    if (!_isBatching) notifyListeners();
   }
 
   void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
@@ -317,9 +329,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   void onCloseDetail(BuildContext context) {
-    _isShowCollapse = true;
-    _isShowInput = false;
-    notifyListeners();
+    _batchUpdate(() {
+      _isShowCollapse = true;
+      _isShowInput = false;
+    });
   }
 
   void onChangeDetailDieuDongTaiSan(DieuDongTaiSanDto? item) async {
@@ -341,16 +354,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // // Cập nhật dữ liệu từ cache
     // _dataAsset = AccountHelper.instance.getAllAssets();
 
-    _itemPreview = null;
-    _item = item;
-
-    // Cập nhật biến private trực tiếp để tránh notifyListeners nhiều lần
-    _isShowInput = true;
-    _isShowCollapse = true;
-    _isLoading = false;
-    _loadingMessage = '';
-
-    notifyListeners();
+    // Batch update để chỉ notify 1 lần
+    _batchUpdate(() {
+      _itemPreview = null;
+      _item = item;
+      _isShowInput = true;
+      _isShowCollapse = true;
+      _isLoading = false;
+      _loadingMessage = '';
+    });
   }
 
   void updateItem(DieuDongTaiSanDto updatedItem) {
@@ -669,13 +681,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   void refreshData(BuildContext context, int type) {
     typeDieuDongTaiSan = type;
-    _data = null;
-    _dataPage = null;
-    _item = null;
-    _dataAsset = null;
-    _dataPhongBan = null;
-    _dataNhanVien = null;
-    notifyListeners();
+    _batchUpdate(() {
+      _data = null;
+      _dataPage = null;
+      _item = null;
+      _dataAsset = null;
+      _dataPhongBan = null;
+      _dataNhanVien = null;
+    });
     _userInfo = AccountHelper.instance.getUserInfo();
     onCloseDetail(context);
     controllerDropdownPage = TextEditingController(text: '10');
@@ -684,8 +697,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
-    _isLoading = true;
-    _loadingMessage = 'Đang tải dữ liệu tài sản...';
+    _batchUpdate(() {
+      _isLoading = true;
+      _loadingMessage = 'Đang tải dữ liệu tài sản...';
+    });
+
     log('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
     Map<String, dynamic> result;
     if (typeDieuDongTaiSan == 1) {
@@ -695,22 +711,21 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         idDonViHienthoi,
       );
     }
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      _dataAsset = result['data'];
-      if(typeDieuDongTaiSan == 1){
-        _dataAsset = _dataAsset?.where((element) => element.idDonViHienThoi == '').toList();
+
+    _batchUpdate(() {
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        _dataAsset = result['data'];
+        _isLoading = false;
+        _loadingMessage = 'Đang tải dữ liệu...';
+      } else {
+        SGLog.debug(
+          "AssetTransferProvider",
+          "Error at onReloadDataAssetByCurrentUnit: ${result['message']}",
+        );
+        _isLoading = false;
+        _loadingMessage = 'Đang tải dữ liệu...';
       }
-      _isLoading = false;
-      _loadingMessage = 'Đang tải dữ liệu...';
-    } else {
-      SGLog.debug(
-        "AssetTransferProvider",
-        "Error at onReloadDataAssetByCurrentUnit: ${result['message']}",
-      );
-      _isLoading = false;
-      _loadingMessage = 'Đang tải dữ liệu...';
-    }
-    notifyListeners();
+    });
   }
 
   void onPushMessage(DieuDongTaiSanDto item) {

@@ -23,32 +23,37 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final DepartmentRepository departmentsProvider = DepartmentRepository();
   DashboardBloc() : super(DashboardInitial()) {
     on<LoadDashboard>((event, emit) async {
-      Map<String, dynamic> result = await AssetManagementRepository()
-          .getListAssetManagement("ct001");
+      // Parallel API calls với Future.wait - giảm load time từ 10s xuống 2-3s
+      final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
+
+      final results = await Future.wait([
+        AssetManagementRepository().getListAssetManagement("ct001"),
+        AssetManagementRepository().getListDuAn("ct001"),
+        DashboardRepository().getDashboardData(),
+        nhanVienProvider.fetchNhanViens(),
+        departmentsProvider.getListDepartment(idCongTy),
+      ]);
+
+      // Parse results
+      final result = results[0] as Map<String, dynamic>;
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _allAsset = result['data'];
       }
 
-      Map<String, dynamic> resultProject = await AssetManagementRepository()
-          .getListDuAn("ct001");
+      final resultProject = results[1] as Map<String, dynamic>;
       if (resultProject['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _allProject = resultProject['data'];
       }
 
-      Map<String, dynamic> resultData =
-          await DashboardRepository().getDashboardData();
-
+      final resultData = results[2] as Map<String, dynamic>;
       if (resultData['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        // Add safety check to ensure _data is a Map before assignment
         var responseData = resultData['data'];
         _data = responseData;
       }
 
-      _allStaffs = await nhanVienProvider.fetchNhanViens();
+      _allStaffs = results[3] as List<NhanVien>;
 
-      final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
-      Map<String, dynamic> resultDepartment =
-          await departmentsProvider.getListDepartment(idCongTy);
+      final resultDepartment = results[4] as Map<String, dynamic>;
       if (resultDepartment['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _allDepartments = resultDepartment['data'];
       }

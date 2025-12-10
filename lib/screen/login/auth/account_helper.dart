@@ -27,12 +27,26 @@ import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 
 class AccountHelper {
   //create private constructor
-  const AccountHelper._privateConstructor();
+  AccountHelper._privateConstructor();
 
   //create instance
-  static const AccountHelper _instance = AccountHelper._privateConstructor();
+  static final AccountHelper _instance = AccountHelper._privateConstructor();
 
   static AccountHelper get instance => _instance;
+
+  // In-memory cache layer để tránh disk I/O liên tục - chỉ cache những data hay dùng nhất
+  List<PhongBan>? _departmentCache;
+  List<NhanVien>? _nhanVienCache;
+  Map<String, PhongBan>? _departmentByIdCache; // O(1) lookup instead of O(n)
+  Map<String, NhanVien>? _nhanVienByIdCache; // O(1) lookup instead of O(n)
+
+  // Clear all caches - gọi khi data update
+  void clearAllCaches() {
+    _departmentCache = null;
+    _nhanVienCache = null;
+    _departmentByIdCache = null;
+    _nhanVienByIdCache = null;
+  }
 
   setUserInfo(userLogin) {
     StorageService.write(StorageKey.USER_INFO, userLogin);
@@ -85,20 +99,29 @@ class AccountHelper {
   //PHÒNG BAN
   setDepartment(department) {
     StorageService.write(StorageKey.DEPARTMENT, department);
+    _departmentCache = null; // Clear cache khi update
+    _departmentByIdCache = null;
   }
 
   void clearDepartment() {
     StorageService.remove(StorageKey.DEPARTMENT);
+    _departmentCache = null;
+    _departmentByIdCache = null;
   }
 
   List<PhongBan>? getDepartment() {
+    // Return from cache if available
+    if (_departmentCache != null) return _departmentCache;
+
     final raw = StorageService.read(StorageKey.DEPARTMENT);
     if (raw == null) return null;
 
     try {
-      if (raw is List<PhongBan>) return raw;
-      if (raw is List) {
-        return raw
+      List<PhongBan>? result;
+      if (raw is List<PhongBan>) {
+        result = raw;
+      } else if (raw is List) {
+        result = raw
             .map((e) {
               if (e is PhongBan) return e;
               if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
@@ -110,7 +133,10 @@ class AccountHelper {
             .whereType<PhongBan>()
             .toList();
       }
-      return null;
+
+      // Cache the result
+      _departmentCache = result;
+      return result;
     } catch (e) {
       print('Error parsing department data: $e');
       return null;
@@ -165,35 +191,47 @@ class AccountHelper {
   }
 
   PhongBan? getDepartmentById(String id) {
-    final departments = getDepartment();
-    if (departments == null) return null;
+    // Build Map cache for O(1) lookup if not exists
+    if (_departmentByIdCache == null) {
+      final departments = getDepartment();
+      if (departments == null) return null;
 
-    try {
-      for (final d in departments) {
-        if (d.id == id) return d;
-      }
-      return null;
-    } catch (e) {
-      return null;
+      _departmentByIdCache = {
+        for (var dept in departments)
+          if (dept.id != null) dept.id!: dept,
+      };
     }
+
+    // O(1) lookup instead of O(n) loop
+    return _departmentByIdCache?[id];
   }
 
   //NHÂN VIÊN
   setNhanVien(nhanVien) {
     StorageService.write(StorageKey.NHAN_VIEN, nhanVien);
+    _nhanVienCache = null; // Clear cache khi update
+    _nhanVienByIdCache = null;
   }
 
   void clearNhanVien() {
     StorageService.remove(StorageKey.NHAN_VIEN);
+    _nhanVienCache = null;
+    _nhanVienByIdCache = null;
   }
 
   List<NhanVien>? getNhanVien() {
+    // Return from cache if available
+    if (_nhanVienCache != null) return _nhanVienCache;
+
     final raw = StorageService.read(StorageKey.NHAN_VIEN);
     if (raw == null) return null;
-    if (raw is List<NhanVien>) return raw;
-    if (raw is List) {
+
+    List<NhanVien>? result;
+    if (raw is List<NhanVien>) {
+      result = raw;
+    } else if (raw is List) {
       try {
-        return raw
+        result = raw
             .map(
               (e) =>
                   e is NhanVien
@@ -206,22 +244,26 @@ class AccountHelper {
         return null;
       }
     }
-    return null;
+
+    // Cache the result
+    _nhanVienCache = result;
+    return result;
   }
 
   NhanVien? getNhanVienById(String id) {
-    final nhanVienList = getNhanVien();
-    if (nhanVienList == null) return null;
+    // Build Map cache for O(1) lookup if not exists
+    if (_nhanVienByIdCache == null) {
+      final nhanVienList = getNhanVien();
+      if (nhanVienList == null) return null;
 
-    try {
-      return nhanVienList.firstWhere(
-        (nhanVien) => nhanVien.id == id,
-        orElse: () => NhanVien(),
-      );
-    } catch (e) {
-      print('Error parsing nhanVien data: $e');
-      return NhanVien();
+      _nhanVienByIdCache = {
+        for (var nv in nhanVienList)
+          if (nv.id != null) nv.id!: nv,
+      };
     }
+
+    // O(1) lookup instead of O(n) firstWhere
+    return _nhanVienByIdCache?[id];
   }
 
   //CHỨC VỤ
