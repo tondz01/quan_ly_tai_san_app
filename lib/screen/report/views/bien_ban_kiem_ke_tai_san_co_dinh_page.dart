@@ -112,7 +112,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'soLuongKeToan',
-            widget.taiSanCoDinhList[index].soLuong.toString(),
+            widget.taiSanCoDinhList[index].soLuongSoSach.toString(),
           ),
         ) ??
         0;
@@ -121,7 +121,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'soLuongKiemKe',
-            widget.taiSanCoDinhList[index].soLuong.toString(),
+            widget.taiSanCoDinhList[index].soLuongKiemKe.toString(),
           ),
         ) ??
         0;
@@ -134,7 +134,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'nguyenGiaKeToan',
-            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGia),
+            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGiaSoSach),
           ),
         ) ??
         0;
@@ -143,7 +143,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'nguyenGiaKiemKe',
-            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGia),
+            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGiaKiemKe),
           ),
         ) ??
         0;
@@ -158,7 +158,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'giaTriConLaiKeToan',
-            _formatCurrency(widget.taiSanCoDinhList[index].giaTriKhauHaoBanDau),
+            _formatCurrency(widget.taiSanCoDinhList[index].giaTriConLaiSoSach),
           ),
         ) ??
         0;
@@ -167,7 +167,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           _getValue(
             index,
             'giaTriConLaiKiemKe',
-            _formatCurrency(widget.taiSanCoDinhList[index].giaTriKhauHaoBanDau),
+            _formatCurrency(widget.taiSanCoDinhList[index].giaTriConLaiKiemKe),
           ),
         ) ??
         0;
@@ -233,45 +233,57 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           'tenTaiSan',
           widget.taiSanCoDinhList[i].tenTaiSan,
         ),
-        'maSo': _getValue(i, 'maSo', widget.taiSanCoDinhList[i].id),
+        'maSo': _getValue(i, 'maSo', widget.taiSanCoDinhList[i].maSo),
         'noiSuDung': _getValue(
           i,
           'noiSuDung',
-          widget.taiSanCoDinhList[i].idDonViHienThoi,
+          widget.taiSanCoDinhList[i].noiSuDung,
         ),
         'soLuongKeToan': _getValue(
           i,
           'soLuongKeToan',
-          widget.taiSanCoDinhList[i].soLuong.toString(),
+          widget.taiSanCoDinhList[i].soLuongSoSach.toString(),
         ),
         'nguyenGiaKeToan': _getValue(
           i,
           'nguyenGiaKeToan',
-          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGiaSoSach),
         ),
         'giaTriConLaiKeToan': _getValue(
           i,
           'giaTriConLaiKeToan',
-          _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+          _formatCurrency(widget.taiSanCoDinhList[i].giaTriConLaiSoSach),
         ),
         'soLuongKiemKe': _getValue(
           i,
           'soLuongKiemKe',
-          widget.taiSanCoDinhList[i].soLuong.toString(),
+          widget.taiSanCoDinhList[i].soLuongKiemKe.toString(),
         ),
         'nguyenGiaKiemKe': _getValue(
           i,
           'nguyenGiaKiemKe',
-          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGiaKiemKe),
         ),
         'giaTriConLaiKiemKe': _getValue(
           i,
           'giaTriConLaiKiemKe',
-          _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+          _formatCurrency(widget.taiSanCoDinhList[i].giaTriConLaiKiemKe),
         ),
-        'soLuongChenhLech': _getValue(i, 'soLuongChenhLech', '0'),
-        'nguyenGiaChenhLech': _getValue(i, 'nguyenGiaChenhLech', '0'),
-        'giaTriConLaiChenhLech': _getValue(i, 'giaTriConLaiChenhLech', '0'),
+        'soLuongChenhLech': _getValue(
+          i,
+          'soLuongChenhLech',
+          widget.taiSanCoDinhList[i].chenhLechSoLuong.toString(),
+        ),
+        'nguyenGiaChenhLech': _getValue(
+          i,
+          'nguyenGiaChenhLech',
+          _formatCurrency(widget.taiSanCoDinhList[i].chenhLechNguyenGia),
+        ),
+        'giaTriConLaiChenhLech': _getValue(
+          i,
+          'giaTriConLaiChenhLech',
+          _formatCurrency(widget.taiSanCoDinhList[i].chenhLechGiaTriConLai),
+        ),
         'ghiChu': _getValue(i, 'ghiChu', widget.taiSanCoDinhList[i].ghiChu),
       };
       finalData.add(itemData);
@@ -285,22 +297,29 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
     return value.toStringAsFixed(0);
   }
 
-  // Method để khởi tạo dữ liệu ban đầu
+  // Method để khởi tạo dữ liệu ban đầu (sử dụng dữ liệu từ API)
   void _initializeData() {
     for (int i = 0; i < widget.taiSanCoDinhList.length; i++) {
       if (_editedData[i] == null) {
         _editedData[i] = {};
-        // Copy dữ liệu từ Kế toán sang Kiểm kê
+        // Dữ liệu kiểm kê từ API
         _editedData[i]!['soLuongKiemKe'] =
-            widget.taiSanCoDinhList[i].soLuong.toString();
+            widget.taiSanCoDinhList[i].soLuongKiemKe.toString();
         _editedData[i]!['nguyenGiaKiemKe'] = _formatCurrency(
-          widget.taiSanCoDinhList[i].nguyenGia,
+          widget.taiSanCoDinhList[i].nguyenGiaKiemKe,
         );
         _editedData[i]!['giaTriConLaiKiemKe'] = _formatCurrency(
-          widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau,
+          widget.taiSanCoDinhList[i].giaTriConLaiKiemKe,
         );
-        // Tính chênh lệch ban đầu
-        _autoCalculateChenhLech(i);
+        // Dữ liệu chênh lệch từ API
+        _editedData[i]!['soLuongChenhLech'] =
+            widget.taiSanCoDinhList[i].chenhLechSoLuong.toString();
+        _editedData[i]!['nguyenGiaChenhLech'] = _formatCurrency(
+          widget.taiSanCoDinhList[i].chenhLechNguyenGia,
+        );
+        _editedData[i]!['giaTriConLaiChenhLech'] = _formatCurrency(
+          widget.taiSanCoDinhList[i].chenhLechGiaTriConLai,
+        );
       }
     }
   }
@@ -377,74 +396,74 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
                 200,
               ),
               // Mã số - có thể chỉnh sửa
-              _buildEditableCell(i, 'maSo', widget.taiSanCoDinhList[i].id, 100),
+              _buildEditableCell(i, 'maSo', widget.taiSanCoDinhList[i].maSo, 100),
               // Nơi sử dụng - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'noiSuDung',
-                widget.taiSanCoDinhList[i].idDonViHienThoi,
+                widget.taiSanCoDinhList[i].noiSuDung,
                 100,
               ),
               // Số lượng (Kế toán) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'soLuongKeToan',
-                widget.taiSanCoDinhList[i].soLuong.toString(),
+                widget.taiSanCoDinhList[i].soLuongSoSach.toString(),
                 100,
               ),
               // Nguyên giá (Kế toán) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'nguyenGiaKeToan',
-                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGiaSoSach),
                 100,
               ),
               // Giá trị còn lại (Kế toán) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'giaTriConLaiKeToan',
-                _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+                _formatCurrency(widget.taiSanCoDinhList[i].giaTriConLaiSoSach),
                 100,
               ),
               // Số lượng (Kiểm kê) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'soLuongKiemKe',
-                widget.taiSanCoDinhList[i].soLuong.toString(),
+                widget.taiSanCoDinhList[i].soLuongKiemKe.toString(),
                 100,
               ),
               // Nguyên giá (Kiểm kê) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'nguyenGiaKiemKe',
-                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGiaKiemKe),
                 100,
               ),
               // Giá trị còn lại (Kiểm kê) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'giaTriConLaiKiemKe',
-                _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+                _formatCurrency(widget.taiSanCoDinhList[i].giaTriConLaiKiemKe),
                 100,
               ),
-              // Số lượng (Chênh lệch) - tự động tính toán
+              // Số lượng (Chênh lệch) - dữ liệu từ API
               _buildEditableCell(
                 i,
                 'soLuongChenhLech',
-                _getValue(i, 'soLuongChenhLech', '0'),
+                widget.taiSanCoDinhList[i].chenhLechSoLuong.toString(),
                 100,
               ),
               _buildEditableCell(
                 i,
                 'nguyenGiaChenhLech',
-                _getValue(i, 'nguyenGiaChenhLech', '0'),
+                _formatCurrency(widget.taiSanCoDinhList[i].chenhLechNguyenGia),
                 100,
               ),
-              // Giá trị còn lại (Chênh lệch) - tự động tính toán
+              // Giá trị còn lại (Chênh lệch) - dữ liệu từ API
               _buildEditableCell(
                 i,
                 'giaTriConLaiChenhLech',
-                _getValue(i, 'giaTriConLaiChenhLech', '0'),
+                _formatCurrency(widget.taiSanCoDinhList[i].chenhLechGiaTriConLai),
                 100,
               ),
               // Ghi chú - có thể chỉnh sửa

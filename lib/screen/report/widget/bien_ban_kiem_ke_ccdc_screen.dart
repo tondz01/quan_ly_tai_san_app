@@ -421,7 +421,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                       children: [
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
+                                          scale: 1.0,
                                           maxWidth: sizeWidth,
                                           maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeCcdcPage(
@@ -446,7 +446,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                       children: [
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
+                                          scale: 1.0,
                                           maxWidth: sizeWidth,
                                           maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeCcdcPage(
@@ -474,7 +474,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                             children: [
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
-                                                scale: 1.2,
+                                                scale: 1.0,
                                                 maxWidth: sizeWidth,
                                                 maxHeight: sizeWidth * (297 / 210),
                                                 child: Column(
@@ -520,7 +520,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                                     marginsMm: EdgeInsets.all(
                                                       4,
                                                     ),
-                                                    scale: 1.2,
+                                                    scale: 1.0,
                                                     maxWidth: sizeWidth,
                                                     maxHeight:
                                                         sizeWidth * (297 / 210),
@@ -550,7 +550,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                                     marginsMm: EdgeInsets.all(
                                                       4,
                                                     ),
-                                                    scale: 1.2,
+                                                    scale: 1.0,
                                                     maxWidth: sizeWidth,
                                                     maxHeight:
                                                         sizeWidth * (297 / 210),
@@ -575,7 +575,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                           children: [
                                             A4Canvas(
                                               marginsMm: EdgeInsets.all(4),
-                                              scale: 1.2,
+                                              scale: 1.0,
                                               maxWidth: sizeWidth,
                                               maxHeight: sizeWidth * (297 / 210),
                                               child: BodyBankiemKeCCDC(

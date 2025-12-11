@@ -201,7 +201,7 @@ previewDocumentHandover({
           contractPages: [
             A4Canvas(
               marginsMm: const EdgeInsets.all(20),
-              scale: 1.2,
+              scale: 1.0,
               maxWidth: 800,
               maxHeight: 800 * (297 / 210),
               child: ContractPage.assetHandoverPageV2(
@@ -262,9 +262,9 @@ previewDocumentDecisionHandover({
             for (var index = 0; index < document.pages.length; index++)
               A4Canvas(
                 marginsMm: const EdgeInsets.all(20),
-                scale: 1.2,
-                maxHeight: 800,
-                maxWidth: 800 * (297 / 210),
+                scale: 1.0,
+                maxWidth: 800,
+                maxHeight: 800 * (297 / 210),
                 child: PdfPageView(
                   document: document,
                   pageNumber: index + 1,

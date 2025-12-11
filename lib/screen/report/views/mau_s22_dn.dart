@@ -121,11 +121,22 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
     }
   }
 
+  Future<void> _handlePrint() async {
+    if (_isExporting) return;
+    setState(() => _isExporting = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ReportProvider().exportToPdfAndPrint(
+        [_repaintKey],
+        context,
+        () {
+          setState(() => _isExporting = false);
+        },
+      );
+    });
+  }
+
   Future<void> _handleGetData() async {
-    if (_selectedDonVi == null) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
-      return;
-    }
+    if (_selectedDonVi == null) return;
 
     setState(() => _isExporting = true);
 
@@ -224,6 +235,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               setState(() {
                 _selectedDonVi = value;
               });
+              _handleGetData();
             },
           ),
           CmFormDate(
@@ -237,42 +249,14 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               setState(() {
                 _selectedDate = value ?? DateTime.now();
               });
+              if (_selectedDonVi != null) {
+                _handleGetData();
+              }
             },
           ),
         ],
-        onLoadData: _handleGetData,
-        onExportPdf: () {
-          if (_isExporting) return;
-          setState(() => _isExporting = true);
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await ReportProvider().exportToPdf(
-              [_repaintKey],
-              context,
-              () {
-                setState(() => _isExporting = false);
-                AppUtility.showSnackBar(
-                  context,
-                  'Xuất PDF thành công!',
-                  isError: false,
-                );
-              },
-            );
-          });
-        },
-     
-        onPrint: () {
-          if (_isExporting) return;
-          setState(() => _isExporting = true);
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await ReportProvider().exportToPdfAndPrint(
-              [_repaintKey],
-              context,
-              () {
-                setState(() => _isExporting = false);
-              },
-            );
-          });
-        },
+        onExportExcel: _handleExportExcel,
+        onPrint: _handlePrint,
         content: RepaintBoundary(
           key: _repaintKey,
           child: Column(

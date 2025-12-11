@@ -1,6 +1,7 @@
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/tang_giam_trong_ky_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -42,8 +43,10 @@ class ReportRepository extends ApiBase {
     return result;
   }
 
+  /// Lấy danh sách biên bản kiểm kê (gộp cả TaiSan và CCDCVatTu)
+  /// API: GET /api/baocao/bienban-kiemke?idPhongBan={idPhongBan}
   Future<Map<String, dynamic>> getInventoryMinutes(
-    String idDonVi,
+    String idPhongBan,
     String ngayBanGiao,
   ) async {
     List<InventoryMinutes> list = [];
@@ -54,8 +57,8 @@ class ReportRepository extends ApiBase {
 
     try {
       final response = await get(
-        '${EndPointAPI.BAO_CAO}/baocaokiemketaisan',
-        queryParameters: {'iddonvi': idDonVi, 'ngayBanGiao': ngayBanGiao},
+        '${EndPointAPI.BAO_CAO}/bienban-kiemke',
+        queryParameters: {'idPhongBan': idPhongBan},
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -71,8 +74,8 @@ class ReportRepository extends ApiBase {
       );
     } catch (e) {
       SGLog.error(
-        "AssetHandoverRepository",
-        "Error at getListAssetHandover - AssetHandoverRepository: $e",
+        "ReportRepository",
+        "Error at getInventoryMinutes: $e",
       );
     }
 
@@ -168,6 +171,53 @@ class ReportRepository extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       SGLog.error("ReportRepository", "Error at getS22DnReportCCDC: $e");
+    }
+
+    return result;
+  }
+
+  /// Lấy báo cáo tăng giảm trong kỳ (Mẫu số 01)
+  /// API: GET /api/baocao/tang-giam-trong-ky?idPhongBan={idPhongBan}&denNgay={denNgay}
+  /// Trả về danh sách gộp cả TaiSan và CCDCVatTu
+  Future<Map<String, dynamic>> getTangGiamTrongKy(
+    String idPhongBan,
+    String denNgay,
+  ) async {
+    List<TangGiamTrongKyDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final Map<String, dynamic> queryParams = {
+        'denNgay': denNgay,
+      };
+      if (idPhongBan.isNotEmpty) {
+        queryParams['idPhongBan'] = idPhongBan;
+      }
+
+      final response = await get(
+        '${EndPointAPI.BAO_CAO}/tang-giam-trong-ky',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = ResponseParser.parseToList<TangGiamTrongKyDto>(
+        response.data,
+        TangGiamTrongKyDto.fromJson,
+      );
+    } catch (e) {
+      SGLog.error(
+        "ReportRepository",
+        "Error at getTangGiamTrongKy: $e",
+      );
     }
 
     return result;

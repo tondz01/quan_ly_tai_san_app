@@ -8,11 +8,15 @@ class DataConverter {
   ) {
     return taiSanCoDinhList.map((item) {
       return InventoryMinutes(
+        id: item.idTaiSan,
         tenTaiSan: item.tenTaiSan,
-        donViTinh: 'Cái', // Default value
-        nuocSanXuat: '', // Default value
-        hienTrang: '1', // Default value
+        donViTinh: item.donViTinh,
+        nuocSanXuat: '',
+        phuongThucKiemKe: '',
+        soLuongKiemKeThucTe: item.soLuongKiemKe,
+        hienTrang: item.hienTrang,
         ghiChu: item.ghiChu,
+        loai: 'TaiSan',
       );
     }).toList();
   }
@@ -23,13 +27,23 @@ class DataConverter {
   ) {
     return inventoryMinutesList.map((item) {
       return TaiSanCoDinhDto(
-        id: '', // Default value since InventoryMinutes doesn't have id
+        idTaiSan: item.id ?? '',
         tenTaiSan: item.tenTaiSan ?? '',
-        soLuong: 1, // Default value
-        nguyenGia: 0.0, // Default value
-        giaTriKhauHaoBanDau: 0.0, // Default value
-        idDonViHienThoi: '', // Default value
+        maSo: '',
+        noiSuDung: '',
+        idDonViHienThoi: '',
+        soLuongSoSach: item.soLuongKiemKeThucTe ?? 0,
+        nguyenGiaSoSach: 0.0,
+        giaTriConLaiSoSach: 0.0,
+        soLuongKiemKe: item.soLuongKiemKeThucTe ?? 0,
+        nguyenGiaKiemKe: 0.0,
+        giaTriConLaiKiemKe: 0.0,
+        chenhLechSoLuong: 0,
+        chenhLechNguyenGia: 0.0,
+        chenhLechGiaTriConLai: 0.0,
         ghiChu: item.ghiChu ?? '',
+        donViTinh: item.donViTinh,
+        hienTrang: item.hienTrang ?? '',
       );
     }).toList();
   }

@@ -1,12 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
@@ -23,7 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.da
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 
 class BienBanKiemKeScreen extends StatefulWidget {
   const BienBanKiemKeScreen({super.key});
@@ -71,12 +65,18 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   }
 
   Future<void> _exportToExcel() async {
+    if (_list.isEmpty) {
+      AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
+      return;
+    }
+
     setState(() => _isExporting = true);
 
     try {
-      await ScreenshotToExcelService.exportMultiPageReportToExcel(
-        repaintKeys: _pageKeys,
-        reportTitle: 'Bien_Ban_Kiem_Ke',
+      await ExcelExportService.exportBienBanKiemKeToExcel(
+        data: _list,
+        departmentName: donVi?.tenPhongBan ?? '',
+        ngayKiemKe: controllerImportDate.text.trim(),
       );
 
       if (mounted) {
@@ -94,88 +94,6 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     }
   }
 
-  Future<void> _exportToPdf() async {
-    setState(() {
-      _isExporting = true;
-    });
-    try {
-      final pdf = pw.Document();
-      // Đợi frame hiện tại kết thúc để đảm bảo UI render hoàn toàn
-      await WidgetsBinding.instance.endOfFrame;
-      if (_pageKeys.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không có trang để xuất.')),
-          );
-        }
-        return;
-      }
-
-      // Đợi thêm một khoảng nhỏ để ổn định layout (phòng trường hợp scroll/layout vừa thay đổi)
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      for (final key in _pageKeys) {
-        final boundary =
-            key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundary == null) continue;
-
-        final image = await boundary.toImage(pixelRatio: 1.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        final pngBytes = byteData!.buffer.asUint8List();
-
-        final imageWidth = image.width.toDouble();
-        final imageHeight = image.height.toDouble();
-        if (imageWidth.isNaN ||
-            imageHeight.isNaN ||
-            imageWidth <= 0 ||
-            imageHeight <= 0) {
-          continue;
-        }
-
-        final imageProvider = pw.MemoryImage(pngBytes);
-        final aspectRatio = imageWidth / imageHeight;
-        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
-
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.a4.portrait,
-            margin: const pw.EdgeInsets.all(20),
-            build: (context) {
-              if (aspectRatio > a4AspectRatio) {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-                );
-              } else {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-                );
-              }
-            },
-          ),
-        );
-      }
-
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename:
-            'bien_ban_kiem_ke_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
-    } catch (e) {
-      SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isExporting = false;
-        });
-      }
-    }
-  }
-
   Future<void> _loadData() async {
     final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
     final result = await DepartmentRepository().getListDepartment(idCongTy);
@@ -186,10 +104,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   }
 
   Future<void> onloadViewPage() async {
-    if (donVi == null) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
-      return;
-    }
+    if (donVi == null) return;
 
     setState(() {
       _isLoading = true;
@@ -296,15 +211,6 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
           ? const NeverScrollableScrollPhysics()
           : const BouncingScrollPhysics(),
       filterWidgets: [
-        CmFormDate(
-          label: 'Ngày kiểm kê',
-          controller: controllerImportDate,
-          isEditing: true,
-          fieldName: 'importDate',
-          onChanged: (date) {
-            setState(() {});
-          },
-        ),
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị',
           controller: controllerDonVi,
@@ -323,12 +229,23 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
             setState(() {
               donVi = value;
             });
+            onloadViewPage();
+          },
+        ),
+        CmFormDate(
+          label: 'Ngày kiểm kê',
+          controller: controllerImportDate,
+          isEditing: true,
+          fieldName: 'importDate',
+          onChanged: (date) {
+            setState(() {});
+            if (donVi != null) {
+              onloadViewPage();
+            }
           },
         ),
       ],
-      onLoadData: onloadViewPage,
-      onExportPdf: _exportToPdf,
-      // onExportExcel: _exportToExcel, // Hidden per user request
+      onExportExcel: _exportToExcel,
       onPrint: () {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await ReportProvider().exportToPdfAndPrint(
@@ -354,7 +271,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                         children: [
                                           A4Canvas(
                                             marginsMm: EdgeInsets.all(4),
-                                            scale: 1.2,
+                                            scale: 1.0,
                                             maxWidth: sizeWidth,
                                             maxHeight: sizeWidth * (297 / 210),
                                             child: BienBanKiemKePage(
@@ -379,7 +296,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                         children: [
                                           A4Canvas(
                                             marginsMm: EdgeInsets.all(4),
-                                            scale: 1.2,
+                                            scale: 1.0,
                                             maxWidth: sizeWidth,
                                             maxHeight: sizeWidth * (297 / 210),
                                             child: BienBanKiemKePage(
@@ -407,7 +324,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                               children: [
                                                 A4Canvas(
                                                   marginsMm: EdgeInsets.all(4),
-                                                  scale: 1.2,
+                                                  scale: 1.0,
                                                   maxWidth: sizeWidth,
                                                   maxHeight: sizeWidth * (297 / 210),
                                                   child: Column(
@@ -453,7 +370,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                                       marginsMm: EdgeInsets.all(
                                                         4,
                                                       ),
-                                                      scale: 1.2,
+                                                      scale: 1.0,
                                                       maxWidth: sizeWidth,
                                                       maxHeight:
                                                           sizeWidth * (297 / 210),
@@ -483,7 +400,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                                       marginsMm: EdgeInsets.all(
                                                         4,
                                                       ),
-                                                      scale: 1.2,
+                                                      scale: 1.0,
                                                       maxWidth: sizeWidth,
                                                       maxHeight:
                                                           sizeWidth * (297 / 210),
@@ -508,7 +425,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                             children: [
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
-                                                scale: 1.2,
+                                                scale: 1.0,
                                                 maxWidth: sizeWidth,
                                                 maxHeight: sizeWidth * (297 / 210),
                                                 child: BodyBienBanKiemKe(

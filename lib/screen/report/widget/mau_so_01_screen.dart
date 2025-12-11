@@ -1,10 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:pdf/pdf.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/report_page_wrapper_multipage.dart';
@@ -13,17 +9,13 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
-import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/tang_giam_trong_ky_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/mau_so_01.page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 
 class MauSo01Screen extends StatefulWidget {
@@ -34,8 +26,7 @@ class MauSo01Screen extends StatefulWidget {
 }
 
 class _MauSo01ScreenState extends State<MauSo01Screen> {
-  List<CCDCInventoryReport> _listCcdc = [];
-  List<InventoryMinutes> _listTaiSan = [];
+  List<TangGiamTrongKyDto> _listData = [];
 
   List<AssetRowData> _allAssetRows = [];
   List<List<AssetRowData>> _listPages = [];
@@ -74,12 +65,18 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
   }
 
   Future<void> _exportToExcel() async {
+    if (_listData.isEmpty) {
+      AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
+      return;
+    }
+
     setState(() => _isExporting = true);
 
     try {
-      await ScreenshotToExcelService.exportMultiPageReportToExcel(
-        repaintKeys: _pageKeys,
-        reportTitle: 'Mau_So_01',
+      await ExcelExportService.exportMauSo01ToExcel(
+        data: _listData,
+        departmentName: donVi?.tenPhongBan ?? '',
+        thangNam: controllerImportDate.text.trim(),
       );
 
       if (mounted) {
@@ -97,99 +94,13 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     }
   }
 
-  Future<void> _exportToPdf() async {
-    setState(() {
-      _isExporting = true;
-    });
-    try {
-      final pdf = pw.Document();
-      // Đợi frame hiện tại kết thúc để đảm bảo UI render hoàn toàn
-      await WidgetsBinding.instance.endOfFrame;
-      if (_pageKeys.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không có trang để xuất.')),
-          );
-        }
-        return;
-      }
-
-      // Đợi thêm một khoảng nhỏ để ổn định layout (phòng trường hợp scroll/layout vừa thay đổi)
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      for (final key in _pageKeys) {
-        final boundary =
-            key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundary == null) continue;
-
-        final image = await boundary.toImage(pixelRatio: 1.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        final pngBytes = byteData!.buffer.asUint8List();
-
-        final imageWidth = image.width.toDouble();
-        final imageHeight = image.height.toDouble();
-        if (imageWidth.isNaN ||
-            imageHeight.isNaN ||
-            imageWidth <= 0 ||
-            imageHeight <= 0) {
-          continue;
-        }
-
-        final imageProvider = pw.MemoryImage(pngBytes);
-        final aspectRatio = imageWidth / imageHeight;
-        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
-
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.a4.portrait,
-            margin: const pw.EdgeInsets.all(20),
-            build: (context) {
-              if (aspectRatio > a4AspectRatio) {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-                );
-              } else {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-                );
-              }
-            },
-          ),
-        );
-      }
-
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename:
-            'bien_ban_kiem_ke_ccdc_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
-    } catch (e) {
-      SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isExporting = false;
-        });
-      }
-    }
-  }
-
   Future<void> _loadData() async {
-    listPhongBan =
-        AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
+    listPhongBan = AccountHelper.instance.getDepartment() ?? [];
     setState(() {});
   }
 
   Future<void> onloadViewPage() async {
-    if (donVi == null) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
-      return;
-    }
+    if (donVi == null) return;
 
     setState(() {
       _isLoading = true;
@@ -198,11 +109,8 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     // Format date to YYYY-MM-DD format
     String formattedDate = formatToYyyyMmDd(controllerImportDate.text.trim());
 
-    final result = await _repo.getInventoryReportToolsSupplies(
-      donVi!.id!,
-      formattedDate,
-    );
-    final resultTaiSan = await _repo.getInventoryMinutes(
+    // Gọi API mới: GET /api/baocao/tang-giam-trong-ky
+    final result = await _repo.getTangGiamTrongKy(
       donVi!.id!,
       formattedDate,
     );
@@ -210,10 +118,8 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
       setState(() {
-        _listCcdc = [];
-        _listTaiSan = [];
-        _listCcdc = (result['data'] as List).cast<CCDCInventoryReport>();
-        _listTaiSan = (resultTaiSan['data'] as List).cast<InventoryMinutes>();
+        _listData = [];
+        _listData = (result['data'] as List).cast<TangGiamTrongKyDto>();
 
         _parseDataToAssetRows();
 
@@ -224,7 +130,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_listCcdc.isEmpty) {
+        if (_listData.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
           AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
@@ -307,15 +213,6 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
           ? const NeverScrollableScrollPhysics()
           : const BouncingScrollPhysics(),
       filterWidgets: [
-        CmFormDate(
-          label: 'Ngày kiểm kê',
-          controller: controllerImportDate,
-          isEditing: true,
-          fieldName: 'importDate',
-          onChanged: (date) {
-            setState(() {});
-          },
-        ),
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị',
           controller: controllerDonVi,
@@ -334,12 +231,23 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
             setState(() {
               donVi = value;
             });
+            onloadViewPage();
+          },
+        ),
+        CmFormDate(
+          label: 'Ngày kiểm kê',
+          controller: controllerImportDate,
+          isEditing: true,
+          fieldName: 'importDate',
+          onChanged: (date) {
+            setState(() {});
+            if (donVi != null) {
+              onloadViewPage();
+            }
           },
         ),
       ],
-      onLoadData: onloadViewPage,
-      onExportPdf: _exportToPdf,
-      // onExportExcel: _exportToExcel, // Hidden per user request
+      onExportExcel: _exportToExcel,
       onPrint: () {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await ReportProvider().exportToPdfAndPrint(
@@ -365,12 +273,15 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                         children: [
                                           A4Canvas(
                                             marginsMm: EdgeInsets.all(4),
-                                            scale: 1.2,
+                                            scale: 1.0,
                                             maxWidth: sizeWidth,
                                             maxHeight: sizeWidth * (297 / 210),
-                                            child: MauSo01Page(
-                                              listCcdc: _listCcdc,
-                                              listTaiSan: [],
+                                            child: Column(
+                                              children: [
+                                                HeaderMauSo01(),
+                                                BodyMauSo01(assetRows: _allAssetRows),
+                                                FoooterMauSo01(),
+                                              ],
                                             ),
                                           ),
                                           NumberPageView(index: 0),
@@ -387,12 +298,15 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                         children: [
                                           A4Canvas(
                                             marginsMm: EdgeInsets.all(4),
-                                            scale: 1.2,
+                                            scale: 1.0,
                                             maxWidth: sizeWidth,
                                             maxHeight: sizeWidth * (297 / 210),
-                                            child: MauSo01Page(
-                                              listCcdc: _listCcdc,
-                                              listTaiSan: [],
+                                            child: Column(
+                                              children: [
+                                                HeaderMauSo01(),
+                                                BodyMauSo01(assetRows: _allAssetRows),
+                                                FoooterMauSo01(),
+                                              ],
                                             ),
                                           ),
                                           NumberPageView(index: 0),
@@ -414,7 +328,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                               children: [
                                                 A4Canvas(
                                                   marginsMm: EdgeInsets.all(4),
-                                                  scale: 1.2,
+                                                  scale: 1.0,
                                                   maxWidth: sizeWidth,
                                                   maxHeight: sizeWidth * (297 / 210),
                                                   child: Column(
@@ -448,7 +362,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                                       marginsMm: EdgeInsets.all(
                                                         4,
                                                       ),
-                                                      scale: 1.2,
+                                                      scale: 1.0,
                                                       maxWidth: sizeWidth,
                                                       maxHeight:
                                                           sizeWidth * (297 / 210),
@@ -484,7 +398,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                                       marginsMm: EdgeInsets.all(
                                                         4,
                                                       ),
-                                                      scale: 1.2,
+                                                      scale: 1.0,
                                                       maxWidth: sizeWidth,
                                                       maxHeight:
                                                           sizeWidth * (297 / 210),
@@ -510,7 +424,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                             children: [
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
-                                                scale: 1.2,
+                                                scale: 1.0,
                                                 maxWidth: sizeWidth,
                                                 maxHeight: sizeWidth * (297 / 210),
                                                 child: BodyMauSo01(
@@ -529,33 +443,34 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     );
   }
 
-  /// Parse InventoryMinutes và CCDCInventoryReport sang AssetRowData
+  /// Parse TangGiamTrongKyDto sang AssetRowData
+  /// Dữ liệu từ API đã bao gồm cả TaiSan và CCDCVatTu với field loai để phân biệt
   void _parseDataToAssetRows() {
     final List<AssetRowData> result = [];
+
+    // Tách dữ liệu thành 2 nhóm: TaiSan và CCDCVatTu
+    final listTaiSan = _listData.where((item) => item.loai == 'TaiSan').toList();
+    final listCCDC = _listData.where((item) => item.loai == 'CCDCVatTu').toList();
 
     // 1. Thêm header "A - Tài sản cố định"
     result.add(AssetRowData(stt: 'A', tenNhanHieu: 'Tài sản cố định'));
 
-    // 2. Convert InventoryMinutes → DataMap → AssetRowData
-    final assetDataMaps = DataConverterMau01.convertInventoryMinutesToDataMap(
-      _listTaiSan,
-    );
-
+    // 2. Convert TaiSan từ API sang AssetRowData
     int assetIndex = 1;
-    for (final asset in assetDataMaps) {
+    for (final asset in listTaiSan) {
       result.add(
         AssetRowData(
           stt: assetIndex.toString(),
-          tenNhanHieu: asset.tenTaiSan ?? '',
-          dvt: asset.donViTinh ?? '',
-          nuocSx: '',
-          soDuDauKy: asset.soLuong?.toString() ?? '',
-          tangSoLuong: '',
-          tangLyDo: asset.lyDo ?? '',
-          giamSoLuong: '',
-          giamLyDo: '',
-          soDuCuoiKy: '',
-          tinhTrang: '',
+          tenNhanHieu: asset.tenTaiSan,
+          dvt: asset.donViTinh,
+          nuocSx: asset.nuocSanXuat,
+          soDuDauKy: asset.soDuDauKy.toString(),
+          tangSoLuong: asset.soLuongTangTrongKy.toString(),
+          tangLyDo: asset.lyDoTangTrongKy ?? '',
+          giamSoLuong: asset.soLuongGiamTrongKy.toString(),
+          giamLyDo: asset.lyDoGiamTrongKy ?? '',
+          soDuCuoiKy: asset.soDuCuoiKy.toString(),
+          tinhTrang: asset.tinhTrangKyThuat,
           ghiChu: asset.ghiChu ?? '',
         ),
       );
@@ -565,26 +480,22 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     // 3. Thêm header "B - Công cụ dụng cụ"
     result.add(AssetRowData(stt: 'B', tenNhanHieu: 'Công cụ dụng cụ'));
 
-    // 4. Convert CCDCInventoryReport → DataMap → AssetRowData
-    final ccdcDataMaps = DataConverterMau01.convertCCDCInventoryReportToDataMap(
-      _listCcdc,
-    );
-
+    // 4. Convert CCDCVatTu từ API sang AssetRowData
     int ccdcIndex = 1;
-    for (final ccdc in ccdcDataMaps) {
+    for (final ccdc in listCCDC) {
       result.add(
         AssetRowData(
           stt: ccdcIndex.toString(),
-          tenNhanHieu: ccdc.tenTaiSan ?? '',
-          dvt: ccdc.donViTinh ?? '',
-          nuocSx: '',
-          soDuDauKy: ccdc.soLuong?.toString() ?? '',
-          tangSoLuong: '',
-          tangLyDo: ccdc.lyDo ?? '',
-          giamSoLuong: '',
-          giamLyDo: '',
-          soDuCuoiKy: '',
-          tinhTrang: '',
+          tenNhanHieu: ccdc.tenTaiSan,
+          dvt: ccdc.donViTinh,
+          nuocSx: ccdc.nuocSanXuat,
+          soDuDauKy: ccdc.soDuDauKy.toString(),
+          tangSoLuong: ccdc.soLuongTangTrongKy.toString(),
+          tangLyDo: ccdc.lyDoTangTrongKy ?? '',
+          giamSoLuong: ccdc.soLuongGiamTrongKy.toString(),
+          giamLyDo: ccdc.lyDoGiamTrongKy ?? '',
+          soDuCuoiKy: ccdc.soDuCuoiKy.toString(),
+          tinhTrang: ccdc.tinhTrangKyThuat,
           ghiChu: ccdc.ghiChu ?? '',
         ),
       );

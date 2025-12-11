@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -17,6 +18,7 @@ import 'package:quan_ly_tai_san_app/common/components/popup_input_pin.dart';
 import 'package:quan_ly_tai_san_app/common/download_file.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -310,8 +312,20 @@ class _CommonContractState extends State<CommonContract> {
             formattedDate = ngayKy; // Nếu không parse được, dùng giá trị gốc
           }
         }
-        // Sử dụng tên người ký từ API, nếu không có thì fallback về widget.tenNguoiKy
-        final tenKyDung = tenNguoiKy ?? widget.tenNguoiKy;
+        // Sử dụng tên người ký từ API - KHÔNG fallback về user hiện tại
+        // vì đây là chữ ký của người khác đã ký trước đó
+        String? tenKyDung;
+        if (tenNguoiKy != null &&
+            tenNguoiKy.isNotEmpty &&
+            tenNguoiKy != "null") {
+          tenKyDung = tenNguoiKy;
+        } else if (idNguoiKy != null && idNguoiKy.isNotEmpty) {
+          // Nếu không có tên từ API, tra cứu từ danh sách nhân viên đã cache
+          final nhanVien = AccountHelper.instance.getNhanVienById(idNguoiKy);
+          tenKyDung = nhanVien?.hoTen ?? idNguoiKy;
+        } else {
+          tenKyDung = "Người ký";
+        }
         Uint8List? imgBytes = await _captureWidget(tenKyDung, formattedDate);
         if (imgBytes != null) {
           // Use normalized coordinates directly
@@ -423,12 +437,32 @@ class _CommonContractState extends State<CommonContract> {
   }
 
   // ===== Export PDF =====
+  /// Helper function để yield control về event loop và cho phép animation chạy
+  Future<void> _yieldToUI() async {
+    final completer = Completer<void>();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      completer.complete();
+    });
+    await completer.future;
+  }
+
+  /// Helper function để đợi nhiều frame trước khi bắt đầu công việc nặng
+  Future<void> _waitForFrames(int frameCount) async {
+    for (int i = 0; i < frameCount; i++) {
+      await _yieldToUI();
+    }
+  }
+
   Future<void> _exportToPdf() async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
+
+    // Đợi nhiều frame để loading dialog hiển thị và animation chạy mượt
+    // Điều này đảm bảo CircularProgressIndicator đã render và bắt đầu xoay
+    await _waitForFrames(5);
 
     try {
       final pdf = pw.Document();
@@ -448,7 +482,7 @@ class _CommonContractState extends State<CommonContract> {
           state.setState(() => state.isSelected = false);
         }
       }
-      await Future.delayed(const Duration(milliseconds: 100));
+      await _yieldToUI();
 
       // Capture toàn bộ Stack bao gồm nội dung VÀ chữ ký
       final boundary =
@@ -457,9 +491,20 @@ class _CommonContractState extends State<CommonContract> {
 
       if (boundary != null) {
         final double pixelRatio = kIsWeb ? 2.0 : 3.0;
+
+        // Yield trước khi capture để animation có cơ hội chạy
+        await _yieldToUI();
+
         final image = await boundary.toImage(pixelRatio: pixelRatio);
+
+        // Yield nhiều frame sau capture nặng để animation recover
+        await _waitForFrames(3);
+
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
+
+        // Yield nhiều frame sau toByteData để animation recover
+        await _waitForFrames(3);
 
         final imageWidth = image.width.toDouble();
         final imageHeight = image.height.toDouble();
@@ -549,6 +594,9 @@ class _CommonContractState extends State<CommonContract> {
             );
             final croppedPngBytes = croppedByteData!.buffer.asUint8List();
 
+            // Yield nhiều frame sau mỗi trang để animation recover
+            await _waitForFrames(2);
+
             // Tính tỷ lệ của ảnh đã cắt
             final croppedAspectRatio = imageWidth / actualSrcHeight;
             final pageFormat =
@@ -573,7 +621,13 @@ class _CommonContractState extends State<CommonContract> {
         }
       }
 
+      // Yield nhiều frame trước khi save PDF
+      await _waitForFrames(3);
+
       final pdfBytes = await pdf.save();
+
+      // Yield sau khi save PDF
+      await _yieldToUI();
 
       if (kIsWeb) {
         await downloadFileFromBytes(pdfBytes, 'document.pdf', context);
@@ -754,8 +808,20 @@ class _CommonContractState extends State<CommonContract> {
             ngayKy ?? DateFormat('dd/MM/yyyy').format(DateTime.now());
       });
 
-      // Đợi một frame để widget được rebuild với thông tin mới
-      await Future.delayed(const Duration(milliseconds: 50));
+      // Đợi đảm bảo widget được rebuild hoàn toàn trước khi capture
+      // Sử dụng Completer để await addPostFrameCallback
+      final completer = Completer<void>();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        completer.complete();
+      });
+      await completer.future;
+
+      // Đợi thêm một frame nữa để đảm bảo render hoàn tất
+      final completer2 = Completer<void>();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        completer2.complete();
+      });
+      await completer2.future;
 
       RenderRepaintBoundary boundary =
           _captureKey.currentContext!.findRenderObject()
@@ -1107,6 +1173,147 @@ class _CommonContractState extends State<CommonContract> {
     }
   }
 
+  // ===== Ký hash với loại ký = 5 (ký số thuần với hình ảnh từ ký nháy) =====
+  Future<void> signingWithImageType5(
+    NhanVien nhanVien, {
+    double top = 500,
+    double left = 500,
+  }) async {
+    if (widget.idNguoiKy == null || widget.idTaiLieu == null) {
+      return;
+    }
+
+    String value = widget.idNguoiKy! + widget.idTaiLieu!;
+    String hash = generateSha256(value);
+    SGLog.info('Chu ky', 'Chu ky SHA-256: $hash');
+
+    // 1️⃣ Lấy token trước
+    final token = await login();
+    if (token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login thất bại, không thể ký')),
+        );
+      }
+      return;
+    }
+
+    try {
+      // 2️⃣ Lấy hình ảnh từ chữ ký nháy (chuKyNhay)
+      Uint8List? imgBytes;
+      if (widget.signatureList.isNotEmpty) {
+        try {
+          String name = widget.nhanVien?.chuKyNhay ?? "";
+          if (name.isEmpty || name == "null") {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Bạn chưa có chữ ký nháy'),
+                ),
+              );
+            }
+            return;
+          }
+          final url = widget.signatureList.firstWhere(
+            (e) => e.contains(name),
+            orElse: () => "",
+          );
+
+          if (url.isEmpty) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Không tìm thấy hình ảnh chữ ký nháy'),
+                ),
+              );
+            }
+            return;
+          }
+
+          final response = await http.get(Uri.parse(url));
+          if (response.statusCode == 200) {
+            imgBytes = response.bodyBytes;
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Không tải được ảnh chữ ký: $url (HTTP ${response.statusCode})',
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        } catch (e) {
+          SGLog.error('Ký', 'Lỗi tải ảnh chữ ký nháy: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Lỗi tải ảnh chữ ký: $e')));
+          }
+          return;
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy hình ảnh chữ ký nháy'),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3️⃣ Thêm chữ ký vào màn hình với loaiKy = 5
+      _addSignature(imgBytes, 5, top, left, true);
+
+      // 4️⃣ Gọi API ký
+      final String url = "https://rms.efy.com.vn/signing/hash";
+      final Map<String, dynamic> signingPayload = {
+        "agreementUUID": "02e80096-912a-4b30-a38e-334ddc110a1e",
+        "authMode": "EXPLICIT/PIN",
+        "authorizeCode": "efyvn@123",
+        "encryption": "RSA",
+        "hash": hash,
+        "hashAlgorithm": "SHA-256",
+        "mimeType": "application/sha256-binary",
+      };
+      final Map<String, String> headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      };
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(signingPayload),
+      );
+
+      // 5️⃣ Xử lý kết quả
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final Map<String, dynamic> result = jsonDecode(response.body);
+        setState(() {
+          signatureValue = result['signatureValue'] ?? '';
+        });
+      } else {
+        SGLog.error('Ký', 'HTTP ${response.statusCode}: ${response.body}');
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Ký không thành công')));
+        }
+      }
+    } catch (e) {
+      SGLog.error('Ký', 'Lỗi ký: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ký không thành công')));
+      }
+    }
+  }
+
   // ===== Kiểm tra xem user hiện tại có được phép ký không =====
   bool _canUserSign(int newSigningType) {
     // Kiểm tra xem tài liệu đã có chữ ký số (loaiKy = 3, 4, 5) chưa
@@ -1180,7 +1387,7 @@ class _CommonContractState extends State<CommonContract> {
       // Ký thường
       _addFirstSignatureFromList(2, top: top, left: left);
     } else {
-      // Ký số (3 hoặc 4)
+      // Ký số (3, 4 hoặc 5)
       if (widget.nhanVien == null) {
         AppUtility.showSnackBar(context, "Không tìm thấy thông tin nhân viên");
         return;
@@ -1195,8 +1402,14 @@ class _CommonContractState extends State<CommonContract> {
             if (value == widget.pin) {
               if (_selectedSigningType == 3) {
                 await signing(widget.nhanVien!, top: top, left: left);
-              } else {
+              } else if (_selectedSigningType == 4) {
                 await signingWithImageType4(
+                  widget.nhanVien!,
+                  top: top,
+                  left: left,
+                );
+              } else if (_selectedSigningType == 5) {
+                await signingWithImageType5(
                   widget.nhanVien!,
                   top: top,
                   left: left,
@@ -1214,8 +1427,10 @@ class _CommonContractState extends State<CommonContract> {
       } else {
         if (_selectedSigningType == 3) {
           await signing(widget.nhanVien!, top: top, left: left);
-        } else {
+        } else if (_selectedSigningType == 4) {
           await signingWithImageType4(widget.nhanVien!, top: top, left: left);
+        } else if (_selectedSigningType == 5) {
+          await signingWithImageType5(widget.nhanVien!, top: top, left: left);
         }
       }
     }

@@ -1,12 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -19,7 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_rep
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_s21_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
-import 'package:quan_ly_tai_san_app/screen/report/service/screenshot_to_excel_service.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 
 class MauSo21Screen extends StatefulWidget {
   const MauSo21Screen({super.key});
@@ -56,109 +50,31 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   }
 
   Future<void> _exportToExcel() async {
+    if (listKhauHaoTaiSan.isEmpty) {
+      AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
+      return;
+    }
+
     setState(() => _isExporting = true);
 
     try {
-      await ScreenshotToExcelService.exportReportToExcel(
-        repaintKey: _repaintKey,
-        reportTitle: 'Mau_So_21',
+      await ExcelExportService.exportMauSo21ToExcel(
+        data: listKhauHaoTaiSan,
+        year: selectedYear ?? '',
+        loaiTaiSan: loaiTaiSan?.tenNhom ?? '',
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Xuất Excel thành công!')),
-        );
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
       }
     } catch (e) {
       SGLog.error('MauSo21Screen', 'Lỗi xuất Excel: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi xuất Excel: $e')),
-        );
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
       }
     } finally {
       if (mounted) {
         setState(() => _isExporting = false);
-      }
-    }
-  }
-
-  Future<void> _exportToPdf() async {
-    setState(() {
-      _isExporting = true;
-    });
-    try {
-      final pdf = pw.Document();
-      await WidgetsBinding.instance.endOfFrame;
-
-      if (_repaintKey.currentContext == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không có nội dung để xuất.')),
-          );
-        }
-        return;
-      }
-
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      final boundary =
-          _repaintKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary == null) return;
-
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      final imageWidth = image.width.toDouble();
-      final imageHeight = image.height.toDouble();
-      if (imageWidth.isNaN ||
-          imageHeight.isNaN ||
-          imageWidth <= 0 ||
-          imageHeight <= 0) {
-        return;
-      }
-
-      final imageProvider = pw.MemoryImage(pngBytes);
-      final aspectRatio = imageWidth / imageHeight;
-      final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
-
-      pdf.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4.landscape,
-          margin: const pw.EdgeInsets.all(20),
-          build: (context) {
-            if (aspectRatio > a4AspectRatio) {
-              return pw.Center(
-                child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-              );
-            } else {
-              return pw.Center(
-                child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-              );
-            }
-          },
-        ),
-      );
-
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename:
-            'so_tai_san_co_dinh_s21_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
-    } catch (e) {
-      SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isExporting = false;
-        });
       }
     }
   }
@@ -169,30 +85,12 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   }
 
   Future<void> onloadViewPage() async {
-    if (loaiTaiSan == null) {
-      AppUtility.showSnackBar(
-        context,
-        'Vui lòng chọn loại tài sản!',
-        isError: true,
-      );
-      return;
-    }
-
-    if (controllerImportDate.text.trim().isEmpty) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn năm!', isError: true);
-      return;
-    }
+    if (loaiTaiSan == null) return;
+    if (controllerImportDate.text.trim().isEmpty) return;
 
     // Get company ID
     final userInfo = AccountHelper.instance.getUserInfo();
-    if (userInfo?.idCongTy == null) {
-      AppUtility.showSnackBar(
-        context,
-        'Không tìm thấy thông tin công ty!',
-        isError: true,
-      );
-      return;
-    }
+    if (userInfo?.idCongTy == null) return;
 
     // Extract date components
     try {
@@ -315,7 +213,11 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                     controller: controllerImportDate,
                                     isEditing: true,
                                     fieldName: 'year',
-                                    onChanged: (date) {},
+                                    onChanged: (date) {
+                                      if (loaiTaiSan != null) {
+                                        onloadViewPage();
+                                      }
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -338,6 +240,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                       setState(() {
                                         loaiTaiSan = value;
                                       });
+                                      onloadViewPage();
                                     },
                                   ),
                                 ),
@@ -347,55 +250,21 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    onloadViewPage();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      'Lấy dữ liệu',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
                                 Expanded(child: SizedBox.shrink()),
                                 GestureDetector(
-                                  onTap: () {
-                                    _exportToPdf();
-                                  },
+                                  onTap: _isExporting ? null : _exportToExcel,
                                   child: Container(
                                     padding: const EdgeInsets.all(8.0),
                                     decoration: BoxDecoration(
-                                      color: Colors.green,
+                                      color: const Color(0xFF217346), // Excel green color
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Icon(
-                                      Icons.picture_as_pdf,
+                                      Icons.grid_on,
                                       color: Colors.white,
                                     ),
                                   ),
                                 ),
-                                // Hidden per user request: Excel export button
-                                // const SizedBox(width: 8),
-                                // GestureDetector(
-                                //   onTap: _isExporting ? null : _exportToExcel,
-                                //   child: Container(
-                                //     padding: const EdgeInsets.all(8.0),
-                                //     decoration: BoxDecoration(
-                                //       color: Colors.green,
-                                //       borderRadius: BorderRadius.circular(8),
-                                //     ),
-                                //     child: const Icon(
-                                //       Icons.table_chart,
-                                //       color: Colors.white,
-                                //     ),
-                                //   ),
-                                // ),
                                 const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
