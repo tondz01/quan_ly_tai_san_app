@@ -242,11 +242,11 @@ class ReportPageWrapper extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color(0xFF217346), // Excel green color
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                Icons.table_chart,
+                Icons.grid_on,
                 color: Colors.white,
               ),
             ),

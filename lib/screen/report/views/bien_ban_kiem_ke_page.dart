@@ -116,8 +116,16 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           'nuocSanXuat',
           widget.inventoryMinutes[i].nuocSanXuat ?? '',
         ),
-        'phuongThucKiemKe': _getValue(i, 'phuongThucKiemKe', ''),
-        'soLuongKiemKe': _getValue(i, 'soLuongKiemKe', ''),
+        'phuongThucKiemKe': _getValue(
+          i,
+          'phuongThucKiemKe',
+          widget.inventoryMinutes[i].phuongThucKiemKe ?? '',
+        ),
+        'soLuongKiemKe': _getValue(
+          i,
+          'soLuongKiemKe',
+          widget.inventoryMinutes[i].soLuongKiemKeThucTe?.toString() ?? '',
+        ),
         'hienTrang': _getValue(
           i,
           'hienTrang',
@@ -335,9 +343,19 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
                 100,
               ),
               // Phương thức kiểm kê - có thể chỉnh sửa
-              _buildEditableCell(i, 'phuongThucKiemKe', '', 100),
+              _buildEditableCell(
+                i,
+                'phuongThucKiemKe',
+                widget.inventoryMinutes[i].phuongThucKiemKe ?? '',
+                100,
+              ),
               // Số lượng kiểm kê thực tế - có thể chỉnh sửa
-              _buildEditableCell(i, 'soLuongKiemKe', '', 100),
+              _buildEditableCell(
+                i,
+                'soLuongKiemKe',
+                widget.inventoryMinutes[i].soLuongKiemKeThucTe?.toString() ?? '',
+                100,
+              ),
               // Hiện trạng - có thể chỉnh sửa
               _buildEditableCell(
                 i,

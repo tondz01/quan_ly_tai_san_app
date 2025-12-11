@@ -1,12 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
@@ -19,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_tai_san_co_dinh_page.dart';
 import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
@@ -75,91 +70,39 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     super.dispose();
   }
 
-  Future<void> _exportToPdf() async {
-    setState(() {
-      _isExporting = true;
-    });
+  Future<void> _exportToExcel() async {
+    if (_list.isEmpty) {
+      AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
+      return;
+    }
+
+    setState(() => _isExporting = true);
+
     try {
-      final pdf = pw.Document();
-      // Đợi frame hiện tại kết thúc để đảm bảo UI render hoàn toàn
-      await WidgetsBinding.instance.endOfFrame;
-      if (_pageKeys.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không có trang để xuất.')),
-          );
-        }
-        return;
-      }
-
-      // Đợi thêm một khoảng nhỏ để ổn định layout (phòng trường hợp scroll/layout vừa thay đổi)
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      for (final key in _pageKeys) {
-        final boundary =
-            key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundary == null) continue;
-
-        final image = await boundary.toImage(pixelRatio: 1.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        final pngBytes = byteData!.buffer.asUint8List();
-
-        final imageWidth = image.width.toDouble();
-        final imageHeight = image.height.toDouble();
-        if (imageWidth.isNaN ||
-            imageHeight.isNaN ||
-            imageWidth <= 0 ||
-            imageHeight <= 0) {
-          continue;
-        }
-
-        final imageProvider = pw.MemoryImage(pngBytes);
-        final aspectRatio = imageWidth / imageHeight;
-        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
-
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.a4.portrait,
-            margin: const pw.EdgeInsets.all(20),
-            build: (context) {
-              if (aspectRatio > a4AspectRatio) {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
-                );
-              } else {
-                return pw.Center(
-                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
-                );
-              }
-            },
-          ),
-        );
-      }
-
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename:
-            'bien_ban_kiem_ke_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      final taiSanCoDinhList = DataConverter.convertInventoryMinutesToTaiSanCoDinh(_list);
+      await ExcelExportService.exportBaoCao05TSCDToExcel(
+        data: taiSanCoDinhList,
+        departmentName: donVi?.tenPhongBan ?? '',
+        ngayKiemKe: controllerImportDate.text.trim(),
       );
-    } catch (e) {
-      SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
+
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
+      }
+    } catch (e) {
+      SGLog.error('BienBanKiemKeTSCDScreen', 'Lỗi xuất Excel: $e');
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isExporting = false;
-        });
+        setState(() => _isExporting = false);
       }
     }
   }
 
   Future<void> _loadData() async {
-    listPhongBan =
-        AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
+    listPhongBan = AccountHelper.instance.getDepartment() ?? [];
     setState(() {});
   }
 
@@ -285,10 +228,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
   }
 
   Future<void> onloadViewPage() async {
-    if (donVi == null) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
-      return;
-    }
+    if (donVi == null) return;
 
     setState(() {
       _isLoading = true;
@@ -296,12 +236,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
 
     // Format date to YYYY-MM-DD format
     String formattedDate = formatToYyyyMmDd(controllerImportDate.text.trim());
-
-    // với loại tất cả công ty sẽ query theo all Assets
-    if (donVi!.id! == 'all') {
-      await _loadAllAssetsInBatches();
-      return;
-    }
 
     final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
     if (!mounted) return;
@@ -426,15 +360,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                             ),
                           ),
                           Divider(),
-                          CmFormDate(
-                            label: 'Ngày kiểm kê',
-                            controller: controllerImportDate,
-                            isEditing: true,
-                            fieldName: 'importDate',
-                            onChanged: (date) {
-                              setState(() {});
-                            },
-                          ),
                           CmFormDropdownObject<PhongBan>(
                             label: 'Đơn vị',
                             controller: controllerDonVi,
@@ -453,41 +378,38 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                               setState(() {
                                 donVi = value;
                               });
+                              onloadViewPage();
+                            },
+                          ),
+                          CmFormDate(
+                            label: 'Ngày kiểm kê',
+                            controller: controllerImportDate,
+                            isEditing: true,
+                            fieldName: 'importDate',
+                            onChanged: (date) {
+                              setState(() {});
+                              if (donVi != null) {
+                                onloadViewPage();
+                              }
                             },
                           ),
                           Divider(),
                           SizedBox(height: 16),
                           Row(
                             children: [
-                              GestureDetector(
-                                onTap: () {
-                                  onloadViewPage();
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    'Lấy dữ liệu',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
                               Expanded(child: SizedBox.shrink()),
                               GestureDetector(
                                 onTap: () {
-                                  _exportToPdf();
+                                  _exportToExcel();
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(8.0),
                                   decoration: BoxDecoration(
-                                    color: Colors.green,
+                                    color: const Color(0xFF217346), // Excel green color
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
-                                    Icons.picture_as_pdf,
+                                    Icons.grid_on,
                                     color: Colors.white,
                                   ),
                                 ),

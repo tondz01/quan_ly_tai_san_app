@@ -7,8 +7,10 @@ import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class TaiSanCoDinhRepository extends ApiBase {
-  // Get list tài sản cố định
-  Future<Map<String, dynamic>> getListTaiSanCoDinh(String idDonVi) async {
+  /// Lấy danh sách kiểm kê tài sản cố định theo phòng ban
+  /// API: GET /api/baocao/kiemke-taisan-theo-phongban?idPhongBan={idPhongBan}
+  /// Nếu không truyền idPhongBan sẽ lấy toàn bộ công ty
+  Future<Map<String, dynamic>> getListTaiSanCoDinh(String? idPhongBan) async {
     List<TaiSanCoDinhDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -16,9 +18,14 @@ class TaiSanCoDinhRepository extends ApiBase {
     };
 
     try {
+      final Map<String, dynamic> queryParams = {};
+      if (idPhongBan != null && idPhongBan.isNotEmpty) {
+        queryParams['idPhongBan'] = idPhongBan;
+      }
+
       final response = await get(
-        '${EndPointAPI.BAO_CAO}/taisancodinh',
-        queryParameters: {'iddonvi': idDonVi},
+        '${EndPointAPI.BAO_CAO}/kiemke-taisan-theo-phongban',
+        queryParameters: queryParams,
       );
       log('response: ${response.data}');
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {

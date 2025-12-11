@@ -2,22 +2,37 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
-Future<String> saveExportFile(Uint8List bytes, String fileName) async {
+Future<String> saveExportFile(Uint8List bytes, String fileName, {bool print = false}) async {
   final dir = await getDownloadsDirectory();
+  String filePath;
+
   if (dir == null) {
     // Fallback: nếu không lấy được thư mục Downloads
     final tempDir = await getTemporaryDirectory();
-    final fallbackPath = _buildUniqueFilePath(tempDir.path, fileName);
-    final fallbackFile = File(fallbackPath);
-    await fallbackFile.writeAsBytes(bytes);
-    return fallbackPath;
+    filePath = _buildUniqueFilePath(tempDir.path, fileName);
+  } else {
+    filePath = _buildUniqueFilePath(dir.path, fileName);
   }
 
-  final uniquePath = _buildUniqueFilePath(dir.path, fileName);
-  final file = File(uniquePath);
+  final file = File(filePath);
   await file.writeAsBytes(bytes);
 
-  return uniquePath;
+  // Nếu print = true, mở file với ứng dụng mặc định
+  if (print) {
+    await _openFile(filePath);
+  }
+
+  return filePath;
+}
+
+Future<void> _openFile(String filePath) async {
+  if (Platform.isMacOS) {
+    await Process.run('open', [filePath]);
+  } else if (Platform.isWindows) {
+    await Process.run('start', ['', filePath], runInShell: true);
+  } else if (Platform.isLinux) {
+    await Process.run('xdg-open', [filePath]);
+  }
 }
 
 String _buildUniqueFilePath(String directoryPath, String fileName) {
