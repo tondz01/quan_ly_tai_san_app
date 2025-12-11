@@ -243,7 +243,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                                 marginsMm: const EdgeInsets.all(
                                                   20,
                                                 ),
-                                                scale: 1.2,
+                                                scale: 1.0,
                                                 maxWidth: 800,
                                                 maxHeight: 800 * (297 / 210),
                                                 child:

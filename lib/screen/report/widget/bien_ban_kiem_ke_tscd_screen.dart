@@ -549,7 +549,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                       children: [
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
+                                          scale: 1.0,
                                           maxWidth: sizeWidth,
                                           maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeTaiSanCoDinhPage(
@@ -577,7 +577,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                       children: [
                                         A4Canvas(
                                           marginsMm: EdgeInsets.all(4),
-                                          scale: 1.2,
+                                          scale: 1.0,
                                           maxWidth: sizeWidth,
                                           maxHeight: sizeWidth * (297 / 210),
                                           child: BienBanKiemKeTaiSanCoDinhPage(
@@ -608,7 +608,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                             children: [
                                               A4Canvas(
                                                 marginsMm: EdgeInsets.all(4),
-                                                scale: 1.2,
+                                                scale: 1.0,
                                                 maxWidth: sizeWidth,
                                                 maxHeight: sizeWidth * (297 / 210),
                                                 child: Column(
@@ -656,7 +656,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                                     marginsMm: EdgeInsets.all(
                                                       4,
                                                     ),
-                                                    scale: 1.2,
+                                                    scale: 1.0,
                                                     maxWidth: sizeWidth,
                                                     maxHeight:
                                                         sizeWidth * (297 / 210),
@@ -688,7 +688,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                                     marginsMm: EdgeInsets.all(
                                                       4,
                                                     ),
-                                                    scale: 1.2,
+                                                    scale: 1.0,
                                                     maxWidth: sizeWidth,
                                                     maxHeight:
                                                         sizeWidth * (297 / 210),
@@ -713,7 +713,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                           children: [
                                             A4Canvas(
                                               marginsMm: EdgeInsets.all(4),
-                                              scale: 1.2,
+                                              scale: 1.0,
                                               maxWidth: sizeWidth,
                                               maxHeight: sizeWidth * (297 / 210),
                                               child: BodyBienBanKiemKe(

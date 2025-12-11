@@ -91,7 +91,7 @@ previewDocumentToolAndMaterial({
             if (document != null)
               for (var index = 0; index < document.pages.length; index++)
                 A4Canvas(
-                  scale: 1.2,
+                  scale: 1.0,
                   maxWidth: 800,
                   maxHeight: 800 * (297 / 210),
                   child: pdfrx.PdfPageView(
@@ -102,7 +102,7 @@ previewDocumentToolAndMaterial({
                 ),
             A4Canvas(
               marginsMm: const EdgeInsets.all(20),
-              scale: 1.2,
+              scale: 1.0,
               maxWidth: 800,
               maxHeight: 800 * (297 / 210),
               child: ContractPage.toolAndMaterialTransferPage(item),
