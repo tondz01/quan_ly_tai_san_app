@@ -272,7 +272,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
         data: request,
       );
-
+      String idBGTS = response.data['id'];
       final int? status = response.statusCode;
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
@@ -280,7 +280,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       }
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
-          idTaiLieu: request['id'].toString(),
+          idTaiLieu: idBGTS,
           trangThai: 0,
         );
         final responseSignatory = await post(
@@ -295,12 +295,10 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
           return result;
         }
       }
-      for (var e in requestDetailSubppliesHandover) {
-        e['idBanGiaoCCDCVatTu'] = request['id'].toString();
-      }
+    
       final responseDetail = await post(
         "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
-        data: requestDetailSubppliesHandover,
+        data: requestDetailSubppliesHandover.map((e) => e['idBanGiaoCCDCVatTu'] = idBGTS).toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       if (checkStatusCodeFailed(statusDetail ?? 0)) {

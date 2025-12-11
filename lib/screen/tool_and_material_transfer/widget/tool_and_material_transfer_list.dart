@@ -417,7 +417,11 @@ class _ToolAndMaterialTransferListState
                           },
                           // onEdit: (item) {},
                           onDelete: _onDelete,
-                          blockDelete: (item) => !TableToolAndMaterialTransferConfig.isCheckShowDelete(item),
+                          blockDelete:
+                              (item) =>
+                                  !TableToolAndMaterialTransferConfig.isCheckShowDelete(
+                                    item,
+                                  ),
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
@@ -697,14 +701,14 @@ class _ToolAndMaterialTransferListState
 
   Widget viewSignatoryStatus(bool isDone, String name) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           name,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.green,
+            color: isDone ? Colors.green : Colors.red,
           ),
         ),
         Visibility(

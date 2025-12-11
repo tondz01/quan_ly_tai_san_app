@@ -287,8 +287,9 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   Future<void> onLoadDataAssetTransfer() async {
-    final result = await AssetTransferRepository().getListDieuDongTaiSanByHandover();
-    _dataAssetTransfer = result['data'];
+    final result = await AssetTransferRepository().getDataWithPagination(0, 999999, -1, '', 3, '', false);
+    final data = (result['data'] as List<dynamic>).cast<DieuDongTaiSanDto>();
+    _dataAssetTransfer = List<DieuDongTaiSanDto>.from(data);
     notifyListeners();
   }
 
@@ -297,44 +298,62 @@ class AssetHandoverProvider with ChangeNotifier {
   /// - Nếu không: lọc theo phòng ban của người dùng
   /// [isEditing] - Nếu false, trả về tất cả (không lọc)
   List<DieuDongTaiSanDto> getFilteredAssetTransfer({bool isEditing = false}) {
-    if (_dataAssetTransfer == null) return [];
+    // Luôn log kể cả khi null
+    if (_dataAssetTransfer == null) {
+      return [];
+    }
 
     final userInfo = AccountHelper.instance.getUserInfo();
-    if (userInfo == null) return [];
+    if (userInfo == null) {
+      return [];
+    }
 
     final nhanVien = AccountHelper.instance.getNhanVienById(
       userInfo.tenDangNhap,
     );
-    if (nhanVien == null) return [];
+    if (nhanVien == null) {
+      return [];
+    }
 
     // Lấy tất cả các ID phòng ban kho
-    final idPhongBanKhoSet = (_dataDepartment ?? [])
-        .where((element) => element.isKho == true)
-        .map((element) => element.id)
-        .whereType<String>()
-        .toSet();
+    final idPhongBanKhoSet =
+        (_dataDepartment ?? [])
+            .where((element) => element.isKho == true)
+            .map((element) => element.id)
+            .whereType<String>()
+            .toSet();
+
     // Kiểm tra xem nhân viên có thuộc phòng ban kho không
-    final isNhanVienKho = nhanVien.phongBanId != null &&
+    final isNhanVienKho =
+        nhanVien.phongBanId != null &&
         idPhongBanKhoSet.contains(nhanVien.phongBanId);
-    return _dataAssetTransfer!
-        .where((element) => element.trangThai == 3)
-        .where((element) {
+    final filtered =
+        _dataAssetTransfer!.where((element) => element.trangThai == 3).where((
+          element,
+        ) {
           if (isEditing) return true;
 
           // Nếu nhân viên thuộc kho, lấy tất cả phiếu thuộc các phòng ban kho
           if (isNhanVienKho) {
-            return idPhongBanKhoSet.contains(element.idDonViGiao) ||
+            final matchKho =
+                idPhongBanKhoSet.contains(element.idDonViGiao) ||
                 idPhongBanKhoSet.contains(element.idDonViNhan);
+            return matchKho;
           }
 
           // Nếu không phải kho, lọc theo phòng ban của nhân viên
           final idDonViGiao = nhanVien.phongBanId ?? nhanVien.boPhan;
-          if (idDonViGiao == null || idDonViGiao.isEmpty) return false;
+          if (idDonViGiao == null || idDonViGiao.isEmpty) {
+            return false;
+          }
 
-          return element.idDonViGiao == idDonViGiao ||
+          final matchDonVi =
+              element.idDonViGiao == idDonViGiao ||
               element.idDonViNhan == idDonViGiao;
-        })
-        .toList();
+          return matchDonVi;
+        }).toList();
+
+    return filtered;
   }
 
   onLoadDataDropdown() {

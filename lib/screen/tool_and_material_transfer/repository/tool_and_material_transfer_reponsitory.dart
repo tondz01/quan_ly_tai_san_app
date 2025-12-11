@@ -38,10 +38,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     List<ChiTietBanGiaoRequest> requestDetail,
     List<SignatoryDto> listSignatory,
   ) async {
-    log('[createToolAndMaterialTransfer] START - Request ID: ${request.id}');
-    log('[createToolAndMaterialTransfer] Request: ${jsonEncode(request.toJson())}');
-    log('[createToolAndMaterialTransfer] RequestDetail count: ${requestDetail.length}');
-    log('[createToolAndMaterialTransfer] Signatory count: ${listSignatory.length}');
     
     ToolAndMaterialTransferDto? data;
     Map<String, dynamic> result = {
@@ -50,48 +46,39 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     };
 
     try {
-      log('[createToolAndMaterialTransfer] Calling POST to: ${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}');
       final response = await post(
         EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
         data: request.toJson(),
       );
-      log('[createToolAndMaterialTransfer] POST response status: ${response.statusCode}');
-      log('[createToolAndMaterialTransfer] POST response data: ${response.data}');
-
+      String idTMT = response.data['id'];
       final int? status = response.statusCode;
       final bool isOk =
           status == Numeral.STATUS_CODE_SUCCESS ||
           status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
           status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOk) {
-        log('[createToolAndMaterialTransfer] Main request failed, status: $status');
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
 
-      log('[createToolAndMaterialTransfer] Main request successful, creating details');
       final dynamic respData = response.data;
-      log('[createToolAndMaterialTransfer] Calling POST details to: ${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch');
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
-        data: jsonEncode(requestDetail),
+        data: requestDetail.map((e) => e.copyWith(idDieuDongCCDCVatTu: idTMT).toJson()).toList(),
       );
-      log('[createToolAndMaterialTransfer] Details response status: ${responseDetail.statusCode}');
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
           statusDetail == Numeral.STATUS_CODE_SUCCESS ||
           statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
           statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOkDetail) {
-        log('[createToolAndMaterialTransfer] Details request failed, status: $statusDetail');
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
 
-      log('[createToolAndMaterialTransfer] Details request successful, creating signatories');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
-          idTaiLieu: request.id.toString(),
+          idTaiLieu: idTMT,
         );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
@@ -568,7 +555,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     int type,
     String search,
     int trangThai,
-    [String idDonViBanGiao = '']
+    [String idDonViBanGiao = '',
+    bool isSearchUser = true]
   ) async {
     Map<String, dynamic> result = {
       'data': <ToolAndMaterialTransferDto>[],
@@ -584,9 +572,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     };
     final userInfo = AccountHelper.instance.getUserInfo();
     try {
+      String userid =
+          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${idDonViBanGiao.isEmpty ? userInfo?.tenDangNhap ?? '' : idDonViBanGiao}&idDonViGiao=$idDonViBanGiao',
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${isSearchUser ? (idDonViBanGiao.isEmpty ? userid : '') : idDonViBanGiao}&idDonViGiao=$idDonViBanGiao',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

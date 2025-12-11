@@ -416,14 +416,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     child: Column(
                       spacing: 5,
                       children: [
-                        CommonFormInput(
-                          label: 'Số chứng từ',
-                          controller: controllers.controllerSoChungTu,
-                          isEditing: state.isEditing,
-                          textContent: controllers.controllerSoChungTu.text,
-                          fieldName: 'soChungTu',
-                          validationErrors: validation.validationErrors,
-                          isRequired: true,
+                        Visibility(
+                          visible: !state.isEditing,
+                          child: CommonFormInput(
+                            label: 'Số chứng từ',
+                            controller: controllers.controllerSoChungTu,
+                            isEditing: state.isEditing,
+                            textContent: controllers.controllerSoChungTu.text,
+                            fieldName: 'soChungTu',
+                            validationErrors: validation.validationErrors,
+                            isRequired: true,
+                          ),
                         ),
                         CommonFormInput(
                           label: 'at.document_name'.tr,
@@ -869,7 +872,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   LenhDieuDongRequest _createDieuDongRequest(int type, int state) {
     return LenhDieuDongRequest(
-      id: controllers.controllerSoChungTu.text,
       soQuyetDinh: controllers.controllerSoChungTu.text,
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: this.state.donViGiao?.id ?? '',
@@ -916,7 +918,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     List<ChiTietDieuDongTaiSan> listNewDetails,
   ) {
     return DieuDongTaiSanDto(
-      id: controllers.controllerSoChungTu.text,
+      id: state.item?.id ?? '',
       soQuyetDinh: controllers.controllerSoChungTu.text,
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: state.donViGiao?.id ?? '',
@@ -983,7 +985,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         .map(
           (e) => SignatoryDto(
             id: UUIDGenerator.generateWithFormat('NK-************'),
-            idTaiLieu: controllers.controllerSoChungTu.text,
+            idTaiLieu: state.item?.id ?? '',
             idNguoiKy: e.employee?.id ?? '',
             idPhongBan: e.department?.id ?? '',
             tenNguoiKy: e.employee?.hoTen ?? '',

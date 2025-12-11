@@ -560,7 +560,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     assetHandoverProvider.isLoading = true;
 
     final Map<String, dynamic> request = {
-      "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
       "banGiaoTaiSan": controllerDocumentName.text,
       "quyetDinhDieuDongSo": dieuDongTaiSan?.soQuyetDinh ?? '',
@@ -607,7 +606,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             .map(
               (e) => SignatoryDto(
                 id: UUIDGenerator.generateWithFormat("SIG-******"),
-                idTaiLieu: request['id'].toString(),
+                idTaiLieu: item?.id ?? '',
                 idPhongBan: e.department?.id ?? '',
                 idNguoiKy: e.employee?.id ?? '',
                 tenNguoiKy: e.employee?.hoTen ?? '',
@@ -1007,14 +1006,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     return Column(
       spacing: 10,
       children: [
-        CommonFormInput(
-          label: 'Số phiếu bàn giao',
-          controller: controllerHandoverNumber,
-          isEditing: (isEditing && item == null),
-          fieldName: 'handoverNumber',
-          textContent: item?.id ?? '',
-          validationErrors: _validationErrors,
-          isRequired: true,
+        Visibility(
+          visible:!(isEditing && item == null) && !widget.isFindNew,
+          child: CommonFormInput(
+            label: 'Số phiếu bàn giao',
+            controller: controllerHandoverNumber,
+            isEditing: (isEditing && item == null),
+            fieldName: 'handoverNumber',
+            textContent: item?.id ?? '',
+            validationErrors: _validationErrors,
+            isRequired: true,
+          ),
         ),
         CommonFormInput(
           label: 'Tên biên bản bàn giao tài sản',
@@ -1119,7 +1121,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           isRequired: true,
         ),
         CommonFormInput(
-          label: 'Địa điểm quyết định',
+          label: 'Địa điểm bàn giao',
           controller: controllerDecisionLocation,
           isEditing: isEditing,
           textContent: item?.diaDiemQuyetDinh ?? '',
@@ -1351,7 +1353,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   AssetHandoverDto? getAssetHandoverPreview() {
     return AssetHandoverDto(
-      id: controllerHandoverNumber.text,
+      // id: controllerHandoverNumber.text,
       idCongTy: currentUser?.idCongTy ?? '',
       banGiaoTaiSan: controllerDocumentName.text,
       quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',

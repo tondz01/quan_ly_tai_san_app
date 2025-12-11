@@ -111,14 +111,6 @@ class AssetTransferRepository extends ApiBase {
             DieuDongTaiSanDto.fromJson,
           );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      await Future.wait(
-        dieuDongTaiSans.map((dieuDongTaiSan) async {
-          Map<String, dynamic> result = await getChiTietDieuDongTaiSan(
-            dieuDongTaiSan.id.toString(),
-          );
-          dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
-        }),
-      );
       result['data'] = dieuDongTaiSans.where((e) => e.trangThai == 3).toList();
     } catch (e) {
       log("Error at getListDieuDongTaiSanByHandover - AssetTransferRepository: $e");
@@ -156,10 +148,10 @@ class AssetTransferRepository extends ApiBase {
 
       final dynamic respData = response.data;
 
-      for (var detail in requestDetail) {
+      if (requestDetail.isNotEmpty) {
         final responseDetail = await post(
-          EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
-          data: detail.toJson(),
+          '${EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN}/batch',
+          data: requestDetail.map((e) => e.copyWith(idDieuDongTaiSan: respData['id'] ?? '').toJson()).toList(),
         );
         final int? statusDetail = responseDetail.statusCode;
         final bool isOkDetail =
@@ -173,7 +165,7 @@ class AssetTransferRepository extends ApiBase {
       }
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
-          idTaiLieu: request.id.toString(),
+          idTaiLieu: respData['id'] ?? '',
         );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
@@ -512,7 +504,8 @@ class AssetTransferRepository extends ApiBase {
     int type,
     String search,
     int trangThai,
-    [String idDepartment = '']
+    [String idDepartment = '',
+    bool isSearchUser = true]
   ) async {
     Map<String, dynamic> result = {
       'data': <DieuDongTaiSanDto>[],
@@ -533,7 +526,7 @@ class AssetTransferRepository extends ApiBase {
           userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&userid=${idDepartment.isEmpty ? userid : ''}&trangThai=${trangThai == -1 ? '' : trangThai}&idDonViGiao=$idDepartment',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&userid=${isSearchUser ? (idDepartment.isEmpty ? userid : '') : ''}&trangThai=${trangThai == -1 ? '' : trangThai}&idDonViGiao=$idDepartment',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

@@ -620,7 +620,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                               ],
                               actionsColumnWidth: 120,
                               maxHeight:
-                                  MediaQuery.of(context).size.height * 0.75,
+                                  MediaQuery.of(context).size.height * 0.65,
                             );
                           },
                         ),

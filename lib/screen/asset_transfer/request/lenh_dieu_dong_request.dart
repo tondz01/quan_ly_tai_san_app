@@ -1,5 +1,4 @@
 class LenhDieuDongRequest {
-  final String id;
   final String soQuyetDinh;
   final String tenPhieu;
   final String idDonViGiao;
@@ -34,7 +33,6 @@ class LenhDieuDongRequest {
   final bool byStep;
 
   LenhDieuDongRequest({
-    this.id = '',
     required this.soQuyetDinh,
     required this.tenPhieu,
     required this.idDonViGiao,
@@ -83,7 +81,6 @@ class LenhDieuDongRequest {
     }
 
     return LenhDieuDongRequest(
-      id: json['id'] ?? '',
       soQuyetDinh: json['soQuyetDinh'] ?? '',
       tenPhieu: json['tenPhieu'] ?? '',
       idDonViGiao: json['idDonViGiao'] ?? '',
@@ -121,7 +118,6 @@ class LenhDieuDongRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'soQuyetDinh': soQuyetDinh,
       'tenPhieu': tenPhieu,
       'idDonViGiao': idDonViGiao,
@@ -158,7 +154,6 @@ class LenhDieuDongRequest {
   }
 
   LenhDieuDongRequest copyWith({
-    String? id,
     String? soQuyetDinh,
     String? tenPhieu,
     String? idDonViGiao,
@@ -193,7 +188,6 @@ class LenhDieuDongRequest {
     bool? byStep,
   }) {
     return LenhDieuDongRequest(
-      id: id ?? this.id,
       soQuyetDinh: soQuyetDinh ?? this.soQuyetDinh,
       tenPhieu: tenPhieu ?? this.tenPhieu,
       idDonViGiao: idDonViGiao ?? this.idDonViGiao,
