@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -79,6 +82,7 @@ class _ToolAndSuppliesHandoverListState
   void initState() {
     super.initState();
     userInfo = widget.provider.userInfo;
+    userInfo ??= AccountHelper.instance.getUserInfo();
     _initializeTableConfig();
   }
 
@@ -89,6 +93,7 @@ class _ToolAndSuppliesHandoverListState
   }
 
   void _initializeTableConfig() {
+    log('userInfo: ${jsonEncode(userInfo)}');
     _definitions = TableToolAndSuppliesHandoverConfig.getColumns(
       userInfo ?? UserInfoDTO.empty(),
     );
@@ -149,13 +154,7 @@ class _ToolAndSuppliesHandoverListState
                 ?.hoTen ??
             '';
       case 'trang_thai_ky':
-        int status = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
-          item,
-          userInfo!,
-        );
-        return TableToolAndSuppliesHandoverConfig.getPermissionSigningText(
-          status,
-        );
+       return 'Trạng thái ký';
       case 'trang_thai_phieu':
         return TableToolAndSuppliesHandoverConfig.getStatusHandoverText(
           item.trangThaiPhieu ?? 0,
@@ -516,7 +515,7 @@ class _ToolAndSuppliesHandoverListState
                               ],
                               actionsColumnWidth: 120,
                               maxHeight:
-                                  MediaQuery.of(context).size.height * 0.7,
+                                  MediaQuery.of(context).size.height * 0.63,
                             );
                           },
                         ),

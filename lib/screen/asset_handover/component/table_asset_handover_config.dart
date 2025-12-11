@@ -394,10 +394,6 @@ class TableAssetHandoverConfig {
     final signatureFlow =
         [
               {
-                "id": item.idDaiDiendonviBanHanhQD,
-                "signed": item.daXacNhan == true,
-              },
-              {
                 "id": item.idDaiDienBenGiao,
                 "signed": item.daiDienBenGiaoXacNhan == true,
               },

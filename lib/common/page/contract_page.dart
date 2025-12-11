@@ -881,7 +881,7 @@ class ContractPage {
               children: [
                 tableHeader("STT", SettingPage.scale, SettingPage.textStyle),
                 tableHeader(
-                  "TÊN CCDC - VẬT TƯ",
+                  "Tên ccdc - vật tư",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -978,7 +978,7 @@ class ContractPage {
                         child: Container(
                           alignment: Alignment.topCenter,
                           child: SGText(
-                            text: e.donVi,
+                            text: e.isBGD ? e.chucVu : e.donVi,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(

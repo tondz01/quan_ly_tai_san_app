@@ -23,6 +23,19 @@ class ScrollableBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Guard: chỉ build Chart khi có data hợp lệ
+    if (data.isEmpty) {
+      return SizedBox(
+        height: height,
+        child: Center(
+          child: Text(
+            'Không có dữ liệu',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       height: height,
       child: LayoutBuilder(

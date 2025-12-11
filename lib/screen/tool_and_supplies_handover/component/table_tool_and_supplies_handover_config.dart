@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
@@ -300,39 +302,44 @@ class TableToolAndSuppliesHandoverConfig {
     ToolAndSuppliesHandoverDto item,
     UserInfoDTO userInfo,
   ) {
-    final flow =
+    final signatureFlow =
         [
-          {
-            "id": item.idDaiDiendonviBanHanhQD,
-            "signed": item.daXacNhan == true,
-          },
-          {
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-          },
-          {
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-          },
-          if (item.listSignatory?.isNotEmpty ?? false)
-            ...(item.listSignatory
-                    ?.map(
-                      (e) => {"id": e.idNguoiKy, "signed": e.trangThai == 1},
-                    )
-                    .toList() ??
-                []),
-        ].where((s) => (s["id"] as String?)?.isNotEmpty == true).toList();
-    final current = flow.indexWhere((s) => s["id"] == userInfo.tenDangNhap);
-    if (current == -1) return 2;
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
     if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
-        flow[current]["signed"] != -1) {
-      return flow[current]["signed"] == true ? 4 : 5;
+        signatureFlow[currentIndex]["signed"] != -1) {
+      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
     }
-    if (flow[current]["signed"] == true) return 3;
-    final prevNotSigned = flow
-        .take(current)
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
-    if (prevNotSigned.isNotEmpty) return 1;
+    if (previousNotSigned.isNotEmpty) return 1;
     return 0;
   }
 

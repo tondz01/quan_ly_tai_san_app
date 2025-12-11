@@ -190,8 +190,9 @@ prevDocumentCcdcHandover({
       idNhanVien: dieuDongCcdc?.idGiamDoc ?? '',
       title: 'Giám đốc ký duyệt',
       hoTen: dieuDongCcdc?.tenGiamDoc ?? '',
+      isBGD: true,
       chucVu: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
-      donVi: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idGiamDoc ?? ''),
     ),
     // SigneInfo(
   ];

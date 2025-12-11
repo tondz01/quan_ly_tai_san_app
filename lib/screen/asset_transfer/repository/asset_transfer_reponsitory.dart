@@ -75,7 +75,6 @@ class AssetTransferRepository extends ApiBase {
             // Đảm bảo listSignatory được khởi tạo
             dieuDongTaiSan.listSignatory = signatories;
           } catch (e) {
-            log("Error loading signatories for ${dieuDongTaiSan.id}: $e");
             dieuDongTaiSan.listSignatory = [];
           }
         }),

@@ -24,6 +24,7 @@ import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
+import 'package:quan_ly_tai_san_app/core/services/count_service.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -32,6 +33,11 @@ class App extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<App> createState() => _AppState();
+  
+  /// Reset flag để đảm bảo lần login tiếp theo sẽ load lại counts
+  static void resetCountsLoadedFlag() {
+    _AppState._isCountsLoaded = false;
+  }
 }
 
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
@@ -42,6 +48,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   static bool _isDataLoaded = false;
   static bool _isInitialDataLoaded = false;
   static bool _isListenerSetup = false;
+  static bool _isCountsLoaded = false;
+  
+  final CountService _countService = CountService();
   
   // Throttle cho realtime message - tăng từ 500ms lên 2000ms
   static DateTime? _lastMessageTime;
@@ -62,11 +71,13 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     _loadDataIfNeeded();
     _setupRealtimeMessageListener();
     _getDataAssetAndCCDCIfNeeded();
+    _loadAllCountsIfNeeded();
   }
 
   @override
   void dispose() {
     _messageSub?.close();
+    _countService.dispose();
     super.dispose();
   }
 
@@ -191,6 +202,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
       // Refresh counts sau khi reload - chỉ gọi 1 lần
       AccountHelper.refreshAllCounts();
+      
+      // Debounce load counts để tránh call quá nhiều lần
+      _countService.debouncedLoadAllCounts();
     } finally {
       // Remove from pending sau 1 giây để allow retry nếu cần
       Future.delayed(const Duration(seconds: 1), () {
@@ -266,4 +280,38 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       AssetManagementRepository().getListDuAn('ct001');
     }
   }
+
+  /// Load tất cả counts cho các biên bản khi vào màn hình
+  /// Chỉ load sau khi user đã đăng nhập
+  /// Mỗi lần login sẽ load lại counts
+  Future<void> _loadAllCountsIfNeeded({bool force = false}) async {
+    // Kiểm tra user đã đăng nhập chưa
+    final userInfo = AccountHelper.instance.getUserInfo();
+    final userId = userInfo?.tenDangNhap ?? '';
+    
+    if (userId.isEmpty) {
+      log('[App] User not logged in yet, skip loading counts');
+      _isCountsLoaded = false; // Reset flag để có thể load sau khi đăng nhập
+      return;
+    }
+
+    // Nếu force = true (khi login), luôn load lại
+    // Nếu không force và đã load rồi thì skip
+    if (!force && _isCountsLoaded) {
+      log('[App] Counts already loaded, skipping...');
+      return;
+    }
+
+    _isCountsLoaded = true;
+    
+    // Load bất đồng bộ, không await để không block UI
+    _countService.loadAllCounts(force: true).then((counts) {
+      log('[App] Loaded all counts: $counts');
+    }).catchError((error) {
+      log('[App] Error loading counts: $error');
+      _isCountsLoaded = false; // Reset để có thể retry
+    });
+  }
+  
+  
 }

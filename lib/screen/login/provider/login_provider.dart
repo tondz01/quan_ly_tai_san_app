@@ -18,6 +18,8 @@ import 'package:quan_ly_tai_san_app/screen/login/component/popup_setting_permiss
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
+import 'package:quan_ly_tai_san_app/core/services/count_service.dart';
+import 'package:quan_ly_tai_san_app/app.dart';
 
 class LoginProvider with ChangeNotifier {
   get authRequest => _authRequest;
@@ -146,6 +148,16 @@ class LoginProvider with ChangeNotifier {
     } catch (_) {
     }
 
+    // Reset flag và load counts sau khi đăng nhập thành công
+    // Đảm bảo mỗi lần login đều load lại counts mới nhất
+    try {
+      App.resetCountsLoadedFlag(); // Reset flag trước
+      CountService().loadAllCounts(force: true).then((_) {
+        AccountHelper.refreshAllCounts(); // Refresh menu counts
+      });
+    } catch (_) {
+    }
+
     context.go(AppRoute.dashboard.path);
   }
 
@@ -160,6 +172,8 @@ class LoginProvider with ChangeNotifier {
 
   // Logout method
   void logout(BuildContext context) {
+    // Reset flag counts để đảm bảo lần login tiếp theo sẽ load lại
+    App.resetCountsLoadedFlag();
     try {
       // Reset trạng thái đăng nhập
       _isLoggedIn = false;

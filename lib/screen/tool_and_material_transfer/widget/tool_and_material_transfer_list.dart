@@ -19,8 +19,6 @@ import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
@@ -82,13 +80,15 @@ class _ToolAndMaterialTransferListState
   @override
   void initState() {
     super.initState();
+    userInfo = widget.provider.userInfo;
+    userInfo ??= AccountHelper.instance.getUserInfo();
     _definitions = TableToolAndMaterialTransferConfig.getColumns(
       userInfo ?? UserInfoDTO.empty(),
     );
     _columns = _definitions.map((d) => d.config).toList(growable: true);
     _allColumns = List<TableColumnData>.from(_columns);
     _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
-    _callGetListAssetHandover();
+    // _callGetListAssetHandover();
     userInfo = widget.provider.userInfo;
   }
 
@@ -505,25 +505,25 @@ class _ToolAndMaterialTransferListState
     );
   }
 
-  void _callGetListAssetHandover() {
-    try {
-      final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(
-          context,
-          widget.typeAssetTransfer,
-          widget.idCongTy,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  // void _callGetListAssetHandover() {
+  //   try {
+  //     final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
+  //     assetHandoverBloc.add(
+  //       GetListDieuDongTaiSanEvent(
+  //         context,
+  //         widget.typeAssetTransfer,
+  //         widget.idCongTy,
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   void _handleSignDocument(
     ToolAndMaterialTransferDto item,

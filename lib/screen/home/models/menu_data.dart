@@ -105,6 +105,10 @@ class AppMenuData extends ChangeNotifier {
 
   final ValueNotifier<int> _countTrigger = ValueNotifier<int>(0);
 
+  // Cache counts trong cùng một refresh cycle để tránh gọi AccountHelper nhiều lần
+  Map<String, int>? _cachedCounts;
+  int _lastRefreshTrigger = 0;
+
   static AppMenuData? _instance;
   static AppMenuData get instance {
     _instance ??= AppMenuData._internal();
@@ -285,25 +289,41 @@ class AppMenuData extends ChangeNotifier {
     ];
   }
 
-  // Getter methods để lấy count values
-  int get countAssetTransfer => AccountHelper.instance.getAssetTransferCount(1);
-  int get countAssetTransfer2 =>
-      AccountHelper.instance.getAssetTransferCount(2);
-  int get countAssetTransfer3 =>
-      AccountHelper.instance.getAssetTransferCount(3);
-  int get countToolAndSupplies =>
-      AccountHelper.instance.getToolAndMaterialTransferCount(1);
-  int get countToolAndSupplies2 =>
-      AccountHelper.instance.getToolAndMaterialTransferCount(2);
-  int get countToolAndSupplies3 =>
-      AccountHelper.instance.getToolAndMaterialTransferCount(3);
-  int get countAssetHandover => AccountHelper.instance.getAssetHandoverCount();
-  int get countToolAndMaterialHandover =>
-      AccountHelper.instance.getToolAndMaterialHandoverCount();
+  // Getter methods để lấy count values với cache trong cùng refresh cycle
+  int get countAssetTransfer => _getCachedCount('assetTransfer_1', () => AccountHelper.instance.getAssetTransferCount(1));
+  int get countAssetTransfer2 => _getCachedCount('assetTransfer_2', () => AccountHelper.instance.getAssetTransferCount(2));
+  int get countAssetTransfer3 => _getCachedCount('assetTransfer_3', () => AccountHelper.instance.getAssetTransferCount(3));
+  int get countToolAndSupplies => _getCachedCount('toolMaterialTransfer_1', () => AccountHelper.instance.getToolAndMaterialTransferCount(1));
+  int get countToolAndSupplies2 => _getCachedCount('toolMaterialTransfer_2', () => AccountHelper.instance.getToolAndMaterialTransferCount(2));
+  int get countToolAndSupplies3 => _getCachedCount('toolMaterialTransfer_3', () => AccountHelper.instance.getToolAndMaterialTransferCount(3));
+  int get countAssetHandover => _getCachedCount('assetHandover', () => AccountHelper.instance.getAssetHandoverCount());
+  int get countToolAndMaterialHandover => _getCachedCount('toolMaterialHandover', () => AccountHelper.instance.getToolAndMaterialHandoverCount());
+
+  /// Lấy count từ cache hoặc tính toán và cache lại
+  /// Giúp tránh gọi AccountHelper nhiều lần trong cùng một refresh cycle
+  int _getCachedCount(String key, int Function() getter) {
+    final currentTrigger = _countTrigger.value;
+    
+    // Nếu trigger đã thay đổi, clear cache
+    if (_lastRefreshTrigger != currentTrigger) {
+      _cachedCounts = null;
+      _lastRefreshTrigger = currentTrigger;
+    }
+    
+    // Tạo cache nếu chưa có
+    _cachedCounts ??= <String, int>{};
+    
+    // Trả về từ cache nếu có, nếu không thì tính toán và cache lại
+    if (!_cachedCounts!.containsKey(key)) {
+      _cachedCounts![key] = getter();
+    }
+    return _cachedCounts![key]!;
+  }
 
   /// Method để refresh counts và rebuild menu items
   void refreshCounts() {
-    _countTrigger.value++;
+    _countTrigger.value++; // Tăng trigger để invalidate cache
+    _cachedCounts = null; // Clear cache để tính lại counts mới
     notifyListeners();
   }
 

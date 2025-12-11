@@ -84,7 +84,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   bool _validateForm() {
     setState(() {
       validation.validateForm(
-        soChungTuController: controllers.controllerSoChungTu,
+        // soChungTuController: controllers.controllerSoChungTu,
         documentNameController: controllers.controllerDocumentName,
         subjectController: controllers.controllerSubject,
         deliveringUnitController: controllers.controllerDeliveringUnit,
@@ -919,7 +919,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   ) {
     return DieuDongTaiSanDto(
       id: state.item?.id ?? '',
-      soQuyetDinh: controllers.controllerSoChungTu.text,
+      // soQuyetDinh: controllers.controllerSoChungTu.text,
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: state.donViGiao?.id ?? '',
       idDonViNhan: state.donViNhan?.id ?? '',
@@ -1209,7 +1209,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             [];
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
-        controllers.controllerSoChungTu.text = widget.provider.genID();
+        controllers.controllerSoChungTu.text = '';
         controllers.controllerSubject.text = '';
         controllers.controllerDocumentName.text = '';
         controllers.controllerDeliveringUnit.text = '';

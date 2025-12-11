@@ -1,11 +1,11 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/table_tool_and_supplies_handover_transfer_config.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/table_tool_and_supplies_handover_transfer_provider.dart';
@@ -401,13 +401,11 @@ class _ToolAndSuppliesHandoverTransferListState
                         iconPath: AppIconSvgPath.iconNextDocument,
                         color: ColorValue.mediumGreen,
                         onPressed: (item) {
+                          DateTime now = DateTime.now();
                           widget.provider.onChangeDetail(
                             context,
                             ToolAndSuppliesHandoverDto(
-                              id: UUIDGenerator.generateWithFormat(
-                                'BBCCDC-******',
-                              ),
-                              banGiaoCCDCVatTu: '',
+                              banGiaoCCDCVatTu: 'Phiếu bàn giao ccdc-vật tư ngày ${DateFormat('dd/MM/yyyy').format(now)}',
                               quyetDinhDieuDongSo: '',
                               lenhDieuDong: item.id,
                               idDonViGiao: item.idDonViGiao,

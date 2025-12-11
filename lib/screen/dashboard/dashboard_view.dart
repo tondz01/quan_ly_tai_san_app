@@ -1445,90 +1445,97 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ],
             ),
-            child: graphic.Chart(
-              data:
-                  topAssets
-                      .map(
-                        (item) => {
-                          'tenTaiSan':
-                              item['TenTaiSan'].toString().length > 25
-                                  ? item['TenTaiSan'].toString().substring(
-                                    0,
-                                    25,
-                                  )
-                                  : item['TenTaiSan'].toString(),
-                          'nguyenGia': item['NguyenGia'] ?? 0,
-                        },
-                      )
-                      .toList(),
-              variables: {
-                'genre': graphic.Variable(
-                  accessor: (Map map) => map['tenTaiSan'] as String,
-                ),
-                'sold': graphic.Variable(
-                  accessor: (Map map) => map['nguyenGia'] as num,
-                ),
-              },
-              marks: [
-                graphic.IntervalMark(
-                  label: graphic.LabelEncode(
-                    encoder:
-                        (tuple) => graphic.Label(
-                          formatter.format(tuple['sold']),
-                          graphic.LabelStyle(
-                            textStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                        ),
-                  ),
-                  gradient: graphic.GradientEncode(
-                    value: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.indigo.shade300,
-                        Colors.indigo.shade500,
-                        Colors.indigo.shade700,
-                      ],
-                      stops: const [0, 0.5, 1],
+            child: topAssets.isEmpty
+                ? Center(
+                    child: Text(
+                      'Không có dữ liệu',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                     ),
-                    updaters: {
-                      'tap': {
-                        true:
-                            (_) => LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.amber.shade300,
-                                Colors.amber.shade500,
-                                Colors.amber.shade700,
-                              ],
-                              stops: const [0, 0.5, 1],
-                            ),
-                      },
+                  )
+                : graphic.Chart(
+                    data:
+                        topAssets
+                            .map(
+                              (item) => {
+                                'tenTaiSan':
+                                    item['TenTaiSan'].toString().length > 25
+                                        ? item['TenTaiSan'].toString().substring(
+                                          0,
+                                          25,
+                                        )
+                                        : item['TenTaiSan'].toString(),
+                                'nguyenGia': item['NguyenGia'] ?? 0,
+                              },
+                            )
+                            .toList(),
+                    variables: {
+                      'genre': graphic.Variable(
+                        accessor: (Map map) => map['tenTaiSan'] as String,
+                      ),
+                      'sold': graphic.Variable(
+                        accessor: (Map map) => map['nguyenGia'] as num,
+                      ),
                     },
+                    marks: [
+                      graphic.IntervalMark(
+                        label: graphic.LabelEncode(
+                          encoder:
+                              (tuple) => graphic.Label(
+                                formatter.format(tuple['sold']),
+                                graphic.LabelStyle(
+                                  textStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ),
+                        ),
+                        gradient: graphic.GradientEncode(
+                          value: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.indigo.shade300,
+                              Colors.indigo.shade500,
+                              Colors.indigo.shade700,
+                            ],
+                            stops: const [0, 0.5, 1],
+                          ),
+                          updaters: {
+                            'tap': {
+                              true:
+                                  (_) => LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.amber.shade300,
+                                      Colors.amber.shade500,
+                                      Colors.amber.shade700,
+                                    ],
+                                    stops: const [0, 0.5, 1],
+                                  ),
+                            },
+                          },
+                        ),
+                        modifiers: [graphic.StackModifier()],
+                        transition: graphic.Transition(
+                          duration: const Duration(milliseconds: 500),
+                        ),
+                        entrance: {graphic.MarkEntrance.y},
+                      ),
+                    ],
+                    coord: graphic.RectCoord(transposed: true),
+                    axes: [
+                      graphic.Defaults.verticalAxis
+                        ..line = graphic.Defaults.strokeStyle
+                        ..grid = null,
+                      graphic.Defaults.horizontalAxis
+                        ..line = null
+                        ..grid = graphic.Defaults.strokeStyle,
+                    ],
+                    selections: {'tap': graphic.PointSelection(dim: graphic.Dim.x)},
                   ),
-                  modifiers: [graphic.StackModifier()],
-                  transition: graphic.Transition(
-                    duration: const Duration(milliseconds: 500),
-                  ),
-                  entrance: {graphic.MarkEntrance.y},
-                ),
-              ],
-              coord: graphic.RectCoord(transposed: true),
-              axes: [
-                graphic.Defaults.verticalAxis
-                  ..line = graphic.Defaults.strokeStyle
-                  ..grid = null,
-                graphic.Defaults.horizontalAxis
-                  ..line = null
-                  ..grid = graphic.Defaults.strokeStyle,
-              ],
-              selections: {'tap': graphic.PointSelection(dim: graphic.Dim.x)},
-            ),
           ),
           const SizedBox(height: 16),
           // Summary cards

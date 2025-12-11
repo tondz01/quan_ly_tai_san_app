@@ -4,6 +4,7 @@ class SigneInfo {
   final String hoTen;
   final String chucVu;
   final String donVi;
+  final bool isBGD;
 
   SigneInfo({
     required this.idNhanVien,
@@ -11,6 +12,7 @@ class SigneInfo {
     required this.hoTen,
     required this.chucVu,
     required this.donVi,
+    this.isBGD = false,
   });
 
   factory SigneInfo.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class SigneInfo {
       hoTen: json['hoTen'],
       chucVu: json['chucVu'],
       donVi: json['donVi'],
+      isBGD: json['isBGD'] ?? false,
     );
   }
 
@@ -30,6 +33,7 @@ class SigneInfo {
       'hoTen': hoTen,
       'chucVu': chucVu,
       'donVi': donVi,
+      'isBGD': isBGD,
     };
   }
 
@@ -44,6 +48,7 @@ class SigneInfo {
     String? hoTen,
     String? chucVu,
     String? donVi,
+    bool? isBGD,
   }) {
     return SigneInfo(
       idNhanVien: idNhanVien ?? this.idNhanVien,
@@ -51,6 +56,7 @@ class SigneInfo {
       hoTen: hoTen ?? this.hoTen,
       chucVu: chucVu ?? this.chucVu,
       donVi: donVi ?? this.donVi,
+      isBGD: isBGD ?? this.isBGD,
     );
   }
 }

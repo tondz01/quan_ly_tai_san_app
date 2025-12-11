@@ -40,12 +40,33 @@ class AccountHelper {
   Map<String, PhongBan>? _departmentByIdCache; // O(1) lookup instead of O(n)
   Map<String, NhanVien>? _nhanVienByIdCache; // O(1) lookup instead of O(n)
 
+  // Cache cho counts để tránh tính toán lại nhiều lần
+  Map<String, int> _countCache = {}; // Key: "assetTransfer_1_userId", "toolMaterialTransfer_2_userId", etc.
+  String? _cachedUserTenDangNhap; // Cache user để detect khi user thay đổi
+  int _dataVersion = 0; // Version để invalidate cache khi data thay đổi
+
   // Clear all caches - gọi khi data update
   void clearAllCaches() {
     _departmentCache = null;
     _nhanVienCache = null;
     _departmentByIdCache = null;
     _nhanVienByIdCache = null;
+    _clearCountCache();
+  }
+
+  // Clear count cache khi data thay đổi
+  void _clearCountCache() {
+    _countCache.clear();
+    _dataVersion++;
+  }
+
+  // Kiểm tra và invalidate cache nếu user thay đổi
+  void _checkUserChange() {
+    final currentUser = getUserInfo()?.tenDangNhap;
+    if (_cachedUserTenDangNhap != currentUser) {
+      _cachedUserTenDangNhap = currentUser;
+      _clearCountCache(); // Clear cache khi user thay đổi
+    }
   }
 
   setUserInfo(userLogin) {
@@ -410,6 +431,7 @@ class AccountHelper {
   //ASSET TRANSFER
   setAssetTransfer(assetTransfer) {
     StorageService.write(StorageKey.ASSET_TRANSFER, assetTransfer);
+    _clearCountCache(); // Clear cache khi data thay đổi
     // Ensure menu badges refresh whenever dataset is updated
     refreshAllCounts();
   }
@@ -438,6 +460,7 @@ class AccountHelper {
   //  THÊM: Clear Asset Transfer
   void clearAssetTransfer() {
     StorageService.remove(StorageKey.ASSET_TRANSFER);
+    _clearCountCache(); // Clear cache khi data thay đổi
     refreshAllCounts();
   }
 
@@ -491,53 +514,79 @@ class AccountHelper {
   }
 
   int getAssetTransferCount(int type) {
+    _checkUserChange(); // Kiểm tra user có thay đổi không
+    
+    // Cache key: type + user + dataVersion
+    final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
+    final cacheKey = 'assetTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
+    
+    // Trả về cached count nếu có
+    if (_countCache.containsKey(cacheKey)) {
+      return _countCache[cacheKey]!;
+    }
+
     final assetTransfer = getAssetTransfer();
-    final listAssetTransfer =
-        assetTransfer
-            ?.where(
-              (item) =>
-                  item.share == true ||
-                  item.nguoiTao == getUserInfo()?.tenDangNhap,
-            )
-            .where((item) {
-              final idSignatureGroup =
-                  [
-                    if (item.nguoiLapPhieuKyNhay == true)
-                      {
-                        "id": item.idNguoiKyNhay,
-                        "signed": item.trangThaiKyNhay == true,
-                        "label": "Người lập phiếu: ${item.tenNguoiKyNhay}",
-                      },
-                    {
-                      "id": item.idTrinhDuyetCapPhong,
-                      "signed": item.trinhDuyetCapPhongXacNhan == true,
-                      "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
-                    },
-                    for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
-                      {
-                        "id": item.listSignatory![i].idNguoiKy,
-                        "signed": item.listSignatory![i].trangThai == 1,
-                        "label":
-                            "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
-                      },
-                    {
-                      "id": item.idTrinhDuyetGiamDoc,
-                      "signed": item.trinhDuyetGiamDocXacNhan == true,
-                      "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
-                    },
-                  ].toList();
+    if (assetTransfer == null || assetTransfer.isEmpty) {
+      _countCache[cacheKey] = 0;
+      return 0;
+    }
 
-              final userSignature = idSignatureGroup.firstWhere(
-                (e) => e["id"] == getUserInfo()?.tenDangNhap,
-                orElse: () => {"id": null, "signed": false, "label": ""},
-              );
+    // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
+    final userTenDangNhapCached = userTenDangNhap;
+    
+    // Tối ưu: combine tất cả filters thành một where() duy nhất
+    final listAssetTransfer = assetTransfer.where((item) {
+      // Filter 1: share hoặc người tạo
+      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+        return false;
+      }
+      
+      // Filter 2: loại
+      if (item.loai != type) {
+        return false;
+      }
+      
+      // Filter 3: signature check (chỉ check nếu cần)
+      // Tối ưu: chỉ build signature group khi cần thiết
+      final idSignatureGroup = <Map<String, dynamic>>[];
+      
+      if (item.nguoiLapPhieuKyNhay == true) {
+        idSignatureGroup.add({
+          "id": item.idNguoiKyNhay,
+          "signed": item.trangThaiKyNhay == true,
+        });
+      }
+      
+      idSignatureGroup.add({
+        "id": item.idTrinhDuyetCapPhong,
+        "signed": item.trinhDuyetCapPhongXacNhan == true,
+      });
+      
+      if (item.listSignatory != null) {
+        for (var signatory in item.listSignatory!) {
+          idSignatureGroup.add({
+            "id": signatory.idNguoiKy,
+            "signed": signatory.trangThai == 1,
+          });
+        }
+      }
+      
+      idSignatureGroup.add({
+        "id": item.idTrinhDuyetGiamDoc,
+        "signed": item.trinhDuyetGiamDocXacNhan == true,
+      });
 
-              return userSignature["id"] != null &&
-                  userSignature["signed"] == false;
-            })
-            .where((item) => item.loai == type)
-            .toList();
-    return listAssetTransfer?.length ?? 0;
+      final userSignature = idSignatureGroup.firstWhere(
+        (e) => e["id"] == userTenDangNhapCached,
+        orElse: () => {"id": null, "signed": false},
+      );
+
+      return userSignature["id"] != null && userSignature["signed"] == false;
+    }).toList();
+    
+    final count = listAssetTransfer.length;
+    _countCache[cacheKey] = count; // Cache kết quả
+    return count;
   }
 
   /// Tổng số phiếu điều động theo loại (không lọc theo quyền ký)
@@ -553,6 +602,7 @@ class AccountHelper {
       StorageKey.TOOL_AND_MATERIAL_TRANSFER,
       toolAndSupplies,
     );
+    _clearCountCache(); // Clear cache khi data thay đổi
     // Keep menu counts in sync after updates
     refreshAllCounts();
   }
@@ -581,62 +631,89 @@ class AccountHelper {
   // 🔥 THÊM: Clear Tool and Material Transfer
   void clearToolAndMaterialTransfer() {
     StorageService.remove(StorageKey.TOOL_AND_MATERIAL_TRANSFER);
+    _clearCountCache(); // Clear cache khi data thay đổi
     refreshAllCounts();
   }
 
   int getToolAndMaterialTransferCount(int type) {
+    _checkUserChange(); // Kiểm tra user có thay đổi không
+    
+    // Cache key: type + user + dataVersion
+    final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
+    final cacheKey = 'toolMaterialTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
+    
+    // Trả về cached count nếu có
+    if (_countCache.containsKey(cacheKey)) {
+      return _countCache[cacheKey]!;
+    }
+
     final toolAndSupplies = getToolAndMaterialTransfer();
-    final listToolAndSupplies =
-        toolAndSupplies
-            ?.where((element) => element.loai == type)
-            .where((item) {
-              return item.share == true ||
-                  item.nguoiTao == getUserInfo()?.tenDangNhap;
-            })
-            .where((item) {
-              final idSignatureGroup =
-                  [
-                    if (item.nguoiLapPhieuKyNhay == true)
-                      {
-                        "id": item.idNguoiKyNhay,
-                        "signed": item.trangThaiKyNhay == true,
-                        "label":
-                            "Người lập phiếu: ${getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
-                      },
-                    {
-                      "id": item.idTrinhDuyetCapPhong,
-                      "signed": item.trinhDuyetCapPhongXacNhan == true,
-                      "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
-                    },
-                    for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
-                      {
-                        "id": item.listSignatory![i].idNguoiKy,
-                        "signed": item.listSignatory![i].trangThai == 1,
-                        "label":
-                            "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
-                      },
-                    {
-                      "id": item.idTrinhDuyetGiamDoc,
-                      "signed": item.trinhDuyetGiamDocXacNhan == true,
-                      "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
-                    },
-                  ].toList();
+    if (toolAndSupplies == null || toolAndSupplies.isEmpty) {
+      _countCache[cacheKey] = 0;
+      return 0;
+    }
 
-              final userSignature = idSignatureGroup.firstWhere(
-                (e) => e["id"] == getUserInfo()?.tenDangNhap,
-                orElse: () => {"id": null, "signed": false, "label": ""},
-              );
+    // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
+    final userTenDangNhapCached = userTenDangNhap;
+    
+    // Tối ưu: combine tất cả filters thành một where() duy nhất
+    final listToolAndSupplies = toolAndSupplies.where((item) {
+      // Filter 1: loại
+      if (item.loai != type) {
+        return false;
+      }
+      
+      // Filter 2: share hoặc người tạo
+      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+        return false;
+      }
+      
+      // Filter 3: signature check (chỉ build khi cần)
+      final idSignatureGroup = <Map<String, dynamic>>[];
+      
+      if (item.nguoiLapPhieuKyNhay == true) {
+        idSignatureGroup.add({
+          "id": item.idNguoiKyNhay,
+          "signed": item.trangThaiKyNhay == true,
+        });
+      }
+      
+      idSignatureGroup.add({
+        "id": item.idTrinhDuyetCapPhong,
+        "signed": item.trinhDuyetCapPhongXacNhan == true,
+      });
+      
+      if (item.listSignatory != null) {
+        for (var signatory in item.listSignatory!) {
+          idSignatureGroup.add({
+            "id": signatory.idNguoiKy,
+            "signed": signatory.trangThai == 1,
+          });
+        }
+      }
+      
+      idSignatureGroup.add({
+        "id": item.idTrinhDuyetGiamDoc,
+        "signed": item.trinhDuyetGiamDocXacNhan == true,
+      });
 
-              return userSignature["id"] != null &&
-                  userSignature["signed"] == false;
-            })
-            .toList();
-    return listToolAndSupplies?.length ?? 0;
+      final userSignature = idSignatureGroup.firstWhere(
+        (e) => e["id"] == userTenDangNhapCached,
+        orElse: () => {"id": null, "signed": false},
+      );
+
+      return userSignature["id"] != null && userSignature["signed"] == false;
+    }).toList();
+    
+    final count = listToolAndSupplies.length;
+    _countCache[cacheKey] = count; // Cache kết quả
+    return count;
   }
 
   //ASSET HANDOVER
   setAssetHandover(assetHandover) {
     StorageService.write(StorageKey.ASSET_HANDOVER, assetHandover);
+    _clearCountCache(); // Clear cache khi data thay đổi
     // Trigger global counts refresh
     refreshAllCounts();
   }
@@ -665,62 +742,76 @@ class AccountHelper {
   //  THÊM: Clear Asset Handover
   void clearAssetHandover() {
     StorageService.remove(StorageKey.ASSET_HANDOVER);
+    _clearCountCache(); // Clear cache khi data thay đổi
     refreshAllCounts();
   }
 
   int getAssetHandoverCount() {
+    _checkUserChange(); // Kiểm tra user có thay đổi không
+    
+    // Cache key: user + dataVersion
+    final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
+    final cacheKey = 'assetHandover_${userTenDangNhap}_v$_dataVersion';
+    
+    // Trả về cached count nếu có
+    if (_countCache.containsKey(cacheKey)) {
+      return _countCache[cacheKey]!;
+    }
+
     final assetHandover = getAssetHandover();
-    final listAssetHandover =
-        assetHandover
-            ?.where(
-              (item) =>
-                  item.share == true ||
-                  item.nguoiTao == getUserInfo()?.tenDangNhap,
-            )
-            .where((item) {
-              final idSignatureGroup =
-                  [
-                    {
-                      "id": item.idDaiDiendonviBanHanhQD,
-                      "signed": item.daXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
-                    },
-                    {
-                      "id": item.idDaiDienBenGiao,
-                      "signed": item.daiDienBenGiaoXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
-                    },
-                    {
-                      "id": item.idDaiDienBenNhan,
-                      "signed": item.daiDienBenNhanXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
-                    },
-                    if (item.listSignatory?.isNotEmpty ?? false)
-                      ...(item.listSignatory
-                              ?.map(
-                                (e) => {
-                                  "id": e.idNguoiKy,
-                                  "signed": e.trangThai == 1,
-                                  "label": "Người ký: ${e.tenNguoiKy ?? ''}",
-                                },
-                              )
-                              .toList() ??
-                          []),
-                  ].toList();
+    if (assetHandover == null || assetHandover.isEmpty) {
+      _countCache[cacheKey] = 0;
+      return 0;
+    }
 
-              final userSignature = idSignatureGroup.firstWhere(
-                (e) => e["id"] == getUserInfo()?.tenDangNhap,
-                orElse: () => {"id": null, "signed": false, "label": ""},
-              );
+    // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
+    final userTenDangNhapCached = userTenDangNhap;
+    
+    // Tối ưu: combine tất cả filters thành một where() duy nhất
+    final listAssetHandover = assetHandover.where((item) {
+      // Filter 1: share hoặc người tạo
+      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+        return false;
+      }
+      
+      // Filter 2: signature check (chỉ build khi cần)
+      final idSignatureGroup = <Map<String, dynamic>>[];
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDiendonviBanHanhQD,
+        "signed": item.daXacNhan == true,
+      });
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDienBenGiao,
+        "signed": item.daiDienBenGiaoXacNhan == true,
+      });
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDienBenNhan,
+        "signed": item.daiDienBenNhanXacNhan == true,
+      });
+      
+      if (item.listSignatory != null) {
+        for (var signatory in item.listSignatory!) {
+          idSignatureGroup.add({
+            "id": signatory.idNguoiKy,
+            "signed": signatory.trangThai == 1,
+          });
+        }
+      }
 
-              return userSignature["id"] != null &&
-                  userSignature["signed"] == false;
-            })
-            .toList();
-    return listAssetHandover?.length ?? 0;
+      final userSignature = idSignatureGroup.firstWhere(
+        (e) => e["id"] == userTenDangNhapCached,
+        orElse: () => {"id": null, "signed": false},
+      );
+
+      return userSignature["id"] != null && userSignature["signed"] == false;
+    }).toList();
+    
+    final count = listAssetHandover.length;
+    _countCache[cacheKey] = count; // Cache kết quả
+    return count;
   }
 
   //TOOL AND MATERIAL TRANSFER
@@ -729,6 +820,7 @@ class AccountHelper {
       StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER,
       toolAndMaterialTransfer,
     );
+    _clearCountCache(); // Clear cache khi data thay đổi
     // Refresh menu badges
     refreshAllCounts();
   }
@@ -757,63 +849,77 @@ class AccountHelper {
   }
 
   int getToolAndMaterialHandoverCount() {
+    _checkUserChange(); // Kiểm tra user có thay đổi không
+    
+    // Cache key: user + dataVersion
+    final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
+    final cacheKey = 'toolMaterialHandover_${userTenDangNhap}_v$_dataVersion';
+    
+    // Trả về cached count nếu có
+    if (_countCache.containsKey(cacheKey)) {
+      return _countCache[cacheKey]!;
+    }
+
     final toolAndSuppliesHandover = getToolAndMaterialHandover();
-    final listToolAndSuppliesHandover =
-        toolAndSuppliesHandover
-            ?.where(
-              (item) =>
-                  item.share == true ||
-                  item.nguoiTao == getUserInfo()?.tenDangNhap,
-            )
-            .where((item) {
-              final idSignatureGroup =
-                  [
-                    {
-                      "id": item.idDaiDiendonviBanHanhQD,
-                      "signed": item.daXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
-                    },
-                    {
-                      "id": item.idDaiDienBenGiao,
-                      "signed": item.daiDienBenGiaoXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
-                    },
-                    {
-                      "id": item.idDaiDienBenNhan,
-                      "signed": item.daiDienBenNhanXacNhan == true,
-                      "label":
-                          "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
-                    },
-                    if (item.listSignatory?.isNotEmpty ?? false)
-                      ...(item.listSignatory
-                              ?.map(
-                                (e) => {
-                                  "id": e.idNguoiKy,
-                                  "signed": e.trangThai == 1,
-                                  "label": "Người ký: ${e.tenNguoiKy ?? ''}",
-                                },
-                              )
-                              .toList() ??
-                          []),
-                  ].toList();
+    if (toolAndSuppliesHandover == null || toolAndSuppliesHandover.isEmpty) {
+      _countCache[cacheKey] = 0;
+      return 0;
+    }
 
-              final userSignature = idSignatureGroup.firstWhere(
-                (e) => e["id"] == getUserInfo()?.tenDangNhap,
-                orElse: () => {"id": null, "signed": false, "label": ""},
-              );
+    // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
+    final userTenDangNhapCached = userTenDangNhap;
+    
+    // Tối ưu: combine tất cả filters thành một where() duy nhất
+    final listToolAndSuppliesHandover = toolAndSuppliesHandover.where((item) {
+      // Filter 1: share hoặc người tạo
+      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+        return false;
+      }
+      
+      // Filter 2: signature check (chỉ build khi cần)
+      final idSignatureGroup = <Map<String, dynamic>>[];
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDiendonviBanHanhQD,
+        "signed": item.daXacNhan == true,
+      });
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDienBenGiao,
+        "signed": item.daiDienBenGiaoXacNhan == true,
+      });
+      
+      idSignatureGroup.add({
+        "id": item.idDaiDienBenNhan,
+        "signed": item.daiDienBenNhanXacNhan == true,
+      });
+      
+      if (item.listSignatory != null) {
+        for (var signatory in item.listSignatory!) {
+          idSignatureGroup.add({
+            "id": signatory.idNguoiKy,
+            "signed": signatory.trangThai == 1,
+          });
+        }
+      }
 
-              return userSignature["id"] != null &&
-                  userSignature["signed"] == false;
-            })
-            .toList();
-    return listToolAndSuppliesHandover?.length ?? 0;
+      final userSignature = idSignatureGroup.firstWhere(
+        (e) => e["id"] == userTenDangNhapCached,
+        orElse: () => {"id": null, "signed": false},
+      );
+
+      return userSignature["id"] != null && userSignature["signed"] == false;
+    }).toList();
+    
+    final count = listToolAndSuppliesHandover.length;
+    _countCache[cacheKey] = count; // Cache kết quả
+    return count;
   }
 
   // 🔥 THÊM: Clear Tool and Supplies Handover
   void clearToolAndSuppliesHandover() {
     StorageService.remove(StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER);
+    _clearCountCache(); // Clear cache khi data thay đổi
     refreshAllCounts();
   }
 
