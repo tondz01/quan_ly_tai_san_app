@@ -272,12 +272,24 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
         data: request,
       );
-      String idBGTS = response.data['id'];
       final int? status = response.statusCode;
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
+      
+      // Xử lý null safety cho idBGTS
+      // Response có thể có cấu trúc: {data: {id: ...}} hoặc {id: ...}
+      final dynamic respData = response.data;
+      final String idBGTS = (respData is Map && respData.containsKey('data'))
+          ? (respData['data']?['id']?.toString() ?? '')
+          : (respData['id']?.toString() ?? '');
+      if (idBGTS.isEmpty) {
+        result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+        result['message'] = 'Không nhận được ID từ response';
+        return result;
+      }
+      
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: idBGTS,
@@ -298,7 +310,10 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     
       final responseDetail = await post(
         "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
-        data: requestDetailSubppliesHandover.map((e) => e['idBanGiaoCCDCVatTu'] = idBGTS).toList(),
+        data: requestDetailSubppliesHandover.map((e) => {
+          ...e,
+          'idBanGiaoCCDCVatTu': idBGTS,
+        }).toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       if (checkStatusCodeFailed(statusDetail ?? 0)) {
@@ -306,9 +321,12 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         return result;
       }
 
-      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
+      String newSignatory = listSignatory
+          .map((e) => e.idNguoiKy ?? '')
+          .where((id) => id.isNotEmpty)
+          .join(',');
       String idNeedToDo =
-          "${request['idDonViGiao']},${request['idDonViNhan']},${request['idGiamDoc']},$newSignatory, admin,${request['nguoiTao']}";
+          "${request['idDonViGiao'] ?? ''},${request['idDonViNhan'] ?? ''},${request['idGiamDoc'] ?? ''},$newSignatory, admin,${request['nguoiTao'] ?? ''}";
       Future.delayed(const Duration(milliseconds: 200)).then((_) {
         MessageServiceRealtime().pushJsonMessage(
           typeFunc: FunctionType.TOOL_AND_SUPPLIES_HANDOVER,
@@ -645,7 +663,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     try {
       final signatories = await _signatoryRepository.getAll(item.id.toString());
       item.listSignatory = signatories;
-      log('signatories for ID ${item.id}: ${signatories.length} items');
     } catch (e) {
       item.listSignatory = [];
       SGLog.error(

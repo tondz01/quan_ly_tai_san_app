@@ -214,7 +214,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         isEditing: item != null || widget.isFindNew,
       );
 
-
       if (item != null) {
         isDetail = true;
         if (widget.isFindNew) {
@@ -224,6 +223,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             (element) => element.id == item?.lenhDieuDong,
             orElse: () => DieuDongTaiSanDto(),
           );
+
           controllerOrder.text = dieuDongTaiSan?.id ?? '';
           listDetailAssetHandover =
               (widget.provider.dataDetailAssetMobilization != null
@@ -449,9 +449,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (nguoiKyGiamDoc == null || controllerGiamDocKy.text.isEmpty) {
       newValidationErrors['giamDocXacNhan'] = true;
     }
-    if (controllerHandoverNumber.text.isEmpty) {
-      newValidationErrors['handoverNumber'] = true;
-    }
+    // if (controllerHandoverNumber.text.isEmpty) {
+    //   newValidationErrors['handoverNumber'] = true;
+    // }
     if (controllerDocumentName.text.isEmpty) {
       newValidationErrors['documentName'] = true;
     }
@@ -1007,7 +1007,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       spacing: 10,
       children: [
         Visibility(
-          visible:!(isEditing && item == null) && !widget.isFindNew,
+          visible: !(isEditing && item == null) && !widget.isFindNew,
           child: CommonFormInput(
             label: 'Số phiếu bàn giao',
             controller: controllerHandoverNumber,
@@ -1088,7 +1088,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           fieldName: 'senderUnit',
           items: itemsPhongBan,
           onChanged: (value) {
-            donViGiao = value;
+            setState(() {
+              donViGiao = value;
+            });
           },
           validationErrors: _validationErrors,
         ),
@@ -1107,7 +1109,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           fieldName: 'receiverUnit',
           items: itemsPhongBan,
           onChanged: (value) {
-            donViNhan = value;
+            setState(() {
+              donViNhan = value;
+            });
           },
           validationErrors: _validationErrors,
         ),
@@ -1137,10 +1141,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           onChanged: (dt) {
             setState(() {
               ngayQuyetDinh = dt;
+              if (dt != null) {
+                controllerDecisionDate.text = AppUtility.formatDateString(dt);
+              }
             });
-            if (dt != null) {
-              controllerDecisionDate.text = AppUtility.formatDateString(dt);
-            }
           },
           validationErrors: _validationErrors,
           fieldName: 'decisionDate',
@@ -1151,7 +1155,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           controller: controllerTransferDate,
           isEditing: isEditing,
           value: ngayBanGiao,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+            setState(() {
+              ngayBanGiao = dt;
+              if (dt != null) {
+                controllerTransferDate.text = AppUtility.formatDateString(dt);
+              }
+            });
+          },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
           isRequired: true,
@@ -1161,7 +1172,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           controller: controllerDocumentCreationDate,
           isEditing: isEditing,
           value: ngayTaoChungTu,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+            setState(() {
+              ngayTaoChungTu = dt;
+              if (dt != null) {
+                controllerDocumentCreationDate
+                    .text = AppUtility.formatDateString(dt);
+              }
+            });
+          },
           validationErrors: _validationErrors,
           fieldName: 'documentCreationDate',
           isRequired: true,
@@ -1310,13 +1329,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   ? widget.provider.getNhanVien(idNhanVien: item!.idGiamDoc!)
                   : null,
           fieldName: 'giamDocXacNhan',
-          items: AppUtility.getNhanVienLanhDao(
-            nhanViens: listNhanVien,
-            phongBans: listPhongBan,
-          ).map((e) => DropdownMenuItem<NhanVien>(
-                value: e,
-                child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
-              )).toList(),
+          items:
+              AppUtility.getNhanVienLanhDao(
+                    nhanViens: listNhanVien,
+                    phongBans: listPhongBan,
+                  )
+                  .map(
+                    (e) => DropdownMenuItem<NhanVien>(
+                      value: e,
+                      child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
+                    ),
+                  )
+                  .toList(),
           onChanged: (value) {
             setState(() {
               nguoiKyGiamDoc = value;

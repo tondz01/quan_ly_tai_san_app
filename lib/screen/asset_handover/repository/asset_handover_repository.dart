@@ -163,7 +163,15 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      String idBGTS = response.data['id'];
+      final dynamic respData = response.data;
+      final String idBGTS = (respData is Map<String, dynamic> && respData.containsKey('data'))
+          ? (respData['data']['id']?.toString() ?? '')
+          : (respData['id']?.toString() ?? '');
+      if (idBGTS.isEmpty) {
+        result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+        result['message'] = 'Không nhận được ID từ response';
+        return result;
+      }
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
       String idNeedToDo =

@@ -50,7 +50,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
         data: request.toJson(),
       );
-      String idTMT = response.data['id'];
+      // Parse id từ nested data object: response.data['data']['id']
+      final dynamic respData = response.data;
+      final String idTMT = (respData is Map<String, dynamic> && respData.containsKey('data'))
+          ? (respData['data']['id']?.toString() ?? '')
+          : (respData['id']?.toString() ?? '');
       final int? status = response.statusCode;
       final bool isOk =
           status == Numeral.STATUS_CODE_SUCCESS ||
@@ -61,7 +65,12 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         return result;
       }
 
-      final dynamic respData = response.data;
+      if (idTMT.isEmpty) {
+        result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+        result['message'] = 'Không nhận được ID từ response';
+        return result;
+      }
+
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
         data: requestDetail.map((e) => e.copyWith(idDieuDongCCDCVatTu: idTMT).toJson()).toList(),
@@ -704,5 +713,23 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<int> getCountByDvGiao(String idDonViGiao) async {
+    try {
+      final response = await get(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/count-by-don-vi-giao?trangThai=3&idDonViGiao=$idDonViGiao',
+      );
+      // Response có cấu trúc: {success: true, data: {count: 3, ...}}
+      final dynamic respData = response.data;
+      if (respData is Map && respData.containsKey('data')) {
+        return respData['data']?['count'] ?? 0;
+      }
+      // Fallback nếu không có cấu trúc data
+      return respData['count'] ?? 0;
+    } catch (e) {
+      log("Error at getCountByDvGiao - ToolAndMaterialTransferRepository: $e");
+      return 0;
+    }
   }
 }

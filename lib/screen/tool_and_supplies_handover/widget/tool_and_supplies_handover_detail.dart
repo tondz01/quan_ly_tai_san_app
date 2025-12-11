@@ -411,7 +411,7 @@ class _ToolAndSuppliesHandoverDetailState
               .where((element) => element.phongBanId == idDonViNhan)
               .toList();
     }
-    
+
     if (donViGiao?.isKho == true) {
       final idPhongBanKho =
           departments
@@ -434,12 +434,15 @@ class _ToolAndSuppliesHandoverDetailState
   /// Lọc nhân viên thuộc các phòng ban lãnh đạo (isLanhDao == true)
   List<DropdownMenuItem<NhanVien>> _buildItemsGiamDoc() {
     return AppUtility.getNhanVienLanhDao(
-      nhanViens: listNhanVien,
-      phongBans: listPhongBan,
-    ).map((e) => DropdownMenuItem<NhanVien>(
-          value: e,
-          child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
-        ))
+          nhanViens: listNhanVien,
+          phongBans: listPhongBan,
+        )
+        .map(
+          (e) => DropdownMenuItem<NhanVien>(
+            value: e,
+            child: Text('${e.hoTen ?? ''} - ${e.id ?? ''}'),
+          ),
+        )
         .toList();
   }
 
@@ -449,9 +452,9 @@ class _ToolAndSuppliesHandoverDetailState
     if (!mounted) return false;
     Map<String, bool> newValidationErrors = {};
     try {
-      if (controllerHandoverNumber.text.isEmpty) {
-        newValidationErrors['handoverNumber'] = true;
-      }
+      // if (controllerHandoverNumber.text.isEmpty) {
+      //   newValidationErrors['handoverNumber'] = true;
+      // }
       if (controllerDocumentName.text.isEmpty) {
         newValidationErrors['documentName'] = true;
       }
@@ -651,6 +654,7 @@ class _ToolAndSuppliesHandoverDetailState
     } else {
       provider.onSetLoadingMessage("Đang cập nhập lại biên bản bàn giao...");
       provider.isLoading = true;
+      request['id'] = item?.id ?? '';
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
@@ -1038,7 +1042,7 @@ class _ToolAndSuppliesHandoverDetailState
       spacing: 10,
       children: [
         Visibility(
-          visible: !(widget.provider.isFindNewItem && item == null),
+          visible: !(isEditing && item == null) && !widget.isFindNew,
           child: CommonFormInput(
             label: 'Số phiếu bàn giao',
             controller: controllerHandoverNumber,
@@ -1164,6 +1168,11 @@ class _ToolAndSuppliesHandoverDetailState
           fieldName: 'decisionNumber',
           validationErrors: _validationErrors,
           isRequired: true,
+          onChanged: (value) {
+            setState(() {
+              controllerDecisionNumber.text = value;
+            });
+          },
         ),
         CommonFormInput(
           label: 'Địa điểm bàn giao',
@@ -1173,6 +1182,11 @@ class _ToolAndSuppliesHandoverDetailState
           fieldName: 'decisionLocation',
           validationErrors: _validationErrors,
           isRequired: true,
+          onChanged: (value) {
+            setState(() {
+              controllerDecisionLocation.text = value;
+            });
+          },
         ),
         CmFormDate(
           label: 'Ngày quyết định',
@@ -1182,10 +1196,10 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (dt) {
             setState(() {
               ngayQuyetDinh = dt;
+              if (dt != null) {
+                controllerDecisionDate.text = AppUtility.formatDateString(dt);
+              }
             });
-            if (dt != null) {
-              controllerDecisionDate.text = AppUtility.formatDateString(dt);
-            }
           },
           validationErrors: _validationErrors,
           fieldName: 'decisionDate',
@@ -1199,10 +1213,10 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (dt) {
             setState(() {
               ngayBanGiao = dt;
+              if (dt != null) {
+                controllerTransferDate.text = AppUtility.formatDateString(dt);
+              }
             });
-            if (dt != null) {
-              controllerTransferDate.text = AppUtility.formatDateString(dt);
-            }
           },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
@@ -1216,12 +1230,11 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (dt) {
             setState(() {
               ngayTaoChungTu = dt;
+              if (dt != null) {
+                controllerDocumentCreationDate
+                    .text = AppUtility.formatDateString(dt);
+              }
             });
-            if (dt != null) {
-              controllerDocumentCreationDate.text = AppUtility.formatDateString(
-                dt,
-              );
-            }
           },
           validationErrors: _validationErrors,
           fieldName: 'documentCreationDate',
@@ -1286,7 +1299,9 @@ class _ToolAndSuppliesHandoverDetailState
             ),
           ],
           onChanged: (value) {
-            nguoiDaiDienBenGiao = value;
+            setState(() {
+              nguoiDaiDienBenGiao = value;
+            });
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1322,7 +1337,9 @@ class _ToolAndSuppliesHandoverDetailState
             ),
           ],
           onChanged: (value) {
-            nguoiDaiDienBenNhan = value;
+            setState(() {
+              nguoiDaiDienBenNhan = value;
+            });
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1373,7 +1390,9 @@ class _ToolAndSuppliesHandoverDetailState
           fieldName: 'giamDocXacNhan',
           items: _buildItemsGiamDoc(),
           onChanged: (value) {
-            nguoiKyGiamDoc = value;
+            setState(() {
+              nguoiKyGiamDoc = value;
+            });
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1406,7 +1425,7 @@ class _ToolAndSuppliesHandoverDetailState
 
   ToolAndSuppliesHandoverDto? getToolAndSuppliesHandoverPreview() {
     return ToolAndSuppliesHandoverDto(
-      id: controllerHandoverNumber.text,
+      id: item?.id ?? '',
       banGiaoCCDCVatTu: controllerDocumentName.text,
       quyetDinhDieuDongSo: dieuDongCcdc?.soQuyetDinh ?? '',
       lenhDieuDong: dieuDongCcdc?.id ?? '',

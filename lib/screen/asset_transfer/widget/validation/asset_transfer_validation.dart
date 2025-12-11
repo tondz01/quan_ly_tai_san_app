@@ -9,7 +9,7 @@ class AssetTransferValidation {
   Map<String, bool> get validationErrors => _validationErrors;
 
   bool validateForm({
-    required TextEditingController soChungTuController,
+    // required TextEditingController soChungTuController,
     required TextEditingController documentNameController,
     required TextEditingController subjectController,
     required TextEditingController deliveringUnitController,
@@ -28,9 +28,9 @@ class AssetTransferValidation {
   }) {
     Map<String, bool> newValidationErrors = {};
 
-    if (soChungTuController.text.isEmpty) {
-      newValidationErrors['soChungTu'] = true;
-    }
+    // if (soChungTuController.text.isEmpty) {
+    //   newValidationErrors['soChungTu'] = true;
+    // }
 
     if (documentNameController.text.isEmpty) {
       newValidationErrors['documentName'] = true;

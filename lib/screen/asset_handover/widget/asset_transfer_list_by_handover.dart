@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
@@ -388,12 +389,12 @@ class _AssetTransferListByHandoverState
                         iconPath: AppIconSvgPath.iconNextDocument,
                         color: ColorValue.mediumGreen,
                         onPressed: (item) {
+                          DateTime now = DateTime.now();
                           widget.provider.onChangeDetail(
                             context,
                             AssetHandoverDto(
-                              id: widget.provider.genID(),
                               idCongTy: item.idCongTy,
-                              banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
+                              banGiaoTaiSan: 'Biên bản bàn giao ngày ${DateFormat('dd/MM/yyyy').format(now)}',
                               quyetDinhDieuDongSo: '',
                               lenhDieuDong: item.id,
                               idDonViGiao: item.idDonViGiao,
