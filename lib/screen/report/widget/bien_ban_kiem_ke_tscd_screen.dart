@@ -29,6 +29,7 @@ class BienBanKiemKeTaiSanCoDinhScreen extends StatefulWidget {
 class _BienBanKiemKeTaiSanCoDinhScreenState
     extends State<BienBanKiemKeTaiSanCoDinhScreen> {
   List<InventoryMinutes> _list = [];
+  List<InventoryMinutes> _fullList = []; // Dữ liệu đầy đủ để xuất Excel/In
   List<List<InventoryMinutes>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
@@ -44,10 +45,8 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
   int numberPage = 17;
   late HomeScrollController _scrollController;
 
-  // Giới hạn số lượng items để tránh lag khi có quá nhiều dữ liệu
-  static const int _maxItemsToDisplay = 500; // Giới hạn 500 items đầu tiên
-  bool _hasMoreData = false; // Có dữ liệu bị cắt bớt không
-  int _totalAssetCount = 0; // Tổng số tài sản thực tế
+  // Giới hạn hiển thị tối đa 50 items
+  static const int _maxDisplayItems = 50;
 
   void _onScrollStateChanged() {
     setState(() {});
@@ -106,127 +105,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     setState(() {});
   }
 
-  /// Load và map dữ liệu assets theo batch với tối ưu cho Web
-  Future<void> _loadAllAssetsInBatches() async {
-    final allAssets = AccountHelper.instance.getAllAssets();
-    _totalAssetCount = allAssets.length;
-
-    if (allAssets.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _hasMoreData = false;
-      });
-      if (mounted) {
-        AppUtility.showSnackBar(context, 'Không có dữ liệu!');
-      }
-      return;
-    }
-
-    // Giới hạn số lượng items để tránh treo web
-    final assetsToProcess =
-        allAssets.length > _maxItemsToDisplay
-            ? allAssets.sublist(0, _maxItemsToDisplay)
-            : allAssets;
-
-    _hasMoreData = allAssets.length > _maxItemsToDisplay;
-
-    if (_hasMoreData) {
-      SGLog.info(
-        'Loading',
-        'Giới hạn hiển thị $_maxItemsToDisplay/$_totalAssetCount tài sản để tránh lag',
-      );
-    }
-
-    SGLog.info('Loading', 'Bắt đầu xử lý ${assetsToProcess.length} tài sản...');
-
-    // Giảm batch size xuống để tránh block UI
-    const int batchSize = 50;
-    final List<InventoryMinutes> result = [];
-    int processedCount = 0;
-
-    try {
-      // Xử lý từng batch
-      for (int i = 0; i < assetsToProcess.length; i += batchSize) {
-        if (!mounted) return; // Dừng nếu widget bị dispose
-
-        final int end =
-            (i + batchSize < assetsToProcess.length)
-                ? i + batchSize
-                : assetsToProcess.length;
-
-        final batch = assetsToProcess.sublist(i, end);
-
-        // Map batch hiện tại - inline để nhanh hơn
-        for (final asset in batch) {
-          result.add(
-            InventoryMinutes(
-              tenTaiSan: asset.tenTaiSan,
-              donViTinh: asset.donViTinh ?? '',
-              nuocSanXuat: asset.nuocSanXuat,
-              hienTrang: asset.hienTrang?.toString() ?? '',
-              ghiChu: asset.ghiChu,
-            ),
-          );
-        }
-
-        processedCount += batch.length;
-
-        // Yield control về event loop sau mỗi batch
-        await Future.value();
-
-        // Log progress mỗi 200 items
-        if (processedCount % 200 == 0 ||
-            processedCount == assetsToProcess.length) {
-          SGLog.info(
-            'Loading',
-            'Đã xử lý $processedCount / ${assetsToProcess.length} items (${(processedCount / assetsToProcess.length * 100).toStringAsFixed(1)}%)',
-          );
-        }
-      }
-
-      if (!mounted) return;
-
-      SGLog.info('Loading', 'Bắt đầu chia trang...');
-
-      // Chia trang
-      final listPages = _chunkInventoryMinutes(result);
-
-      if (!mounted) return;
-
-      setState(() {
-        _list = result;
-        _listPages = listPages;
-        final int totalPages = _listPages.isEmpty ? 1 : _listPages.length + 1;
-        _pageKeys
-          ..clear()
-          ..addAll(List.generate(totalPages, (_) => GlobalKey()));
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        String message =
-            'Lấy dữ liệu thành công! (${result.length} tài sản, ${listPages.length} trang)';
-        if (_hasMoreData) {
-          message =
-              'Hiển thị ${result.length}/$_totalAssetCount tài sản (giới hạn để tránh lag)';
-        }
-        AppUtility.showSnackBar(context, message);
-      }
-    } catch (e) {
-      SGLog.error('Loading', 'Lỗi khi xử lý dữ liệu: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        AppUtility.showSnackBar(
-          context,
-          'Lỗi khi xử lý dữ liệu: $e',
-          isError: true,
-        );
-      }
-    }
-  }
-
   Future<void> onloadViewPage() async {
     if (donVi == null) return;
 
@@ -240,9 +118,16 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
+      final fullData = (result['data'] as List).cast<InventoryMinutes>();
+      _fullList = fullData;
+
+      // Giới hạn hiển thị tối đa 50 items
+      final displayData = fullData.length > _maxDisplayItems
+          ? fullData.sublist(0, _maxDisplayItems)
+          : fullData;
+
       setState(() {
-        _list = [];
-        _list = (result['data'] as List).cast<InventoryMinutes>();
+        _list = displayData;
         _listPages = _chunkInventoryMinutes(_list);
         final int totalPages =
             _listPages.isEmpty ? 1 : _listPages.length + 1; // +1 trang footer
@@ -250,10 +135,14 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_list.isEmpty) {
+        if (fullData.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+          String message = 'Lấy dữ liệu thành công!';
+          if (fullData.length > _maxDisplayItems) {
+            message = 'Hiển thị $_maxDisplayItems/${fullData.length} items. Xuất Excel/In để xem toàn bộ.';
+          }
+          AppUtility.showSnackBar(context, message);
         }
       });
     } else {
@@ -378,7 +267,6 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                               setState(() {
                                 donVi = value;
                               });
-                              onloadViewPage();
                             },
                           ),
                           CmFormDate(
@@ -388,15 +276,28 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                             fieldName: 'importDate',
                             onChanged: (date) {
                               setState(() {});
-                              if (donVi != null) {
-                                onloadViewPage();
-                              }
                             },
                           ),
                           Divider(),
                           SizedBox(height: 16),
                           Row(
                             children: [
+                              GestureDetector(
+                                onTap: () {
+                                  onloadViewPage();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Lấy dữ liệu',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
                               Expanded(child: SizedBox.shrink()),
                               GestureDetector(
                                 onTap: () {

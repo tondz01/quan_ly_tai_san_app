@@ -27,11 +27,15 @@ class MauSo01Screen extends StatefulWidget {
 
 class _MauSo01ScreenState extends State<MauSo01Screen> {
   List<TangGiamTrongKyDto> _listData = [];
+  List<TangGiamTrongKyDto> _fullListData = []; // Dữ liệu đầy đủ để xuất Excel/In
 
   List<AssetRowData> _allAssetRows = [];
   List<List<AssetRowData>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
+
+  // Giới hạn hiển thị tối đa 50 items
+  static const int _maxDisplayItems = 50;
 
   TextEditingController controllerImportDate = TextEditingController();
   TextEditingController controllerDonVi = TextEditingController();
@@ -65,7 +69,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
   }
 
   Future<void> _exportToExcel() async {
-    if (_listData.isEmpty) {
+    if (_fullListData.isEmpty) {
       AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
       return;
     }
@@ -74,7 +78,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
 
     try {
       await ExcelExportService.exportMauSo01ToExcel(
-        data: _listData,
+        data: _fullListData,
         departmentName: donVi?.tenPhongBan ?? '',
         thangNam: controllerImportDate.text.trim(),
       );
@@ -117,9 +121,16 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
 
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
+      final fullData = (result['data'] as List).cast<TangGiamTrongKyDto>();
+      _fullListData = fullData;
+
+      // Giới hạn hiển thị tối đa 50 items
+      final displayData = fullData.length > _maxDisplayItems
+          ? fullData.sublist(0, _maxDisplayItems)
+          : fullData;
+
       setState(() {
-        _listData = [];
-        _listData = (result['data'] as List).cast<TangGiamTrongKyDto>();
+        _listData = displayData;
 
         _parseDataToAssetRows();
 
@@ -130,10 +141,14 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_listData.isEmpty) {
+        if (fullData.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+          String message = 'Lấy dữ liệu thành công!';
+          if (fullData.length > _maxDisplayItems) {
+            message = 'Hiển thị $_maxDisplayItems/${fullData.length} items. Xuất Excel/In để xem toàn bộ.';
+          }
+          AppUtility.showSnackBar(context, message);
         }
       });
     } else {
@@ -231,7 +246,6 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
             setState(() {
               donVi = value;
             });
-            onloadViewPage();
           },
         ),
         CmFormDate(
@@ -241,12 +255,10 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
           fieldName: 'importDate',
           onChanged: (date) {
             setState(() {});
-            if (donVi != null) {
-              onloadViewPage();
-            }
           },
         ),
       ],
+      onLoadData: onloadViewPage,
       onExportExcel: _exportToExcel,
       onPrint: () {
         WidgetsBinding.instance.addPostFrameCallback((_) async {

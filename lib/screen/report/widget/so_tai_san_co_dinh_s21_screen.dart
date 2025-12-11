@@ -33,8 +33,12 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   AssetGroupDto? loaiTaiSan;
   String? selectedYear;
   List<KhauHaoTaiSanDto> listKhauHaoTaiSan = [];
+  List<KhauHaoTaiSanDto> _fullListKhauHao = []; // Dữ liệu đầy đủ để xuất Excel/In
   bool _isLoading = false;
   bool _isExporting = false;
+
+  // Giới hạn hiển thị tối đa 50 items
+  static const int _maxDisplayItems = 50;
 
   @override
   void initState() {
@@ -50,7 +54,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   }
 
   Future<void> _exportToExcel() async {
-    if (listKhauHaoTaiSan.isEmpty) {
+    if (_fullListKhauHao.isEmpty) {
       AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
       return;
     }
@@ -59,7 +63,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
 
     try {
       await ExcelExportService.exportMauSo21ToExcel(
-        data: listKhauHaoTaiSan,
+        data: _fullListKhauHao,
         year: selectedYear ?? '',
         loaiTaiSan: loaiTaiSan?.tenNhom ?? '',
       );
@@ -117,14 +121,24 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
       if (!mounted) return;
 
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final fullData = result['data'] as List<KhauHaoTaiSanDto>;
+        _fullListKhauHao = fullData;
+
+        // Giới hạn hiển thị tối đa 50 items
+        final displayData = fullData.length > _maxDisplayItems
+            ? fullData.sublist(0, _maxDisplayItems)
+            : fullData;
+
         setState(() {
-          listKhauHaoTaiSan = result['data'] as List<KhauHaoTaiSanDto>;
+          listKhauHaoTaiSan = displayData;
           _isLoading = false;
         });
-        AppUtility.showSnackBar(
-          context,
-          'Lấy dữ liệu thành công! (${listKhauHaoTaiSan.length} bản ghi)',
-        );
+
+        String message = 'Lấy dữ liệu thành công! (${fullData.length} bản ghi)';
+        if (fullData.length > _maxDisplayItems) {
+          message = 'Hiển thị $_maxDisplayItems/${fullData.length} items. Xuất Excel/In để xem toàn bộ.';
+        }
+        AppUtility.showSnackBar(context, message);
       } else {
         setState(() {
           _isLoading = false;
@@ -214,9 +228,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                     isEditing: true,
                                     fieldName: 'year',
                                     onChanged: (date) {
-                                      if (loaiTaiSan != null) {
-                                        onloadViewPage();
-                                      }
+                                      setState(() {});
                                     },
                                   ),
                                 ),
@@ -240,7 +252,6 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                       setState(() {
                                         loaiTaiSan = value;
                                       });
-                                      onloadViewPage();
                                     },
                                   ),
                                 ),
@@ -250,6 +261,22 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    onloadViewPage();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Lấy dữ liệu',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
                                 Expanded(child: SizedBox.shrink()),
                                 GestureDetector(
                                   onTap: _isExporting ? null : _exportToExcel,
