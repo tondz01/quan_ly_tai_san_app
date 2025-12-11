@@ -28,9 +28,13 @@ class BienBanKiemKeScreen extends StatefulWidget {
 
 class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   List<InventoryMinutes> _list = [];
+  List<InventoryMinutes> _fullList = []; // Dữ liệu đầy đủ để xuất Excel/In
   List<List<InventoryMinutes>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
+
+  // Giới hạn hiển thị tối đa 50 items
+  static const int _maxDisplayItems = 50;
 
   TextEditingController controllerImportDate = TextEditingController();
   TextEditingController controllerDonVi = TextEditingController();
@@ -65,7 +69,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   }
 
   Future<void> _exportToExcel() async {
-    if (_list.isEmpty) {
+    if (_fullList.isEmpty) {
       AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
       return;
     }
@@ -74,7 +78,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
 
     try {
       await ExcelExportService.exportBienBanKiemKeToExcel(
-        data: _list,
+        data: _fullList,
         departmentName: donVi?.tenPhongBan ?? '',
         ngayKiemKe: controllerImportDate.text.trim(),
       );
@@ -116,9 +120,16 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
+      final fullData = (result['data'] as List).cast<InventoryMinutes>();
+      _fullList = fullData;
+
+      // Giới hạn hiển thị tối đa 50 items
+      final displayData = fullData.length > _maxDisplayItems
+          ? fullData.sublist(0, _maxDisplayItems)
+          : fullData;
+
       setState(() {
-        _list = [];
-        _list = (result['data'] as List).cast<InventoryMinutes>();
+        _list = displayData;
         _listPages = _chunkInventoryMinutes(_list);
         final int totalPages =
             _listPages.isEmpty ? 1 : _listPages.length + 1; // +1 trang footer
@@ -126,10 +137,14 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_list.isEmpty) {
+        if (fullData.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+          String message = 'Lấy dữ liệu thành công!';
+          if (fullData.length > _maxDisplayItems) {
+            message = 'Hiển thị $_maxDisplayItems/${fullData.length} items. Xuất Excel/In để xem toàn bộ.';
+          }
+          AppUtility.showSnackBar(context, message);
         }
       });
     } else {
@@ -229,7 +244,6 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
             setState(() {
               donVi = value;
             });
-            onloadViewPage();
           },
         ),
         CmFormDate(
@@ -239,12 +253,10 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
           fieldName: 'importDate',
           onChanged: (date) {
             setState(() {});
-            if (donVi != null) {
-              onloadViewPage();
-            }
           },
         ),
       ],
+      onLoadData: onloadViewPage,
       onExportExcel: _exportToExcel,
       onPrint: () {
         WidgetsBinding.instance.addPostFrameCallback((_) async {

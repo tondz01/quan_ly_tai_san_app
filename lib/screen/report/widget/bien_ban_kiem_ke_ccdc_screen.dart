@@ -22,6 +22,7 @@ import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_pa
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 
 class BienBanKiemKeCcdcScreen extends StatefulWidget {
   const BienBanKiemKeCcdcScreen({super.key});
@@ -33,9 +34,13 @@ class BienBanKiemKeCcdcScreen extends StatefulWidget {
 
 class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
   List<CCDCInventoryReport> _list = [];
+  List<CCDCInventoryReport> _fullList = []; // Dữ liệu đầy đủ để xuất Excel/In
   List<List<CCDCInventoryReport>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
+
+  // Giới hạn hiển thị tối đa 50 items
+  static const int _maxDisplayItems = 50;
 
   TextEditingController controllerImportDate = TextEditingController();
   TextEditingController controllerDonVi = TextEditingController();
@@ -150,6 +155,36 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
     }
   }
 
+  Future<void> _exportToExcel() async {
+    if (_fullList.isEmpty) {
+      AppUtility.showSnackBar(context, 'Không có dữ liệu để xuất!', isError: true);
+      return;
+    }
+
+    setState(() => _isExporting = true);
+
+    try {
+      await ExcelExportService.exportBienBanKiemKeCcdcToExcel(
+        data: _fullList,
+        departmentName: donVi?.tenPhongBan ?? '',
+        ngayKiemKe: controllerImportDate.text.trim(),
+      );
+
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Xuất Excel thành công!');
+      }
+    } catch (e) {
+      SGLog.error('BienBanKiemKeCcdcScreen', 'Lỗi xuất Excel: $e');
+      if (mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi xuất Excel: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
   Future<void> _loadData() async {
     final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
     final result = await DepartmentRepository().getListDepartment(idCongTy);
@@ -178,9 +213,16 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
     );
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
+      final fullData = (result['data'] as List).cast<CCDCInventoryReport>();
+      _fullList = fullData;
+
+      // Giới hạn hiển thị tối đa 50 items
+      final displayData = fullData.length > _maxDisplayItems
+          ? fullData.sublist(0, _maxDisplayItems)
+          : fullData;
+
       setState(() {
-        _list = [];
-        _list = (result['data'] as List).cast<CCDCInventoryReport>();
+        _list = displayData;
         _listPages = _chunkInventoryMinutes(_list);
         final int totalPages =
             _listPages.isEmpty ? 1 : _listPages.length + 1; // +1 trang footer
@@ -188,10 +230,14 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_list.isEmpty) {
+        if (fullData.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+          String message = 'Lấy dữ liệu thành công!';
+          if (fullData.length > _maxDisplayItems) {
+            message = 'Hiển thị $_maxDisplayItems/${fullData.length} items. Xuất Excel/In để xem toàn bộ.';
+          }
+          AppUtility.showSnackBar(context, message);
         }
       });
     } else {
@@ -348,6 +394,23 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                 ),
                               ),
                               Expanded(child: SizedBox.shrink()),
+                              GestureDetector(
+                                onTap: () {
+                                  _exportToExcel();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF217346),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.grid_on,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: () {
                                   _exportToPdf();

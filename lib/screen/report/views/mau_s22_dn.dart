@@ -50,6 +50,11 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
   final TextEditingController _donViController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
 
+  // Giới hạn hiển thị tối đa 50 items để tránh lag
+  static const int _maxDisplayItems = 50;
+  List<DataMap> _fullAssetData = [];  // Dữ liệu đầy đủ để xuất Excel/In
+  List<DataMap> _fullCcdcData = [];   // Dữ liệu đầy đủ để xuất Excel/In
+
   @override
   void initState() {
     super.initState();
@@ -74,7 +79,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
       return;
     }
 
-    if (_assetData.isEmpty && _ccdcData.isEmpty) {
+    if (_fullAssetData.isEmpty && _fullCcdcData.isEmpty) {
       AppUtility.showSnackBar(context, 'Chưa có dữ liệu để xuất!', isError: true);
       return;
     }
@@ -91,7 +96,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
           _ccdcTableKey.currentState?.getEditedData() ?? [];
 
       // Nếu không lấy được data từ UI (state chưa được khởi tạo), fallback về data gốc
-      if (excelAssetData.isEmpty && _assetData.isNotEmpty) {
+      if (excelAssetData.isEmpty && _fullAssetData.isNotEmpty) {
         AppUtility.showSnackBar(
           context,
           'Không thể lấy dữ liệu từ UI. Vui lòng thử lại!',
@@ -197,12 +202,30 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
         ccdcData = [...increase, ...reduce];
       }
 
+      // Lưu dữ liệu đầy đủ để xuất Excel/In
+      _fullAssetData = assetData;
+      _fullCcdcData = ccdcData;
+
+      // Giới hạn hiển thị tối đa 50 items để tránh lag
+      final displayAssetData = assetData.length > _maxDisplayItems
+          ? assetData.sublist(0, _maxDisplayItems)
+          : assetData;
+      final displayCcdcData = ccdcData.length > _maxDisplayItems
+          ? ccdcData.sublist(0, _maxDisplayItems)
+          : ccdcData;
+
       setState(() {
-        _assetData = assetData;
-        _ccdcData = ccdcData;
+        _assetData = displayAssetData;
+        _ccdcData = displayCcdcData;
         _isExporting = false;
       });
-      AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+
+      // Thông báo nếu có giới hạn hiển thị
+      String message = 'Lấy dữ liệu thành công!';
+      if (assetData.length > _maxDisplayItems || ccdcData.length > _maxDisplayItems) {
+        message = 'Hiển thị tối đa $_maxDisplayItems items. Xuất Excel/In để xem toàn bộ ${assetData.length + ccdcData.length} items.';
+      }
+      AppUtility.showSnackBar(context, message);
     } catch (e) {
       setState(() => _isExporting = false);
       AppUtility.showSnackBar(context, 'Lỗi lấy dữ liệu: $e', isError: true);
@@ -235,7 +258,6 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               setState(() {
                 _selectedDonVi = value;
               });
-              _handleGetData();
             },
           ),
           CmFormDate(
@@ -249,12 +271,10 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               setState(() {
                 _selectedDate = value ?? DateTime.now();
               });
-              if (_selectedDonVi != null) {
-                _handleGetData();
-              }
             },
           ),
         ],
+        onLoadData: _handleGetData,
         onExportExcel: _handleExportExcel,
         onPrint: _handlePrint,
         content: RepaintBoundary(

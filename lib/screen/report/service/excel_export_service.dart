@@ -4,6 +4,7 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/tang_giam_trong_ky_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/khau_hao_tai_san_dto.dart';
 
 import '../../../common/reponsitory/save_export_file_stub.dart'
@@ -658,6 +659,142 @@ class ExcelExportService {
     keToanRange.cellStyle.wrapText = true;
 
     sheet.setRowHeightInPixels(currentRow, 60);
+  }
+
+  // ========================================================================
+  // BIÊN BẢN KIỂM KÊ CCDC EXPORT
+  // ========================================================================
+
+  /// Export Biên bản kiểm kê CCDC to Excel
+  static Future<void> exportBienBanKiemKeCcdcToExcel({
+    required List<CCDCInventoryReport> data,
+    required String departmentName,
+    required String ngayKiemKe,
+  }) async {
+    final Workbook workbook = Workbook();
+    final Worksheet sheet = workbook.worksheets[0];
+    sheet.name = 'Bien_Ban_Kiem_Ke_CCDC';
+
+    int currentRow = 1;
+
+    // ===== HEADER =====
+    sheet.getRangeByIndex(currentRow, 1, currentRow, 3).merge();
+    final tapDoanRange = sheet.getRangeByIndex(currentRow, 1);
+    tapDoanRange.setText('TẬP ĐOÀN CÔNG NGHIỆP\nTHAN - KHOÁNG SẢN VIỆT NAM');
+    tapDoanRange.cellStyle.fontSize = 11;
+    tapDoanRange.cellStyle.hAlign = HAlignType.center;
+    tapDoanRange.cellStyle.wrapText = true;
+
+    sheet.getRangeByIndex(currentRow, 4, currentRow, 5).merge();
+    final mauSoRange = sheet.getRangeByIndex(currentRow, 4);
+    mauSoRange.setText('Mẫu số 01b-CCDC');
+    mauSoRange.cellStyle.fontSize = 11;
+    mauSoRange.cellStyle.bold = true;
+    mauSoRange.cellStyle.hAlign = HAlignType.center;
+    sheet.setRowHeightInPixels(currentRow, 35);
+    currentRow++;
+
+    sheet.getRangeByIndex(currentRow, 1, currentRow, 3).merge();
+    final congTyRange = sheet.getRangeByIndex(currentRow, 1);
+    congTyRange.setText('CÔNG TY THAN UÔNG BÍ - TKV');
+    congTyRange.cellStyle.fontSize = 11;
+    congTyRange.cellStyle.bold = true;
+    congTyRange.cellStyle.hAlign = HAlignType.center;
+    currentRow += 2;
+
+    // Title
+    sheet.getRangeByIndex(currentRow, 1, currentRow, 5).merge();
+    final titleRange = sheet.getRangeByIndex(currentRow, 1);
+    titleRange.setText('BIÊN BẢN KIỂM KÊ CÔNG CỤ DỤNG CỤ');
+    titleRange.cellStyle.fontSize = 14;
+    titleRange.cellStyle.bold = true;
+    titleRange.cellStyle.hAlign = HAlignType.center;
+    currentRow++;
+
+    // Đơn vị
+    sheet.getRangeByIndex(currentRow, 1, currentRow, 5).merge();
+    final donViRange = sheet.getRangeByIndex(currentRow, 1);
+    donViRange.setText('Đơn vị: $departmentName');
+    donViRange.cellStyle.fontSize = 11;
+    donViRange.cellStyle.bold = true;
+    donViRange.cellStyle.hAlign = HAlignType.center;
+    currentRow++;
+
+    // Thời điểm kiểm kê
+    sheet.getRangeByIndex(currentRow, 1, currentRow, 5).merge();
+    final thoiDiemRange = sheet.getRangeByIndex(currentRow, 1);
+    thoiDiemRange.setText('Thời điểm kiểm kê: $ngayKiemKe');
+    thoiDiemRange.cellStyle.fontSize = 11;
+    thoiDiemRange.cellStyle.hAlign = HAlignType.center;
+    currentRow += 2;
+
+    // ===== TABLE HEADER =====
+    final headers = [
+      'STT',
+      'Tên công cụ dụng cụ',
+      'Đơn vị tính',
+      'Nước sản xuất',
+      'Ghi chú',
+    ];
+
+    for (int i = 0; i < headers.length; i++) {
+      final cell = sheet.getRangeByIndex(currentRow, i + 1);
+      cell.setText(headers[i]);
+      cell.cellStyle.fontSize = 11;
+      cell.cellStyle.bold = true;
+      cell.cellStyle.hAlign = HAlignType.center;
+      cell.cellStyle.vAlign = VAlignType.center;
+      cell.cellStyle.backColor = '#D9E1F2';
+      cell.cellStyle.borders.all.lineStyle = LineStyle.thin;
+      cell.cellStyle.wrapText = true;
+    }
+    sheet.setRowHeightInPixels(currentRow, 40);
+    currentRow++;
+
+    // ===== DATA ROWS =====
+    for (int i = 0; i < data.length; i++) {
+      final item = data[i];
+
+      // STT
+      sheet.getRangeByIndex(currentRow, 1).setNumber(i + 1);
+      _setDataCellStyle(sheet, currentRow, 1, HAlignType.center);
+
+      // Tên công cụ dụng cụ
+      sheet.getRangeByIndex(currentRow, 2).setText(item.tenTaiSan ?? '');
+      _setDataCellStyle(sheet, currentRow, 2, HAlignType.left);
+
+      // Đơn vị tính
+      sheet.getRangeByIndex(currentRow, 3).setText(item.donViTinh ?? '');
+      _setDataCellStyle(sheet, currentRow, 3, HAlignType.center);
+
+      // Nước sản xuất
+      sheet.getRangeByIndex(currentRow, 4).setText(item.nuocSanXuat ?? '');
+      _setDataCellStyle(sheet, currentRow, 4, HAlignType.center);
+
+      // Ghi chú
+      sheet.getRangeByIndex(currentRow, 5).setText(item.ghiChu ?? '');
+      _setDataCellStyle(sheet, currentRow, 5, HAlignType.left);
+
+      currentRow++;
+    }
+
+    // Set column widths
+    sheet.getRangeByIndex(1, 1).columnWidth = 6;
+    sheet.getRangeByIndex(1, 2).columnWidth = 40;
+    sheet.getRangeByIndex(1, 3).columnWidth = 12;
+    sheet.getRangeByIndex(1, 4).columnWidth = 15;
+    sheet.getRangeByIndex(1, 5).columnWidth = 25;
+
+    // ===== FOOTER =====
+    currentRow += 2;
+    _buildBienBanKiemKeFooter(sheet, currentRow);
+
+    // ===== SAVE FILE =====
+    final List<int> bytes = workbook.saveAsStream();
+    workbook.dispose();
+
+    final String fileName = 'Bien_ban_kiem_ke_CCDC_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx';
+    await saveExportFile(Uint8List.fromList(bytes), fileName);
   }
 
   // ========================================================================
