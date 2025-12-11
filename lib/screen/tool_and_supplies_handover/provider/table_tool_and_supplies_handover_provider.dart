@@ -119,9 +119,6 @@ class TableToolAndSuppliesHandoverProvider
     _isApiLoading = true;
     _lastApiCallTime = now;
     
-    log(
-      'loadDataFromApi ToolAndSuppliesHandover: page=$page -- trangThai=$trangThai -- isRefresh=$isRefresh',
-    );
     _currentTrangThai = trangThai;
 
     // Set loading cho API call

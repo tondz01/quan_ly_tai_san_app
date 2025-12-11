@@ -36,14 +36,17 @@ class MessageServiceRealtime {
     }
   }
 
-  /// Lắng nghe message JSON mới nhất
+  /// Lắng nghe message JSON mới nhất (chỉ lấy 5 request mới nhất)
   Stream<Map<String, dynamic>> listenLatestJson() {
     if (!isSupported) {
       debugPrint('⚠️ Firebase Realtime Database không hỗ trợ trên platform này');
       return Stream.value({}); // Return empty stream on unsupported platforms
     }
     
-    return messagesRef.onChildAdded.map((event) {
+    return messagesRef
+        .limitToLast(5)
+        .onChildAdded
+        .map((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
       if (data == null) return {};

@@ -185,10 +185,11 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
                             },
                             valueCheckBox: idNhomTaiSan == item.id,
                             onChange: (value) {
+                              final isSameGroup = idNhomTaiSan == item.id;
                               setState(() {
-                                idNhomTaiSan = item.id;
+                                idNhomTaiSan = isSameGroup ? null : item.id;
                               });
-                              notifier.searchByGroup(item.id ?? '');
+                              notifier.searchByGroup(idNhomTaiSan ?? '');
                             },
                           ),
                         ),

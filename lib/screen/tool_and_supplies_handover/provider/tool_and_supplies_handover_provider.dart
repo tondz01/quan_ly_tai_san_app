@@ -164,9 +164,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _searchTerm = '';
 
     // Reload data
-    context.read<ToolAndSuppliesHandoverBloc>().add(
-      GetListToolAndSuppliesHandoverEvent(context),
-    );
+    // context.read<ToolAndSuppliesHandoverBloc>().add(
+    //   GetListToolAndSuppliesHandoverEvent(context),
+    // );
     notifyListeners();
   }
 
@@ -355,7 +355,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     onLoadDataDropdown();
     onLoadDataCcdc(context);
     // getListToolAndSuppliesHandover(context);
-    onLoadDataAssetTransfer();
+    // onLoadDataAssetTransfer();
     // _autoReloadTimer?.cancel();
     // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
     //   onReloadDataToolAndMaterialHandover();
@@ -363,12 +363,12 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     // });
   }
 
-  onLoadDataAssetTransfer() async {
-    _dataAssetTransfer =
-        await ToolAndMaterialTransferRepository()
-            .getAllToolAndMeterialTransferByCT();
-    notifyListeners();
-  }
+  // onLoadDataAssetTransfer() async {
+  //   _dataAssetTransfer =
+  //       await ToolAndMaterialTransferRepository()
+  //           .getAllToolAndMeterialTransferByCT();
+  //   notifyListeners();
+  // }
 
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.TOOL_AND_SUPPLIES_HANDOVER) {
@@ -520,8 +520,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   /// Helper: Đảm bảo dữ liệu AssetTransfer đã được load
   Future<void> _ensureAssetTransferLoaded() async {
-    if (_dataAssetTransfer != null && _dataAssetTransfer!.isNotEmpty) return;
-    await onLoadDataAssetTransfer();
+    final result = await ToolAndMaterialTransferRepository().getDataWithPagination(0, 999999, -1, '', 3, '', false);
+    final data = (result['data'] as List<dynamic>).cast<ToolAndMaterialTransferDto>();
+    _dataAssetTransfer = List<ToolAndMaterialTransferDto>.from(data);
   }
 
   void updateItem(ToolAndSuppliesHandoverDto updatedItem) {

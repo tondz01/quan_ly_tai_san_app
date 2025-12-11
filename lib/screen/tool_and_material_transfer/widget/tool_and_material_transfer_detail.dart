@@ -810,14 +810,17 @@ class _ToolAndMaterialTransferDetailState
                     child: Column(
                       spacing: 5,
                       children: [
-                        CommonFormInput(
-                          label: 'Số chứng từ',
-                          controller: controllerSoChungTu,
-                          isEditing: isEditing,
-                          textContent: controllerSoChungTu.text,
-                          fieldName: 'soChungTu',
-                          validationErrors: _validationErrors,
-                          isRequired: true,
+                        Visibility(
+                          visible: !isEditing,
+                          child: CommonFormInput(
+                            label: 'Số chứng từ',
+                            controller: controllerSoChungTu,
+                            isEditing: isEditing,
+                            textContent: controllerSoChungTu.text,
+                            fieldName: 'soChungTu',
+                            validationErrors: _validationErrors,
+                            isRequired: true,
+                          ),
                         ),
                         CommonFormInput(
                           label: 'Tên phiếu',
@@ -1261,7 +1264,6 @@ class _ToolAndMaterialTransferDetailState
     int state,
   ) {
     return ToolAndMaterialTransferRequest(
-      id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
@@ -1306,7 +1308,7 @@ class _ToolAndMaterialTransferDetailState
   // Create data preview
   ToolAndMaterialTransferDto _createToolAndMaterialTransPreview(int type) {
     return ToolAndMaterialTransferDto(
-      id: controllerSoChungTu.text,
+      id: item?.id ?? '',
       soQuyetDinh: controllerSoChungTu.text,
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
@@ -1360,7 +1362,7 @@ class _ToolAndMaterialTransferDetailState
         .map(
           (e) => ChiTietBanGiaoRequest(
             id: UUIDGenerator.generateWithFormat('CTBG-************'),
-            idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
+            idDieuDongCCDCVatTu: item?.id ?? '',
             idCCDCVatTu: e.idCCDCVatTu,
             soLuong: e.soLuong,
             idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,

@@ -556,7 +556,6 @@ class _ToolAndSuppliesHandoverDetailState
     provider.isLoading = true;
 
     final Map<String, dynamic> request = {
-      "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
       "banGiaoCCDCVatTu": controllerDocumentName.text,
       "quyetDinhDieuDongSo": dieuDongCcdc?.soQuyetDinh ?? '',
@@ -600,7 +599,7 @@ class _ToolAndSuppliesHandoverDetailState
             .map(
               (e) => SignatoryDto(
                 id: UUIDGenerator.generateWithFormat("SIG-******"),
-                idTaiLieu: request['id'].toString(),
+                idTaiLieu: item?.id ?? '',
                 idPhongBan: e.department?.id ?? '',
                 idNguoiKy: e.employee?.id ?? '',
                 tenNguoiKy: e.employee?.hoTen ?? '',
@@ -1038,17 +1037,20 @@ class _ToolAndSuppliesHandoverDetailState
     return Column(
       spacing: 10,
       children: [
-        CommonFormInput(
-          label: 'Số phiếu bàn giao',
-          controller: controllerHandoverNumber,
-          isEditing:
-              widget.provider.isFindNewItem
-                  ? true
-                  : (isEditing && item == null),
-          fieldName: 'handoverNumber',
-          textContent: item?.id ?? '',
-          validationErrors: _validationErrors,
-          isRequired: true,
+        Visibility(
+          visible: !(widget.provider.isFindNewItem && item == null),
+          child: CommonFormInput(
+            label: 'Số phiếu bàn giao',
+            controller: controllerHandoverNumber,
+            isEditing:
+                widget.provider.isFindNewItem
+                    ? true
+                    : (isEditing && item == null),
+            fieldName: 'handoverNumber',
+            textContent: item?.id ?? '',
+            validationErrors: _validationErrors,
+            isRequired: true,
+          ),
         ),
         CommonFormInput(
           label: 'Tên biên bản bàn giao ccdc-vật tư',
@@ -1164,7 +1166,7 @@ class _ToolAndSuppliesHandoverDetailState
           isRequired: true,
         ),
         CommonFormInput(
-          label: 'Địa điểm quyết định',
+          label: 'Địa điểm bàn giao',
           controller: controllerDecisionLocation,
           isEditing: isEditing,
           textContent: item?.diaDiemQuyetDinh ?? '',

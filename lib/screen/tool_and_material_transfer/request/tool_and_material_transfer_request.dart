@@ -1,5 +1,4 @@
 class ToolAndMaterialTransferRequest {
-  final String id;
   final String soQuyetDinh;
   final String tenPhieu;
   final String idDonViGiao;
@@ -34,7 +33,6 @@ class ToolAndMaterialTransferRequest {
   final bool byStep;
 
   ToolAndMaterialTransferRequest({
-    this.id = '',
     required this.soQuyetDinh,
     required this.tenPhieu,
     required this.idDonViGiao,
@@ -83,7 +81,6 @@ class ToolAndMaterialTransferRequest {
     }
 
     return ToolAndMaterialTransferRequest(
-      id: json['id'] ?? '',
       soQuyetDinh: json['soQuyetDinh'] ?? '',
       tenPhieu: json['tenPhieu'] ?? '',
       idDonViGiao: json['idDonViGiao'] ?? '',
@@ -121,7 +118,6 @@ class ToolAndMaterialTransferRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'soQuyetDinh': soQuyetDinh,
       'tenPhieu': tenPhieu,
       'idDonViGiao': idDonViGiao,
@@ -158,7 +154,6 @@ class ToolAndMaterialTransferRequest {
   }
 
   ToolAndMaterialTransferRequest copyWith({
-    String? id,
     String? soQuyetDinh,
     String? tenPhieu,
     String? idDonViGiao,
@@ -193,7 +188,6 @@ class ToolAndMaterialTransferRequest {
     bool? byStep,
   }) {
     return ToolAndMaterialTransferRequest(
-      id: id ?? this.id,
       soQuyetDinh: soQuyetDinh ?? this.soQuyetDinh,
       tenPhieu: tenPhieu ?? this.tenPhieu,
       idDonViGiao: idDonViGiao ?? this.idDonViGiao,
@@ -233,7 +227,6 @@ class ToolAndMaterialTransferRequest {
 
   factory ToolAndMaterialTransferRequest.empty() {
     return ToolAndMaterialTransferRequest(
-      id: '',
       soQuyetDinh: '',
       tenPhieu: '',
       idDonViGiao: '',

@@ -86,12 +86,15 @@ class _AssetHandoverViewState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    log('AssetHandoverView::didChangeDependencies');
+
     // Store provider reference for safe access in dispose()
     _providerRef ??= Provider.of<AssetHandoverProvider>(context, listen: false);
 
     final extra = GoRouterState.of(context).extra;
 
     if (extra is Map<String, dynamic>) {
+      log('AssetHandoverView::didChangeDependencies extra Map keys=${extra.keys}');
       assetHandoverData = extra['AssetHandoverDto'] as AssetHandoverDto?;
       menuSelectionData = extra['menuSelection'] as Map<String, dynamic>?;
 
@@ -128,6 +131,8 @@ class _AssetHandoverViewState
   void _handleAssetHandoverData(AssetHandoverDto assetHandoverDto) {
     final provider = Provider.of<AssetHandoverProvider>(context, listen: false);
 
+    log('AssetHandoverView::_handleAssetHandoverData id=${assetHandoverDto.id}');
+
     provider.onInit(context);
     provider.onChangeDetail(context, assetHandoverDto);
   }
@@ -141,7 +146,7 @@ class _AssetHandoverViewState
 
   void _initData() {
     if (_isInitialized) return; // Tránh gọi nhiều lần
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final provider = Provider.of<AssetHandoverProvider>(
@@ -149,10 +154,13 @@ class _AssetHandoverViewState
         listen: false,
       );
 
+      log('AssetHandoverView::_initData start - hasAssetHandoverData=${assetHandoverData != null}');
+
       // Chỉ khởi tạo nếu không có data từ router
       if (assetHandoverData == null && !_isInitialized) {
         _isInitialized = true;
         provider.onInit(context);
+        log('AssetHandoverView::onInit triggered (no router data)');
       }
     });
   }
@@ -169,6 +177,7 @@ class _AssetHandoverViewState
 
   @override
   Widget build(BuildContext context) {
+    log('AssetHandoverView::build start');
     // Đã di chuyển ref.listen ra initState để tránh tạo listener mới mỗi lần build
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {

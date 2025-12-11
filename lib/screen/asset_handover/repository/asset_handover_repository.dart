@@ -163,6 +163,7 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
+      String idBGTS = response.data['id'];
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
       String idNeedToDo =
@@ -175,12 +176,10 @@ class AssetHandoverRepository extends ApiBase {
           idNeedToDo: idNeedToDo,
         );
       });
-      print(
-        'message createAssetHandover listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}',
-      );
+     
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
-        data: listDetailAssetHandover.map((e) => e.toJson()).toList(),
+        data: listDetailAssetHandover.map((e) => e.copyWith(idBanGiaoTaiSan: idBGTS).toJson()).toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
@@ -191,11 +190,9 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      log('message request id: ${jsonEncode(listSignatory)}');
       for (var signatory in listSignatory) {
-        log('message request id: ${request['id']}');
         final signatoryCopy = signatory.copyWith(
-          idTaiLieu: request['id'].toString(),
+          idTaiLieu: idBGTS,
           trangThai: 0,
         );
         final responseSignatory = await post(
