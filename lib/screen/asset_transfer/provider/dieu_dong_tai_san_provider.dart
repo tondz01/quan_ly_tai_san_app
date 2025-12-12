@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -277,10 +278,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     print('AssetListCacheService message onGetDataAsset');
 
     try {
+      // 1. Load từ cache trước
       _dataAsset = await AssetListCacheService().loadAssetList();
-      print(
-        'AssetListCacheService message onGetDataAsset 2: ${_dataAsset?.length}',
-      );
+      
+      // 2. Nếu cache rỗng hoặc null → gọi API để lấy dữ liệu mới
+      if (_dataAsset == null || _dataAsset!.isEmpty) {
+        await AssetManagementRepository().getListAssetManagement('ct001');
+        // 3. Sau khi API trả về → load lại từ cache
+        _dataAsset = await AssetListCacheService().loadAssetList();
+      }
     } catch (e) {
       log('onGetDataAsset error: $e');
     } finally {
