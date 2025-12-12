@@ -1093,6 +1093,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         controllers.controllerDocumentName.text = state.item?.tenPhieu ?? '';
         controllers.controllerDeliveringUnit.text =
             state.item?.tenDonViGiao ?? '';
+        
         controllers.controllerReceivingUnit.text =
             state.item?.tenDonViNhan ?? '';
         controllers.controllerRequester.text = state.item?.tenNguoiDeNghi ?? '';
@@ -1119,6 +1120,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.idDonViDeNghi ?? '',
         );
         assetByDepartment = widget.provider.dataAsset ?? [];
+        print('Asset by department: ${assetByDepartment.length}');
+        print(
+            'Don vi giao ID: ${state.donViGiao != null ? state.donViGiao!.id : 'null'}');
+
+        print('detail item: ${state.item?.chiTietDieuDongTaiSans?.length}');
         //load list staff by department
         state.listStaffByDepartment =
             widget.provider.dataNhanVien
