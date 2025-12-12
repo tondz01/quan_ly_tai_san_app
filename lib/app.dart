@@ -316,6 +316,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       log('[App] Error loading counts: $error');
       _isCountsLoaded = false; // Reset để có thể retry
     });
+    _loadDataIfNeeded();
   }
   
   
