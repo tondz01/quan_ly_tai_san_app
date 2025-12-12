@@ -28,6 +28,17 @@ class TableToolAndMaterialTransferConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
+          name: 'Trích yếu',
+          key: 'trich_yeu',
+          width: 150,
+          flex: 1,
+        ),
+        builder: (item) {
+          return TableCellData(widget: Text(item.trichYeu ?? ''));
+        },
+      ),
+      ColumnDefinition(
+        config: TableColumnData.select(
           name: 'Ngày có hiệu lực',
           key: 'effective_date',
           width: 150,
@@ -152,7 +163,7 @@ class TableToolAndMaterialTransferConfig {
         builder: (item) {
           return TableCellData(
             widget: AppUtility.showPermissionSigning(
-              getPermissionSigning(item, userInfo),
+              getPermissionSigning(item),
             ),
           );
         },
@@ -203,43 +214,50 @@ class TableToolAndMaterialTransferConfig {
 
   static int getPermissionSigning(
     ToolAndMaterialTransferDto item,
-    UserInfoDTO userInfo,
   ) {
+    final userInfo = AccountHelper.instance.getUserInfo();
     final signatureFlow =
         [
               if (item.nguoiLapPhieuKyNhay == true)
                 {
                   "id": item.idNguoiKyNhay,
                   "signed": item.trangThaiKyNhay == true,
+                  "label":
+                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
                 },
               {
                 "id": item.idTrinhDuyetCapPhong,
                 "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
               },
               for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
                 {
                   "id": item.listSignatory![i].idNguoiKy,
                   "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
                 },
               {
                 "id": item.idTrinhDuyetGiamDoc,
                 "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
               },
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
             )
             .toList();
-
     final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo.tenDangNhap,
+      (s) => s["id"] == userInfo?.tenDangNhap,
     );
+
     if (currentIndex == -1) return 2;
-    if (item.nguoiTao == userInfo.tenDangNhap &&
+    if (item.nguoiTao == userInfo?.tenDangNhap &&
         signatureFlow[currentIndex]["signed"] != -1) {
       return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
     }
     if (signatureFlow[currentIndex]["signed"] == true) return 3;
+
     final previousNotSigned = signatureFlow
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
@@ -330,9 +348,8 @@ class TableToolAndMaterialTransferConfig {
 
   static String getStatusSigningName(
     ToolAndMaterialTransferDto item,
-    UserInfoDTO userInfo,
   ) {
-    int status = getPermissionSigning(item, userInfo);
+    int status = getPermissionSigning(item);
     String statusName =
         status == 2
             ? 'Không được phép ký'

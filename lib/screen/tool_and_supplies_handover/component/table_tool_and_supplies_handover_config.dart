@@ -320,8 +320,7 @@ class TableToolAndSuppliesHandoverConfig {
                         )
                         .toList() ??
                     []),
-              if (item.idGiamDoc != null && item.idGiamDoc!.isNotEmpty)
-                {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
+              {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
@@ -339,6 +338,7 @@ class TableToolAndSuppliesHandoverConfig {
     final previousNotSigned = signatureFlow
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
     if (previousNotSigned.isNotEmpty) return 1;
     return 0;
   }
