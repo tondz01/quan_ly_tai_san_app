@@ -45,7 +45,6 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         AssetManagementDto.fromJson,
       );
-      log('message result: ${result['data'].length}');
       
       // Lưu trữ dữ liệu vào bộ nhớ đệm
       // Extract raw list data and convert to List<Map<String, dynamic>> for cache

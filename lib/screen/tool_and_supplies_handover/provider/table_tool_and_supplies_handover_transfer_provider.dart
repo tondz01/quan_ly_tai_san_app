@@ -17,6 +17,21 @@ final tableToolAndSuppliesHandoverTransferProvider =
       return TableToolAndSuppliesHandoverTransferProvider(repository);
     });
 
+/// Helper class để lấy các giá trị total
+/// Sử dụng: ref.read(TableToolAndSuppliesHandoverTransferProvider.notifier).getTotals()
+extension TableToolAndSuppliesHandoverTransferTotals
+    on TableToolAndSuppliesHandoverTransferProvider {
+  /// Lấy tất cả các totals dưới dạng Map
+  Map<String, int> getTotals() {
+    return {
+      'totalAll': totalAll,
+      'totalCP': totalCP,
+      'totalDC': totalDC,
+      'totalTH': totalTH,
+    };
+  }
+}
+
 class TableToolAndSuppliesHandoverTransferProvider
     extends TableNotifier<ToolAndMaterialTransferDto> {
   final ToolAndMaterialTransferRepository repository;
@@ -24,13 +39,13 @@ class TableToolAndSuppliesHandoverTransferProvider
   // Tổng theo API
   int totalItems = 0;
   int totalAll = 0;
-  int totalDraft = 0;
-  int totalApprove = 0;
-  int totalCancel = 0;
-  int totalComplete = 0;
+  int totalCP = 0;
+  int totalDC = 0;
+  int totalTH = 0;
 
   // Trạng thái filter/search hiện tại
   String _currentSearchTerm = '';
+  int _currentType = -1; // lưu type hiện tại
 
   // Lưu dữ liệu gốc của page hiện tại (chưa filter offline)
   List<ToolAndMaterialTransferDto> _rawPageData = [];
@@ -87,15 +102,16 @@ class TableToolAndSuppliesHandoverTransferProvider
 
     try {
       final userInfo = AccountHelper.instance.getUserInfo();
-      final nhanVien = AccountHelper.instance.getNhanVienById(userInfo?.tenDangNhap ?? '');
+      final nhanVien = AccountHelper.instance.getNhanVienById(
+        userInfo?.tenDangNhap ?? '',
+      );
       final idDonViGiao = nhanVien?.phongBanId ?? nhanVien?.boPhan ?? '';
       // Gọi API
-      final response = await repository.getDataWithPagination(
+      final response = await repository.getDataPageByBanGiao(
         page,
         state.paginationState.itemsPerPage,
-        -1,
+        _currentType,
         _currentSearchTerm,
-        3,
         idDonViGiao,
       );
 
@@ -116,10 +132,9 @@ class TableToolAndSuppliesHandoverTransferProvider
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
-      totalDraft = response['totalDraft'] as int? ?? 0;
-      totalApprove = response['totalApprove'] as int? ?? 0;
-      totalCancel = response['totalCancel'] as int? ?? 0;
-      totalComplete = response['totalComplete'] as int? ?? 0;
+      totalCP = response['totalCP'] as int? ?? 0;
+      totalDC = response['totalDC'] as int? ?? 0;
+      totalTH = response['totalTH'] as int? ?? 0;
 
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
@@ -153,14 +168,14 @@ class TableToolAndSuppliesHandoverTransferProvider
     }
   }
 
-  // Refresh dữ liệu trang hiện tại (giữ filter offline nếu có)
-  Future<void> refreshData([bool isLoading = true]) async {
+  // Refresh dữ liệu
+  Future<void> refreshData(int type, [bool isRefresh = true]) async {
+    _currentType = type;
     await loadDataFromApi(
       state.paginationState.currentDisplayPage,
-      isLoading,
+      isRefresh,
     );
   }
-
   // ================== FILTER OFFLINE TRÊN PAGE HIỆN TẠI ==================
 
   // Ghi đè applyColumnFilter: nếu đang dùng API pagination → filter offline
