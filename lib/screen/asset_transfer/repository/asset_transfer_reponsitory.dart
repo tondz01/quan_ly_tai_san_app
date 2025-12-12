@@ -643,7 +643,7 @@ class AssetTransferRepository extends ApiBase {
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety
-      final groupCounts = response.data['trangThaiCounts'];
+      final groupCounts = response.data['loaiCounts'];
       if (groupCounts is Map<String, dynamic>) {
         // Helper function để parse giá trị từ groupCounts
         int parseGroupCount(String key, [String? altKey]) {
@@ -655,9 +655,9 @@ class AssetTransferRepository extends ApiBase {
         }
 
         result['totalAll'] = parseGroupCount('-1', 'all');
-        result['totalCP'] = parseGroupCount('0', 'capPhat');
-        result['totalDC'] = parseGroupCount('1', 'dieuChuyen');
-        result['totalTH'] = parseGroupCount('2', 'thuHoi');
+        result['totalCP'] = parseGroupCount('1', 'capPhat');
+        result['totalDC'] = parseGroupCount('2', 'dieuChuyen');
+        result['totalTH'] = parseGroupCount('3', 'thuHoi');
       } else {
         // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
         result['totalAll'] = 0;
@@ -668,7 +668,7 @@ class AssetTransferRepository extends ApiBase {
     } catch (e) {
       log("Error at getDataWithPagination - AssetTransferRepository: $e");
     }
-
+    print('check result: $result');
     return result;
   }
 

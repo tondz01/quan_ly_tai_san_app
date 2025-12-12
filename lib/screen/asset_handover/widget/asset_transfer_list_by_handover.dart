@@ -452,19 +452,20 @@ class _AssetTransferListByHandoverState
         ),
         riverpod.Consumer(
           builder: (context, ref, _) {
-            final totals =
-                ref
-                    .read(tableAssetTransferByHandoverProvider.notifier)
-                    .getTotals();
-
+            final isLoading = ref.watch(
+              tableAssetTransferByHandoverProvider.select((s) => s.isLoading),
+            );
+            final totals = ref
+                .watch(tableAssetTransferByHandoverProvider.notifier)
+                .getTotals();
             return FindByType(
               isCapPhat: isCapPhat,
               isDieuChuyen: isDieuChuyen,
               isThuHoi: isThuHoi,
-              allCount: totals['totalAll'] ?? 0,
-              capPhatCount: totals['totalCP'] ?? 0,
-              dieuChuyenCount: totals['totalDC'] ?? 0,
-              thuHoiCount: totals['totalTH'] ?? 0,
+              allCount: isLoading ? 0 : totals['totalAll'] ?? 0,
+              capPhatCount: isLoading ? 0 : totals['totalCP'] ?? 0,
+              dieuChuyenCount: isLoading ? 0 : totals['totalDC'] ?? 0,
+              thuHoiCount: isLoading ? 0 : totals['totalTH'] ?? 0,
               onFilterChanged: (status, value) {
                 setState(() {
                   setFilterStatus(status, value);
