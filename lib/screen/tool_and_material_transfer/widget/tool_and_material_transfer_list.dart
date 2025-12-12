@@ -104,6 +104,8 @@ class _ToolAndMaterialTransferListState
     switch (key) {
       case 'type':
         return item.tenPhieu;
+      case 'trich_yeu':
+        return item.trichYeu;
       case 'effective_date':
         return item.tggnTuNgay;
       case 'approver':
@@ -133,7 +135,6 @@ class _ToolAndMaterialTransferListState
       case 'permission_signing':
         return TableToolAndMaterialTransferConfig.getStatusSigningName(
           item,
-          userInfo ?? UserInfoDTO.empty(),
         );
       case 'status_document':
         return TableToolAndMaterialTransferConfig.getStatusDocumentName(item);
@@ -176,11 +177,9 @@ class _ToolAndMaterialTransferListState
     for (int i = 0; i < list1.length; i++) {
       int statusSign1 = TableToolAndMaterialTransferConfig.getPermissionSigning(
         list1[i],
-        userInfo!,
       );
       int statusSign2 = TableToolAndMaterialTransferConfig.getPermissionSigning(
         list2[i],
-        userInfo!,
       );
       if (list1[i].id != list2[i].id) return false;
       if (list1[i].trangThai != list2[i].trangThai) return false;

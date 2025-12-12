@@ -11,6 +11,9 @@ class ChiTietDieuDongTaiSan {
   int hienTrang;
   int soLuong;
   String ghiChu;
+  String kyHieu;
+  String soKyHieu;
+  String namSanXuat;
   String ngayTao;
   String ngayCapNhat;
   String nguoiTao;
@@ -28,6 +31,9 @@ class ChiTietDieuDongTaiSan {
     required this.hienTrang,
     required this.soLuong,
     required this.ghiChu,
+    required this.kyHieu,
+    required this.soKyHieu,
+    required this.namSanXuat,
     required this.ngayTao,
     required this.ngayCapNhat,
     required this.nguoiTao,
@@ -61,6 +67,9 @@ class ChiTietDieuDongTaiSan {
       hienTrang: parseInt(json['hienTrang']),
       soLuong: parseInt(json['soLuong']),
       ghiChu: parseString(json['ghiChu']),
+      kyHieu: parseString(json['kyHieu']),
+      soKyHieu: parseString(json['soKyHieu']),
+      namSanXuat: parseString(json['namSanXuat']),
       ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
       ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: parseString(json['nguoiTao']),
@@ -81,6 +90,9 @@ class ChiTietDieuDongTaiSan {
       'hienTrang': hienTrang,
       'soLuong': soLuong,
       'ghiChu': ghiChu,
+      'kyHieu': kyHieu,
+      'soKyHieu': soKyHieu,
+      'namSanXuat': namSanXuat,
       'ngayTao': AppUtility.formatFromISOString(ngayTao),
       'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
       'nguoiTao': nguoiTao,
@@ -101,6 +113,9 @@ class ChiTietDieuDongTaiSan {
       hienTrang: 0,
       soLuong: 0,
       ghiChu: '',
+      kyHieu: '',
+      soKyHieu: '',
+      namSanXuat: '',
       ngayTao: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
       ngayCapNhat: AppUtility.formatFromISOString(
         DateTime.now().toIso8601String(),

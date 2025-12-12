@@ -16,6 +16,7 @@ class DetailAssetHandoverDto {
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
+  final String? namSanXuat;
 
   DetailAssetHandoverDto({
     this.id,
@@ -35,6 +36,7 @@ class DetailAssetHandoverDto {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
+    this.namSanXuat,
   });
 
   factory DetailAssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class DetailAssetHandoverDto {
       nguoiTao: json['nguoiTao'] as String?,
       nguoiCapNhat: json['nguoiCapNhat'] as String?,
       isActive: json['isActive'] as bool?,
+      namSanXuat: json['namSanXuat'] as String?,
     );
   }
 
@@ -82,6 +85,7 @@ class DetailAssetHandoverDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'namSanXuat': namSanXuat,
     };
   }
 
@@ -103,6 +107,7 @@ class DetailAssetHandoverDto {
     String? nguoiTao,
     String? nguoiCapNhat,
     bool? isActive,
+    String? namSanXuat,
   }) {
     return DetailAssetHandoverDto(
       id: id ?? this.id,
@@ -122,6 +127,7 @@ class DetailAssetHandoverDto {
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
+      namSanXuat: namSanXuat ?? this.namSanXuat,
     );
   }
 
@@ -150,7 +156,8 @@ class DetailAssetHandoverDto {
         other.ngayCapNhat == ngayCapNhat &&
         other.nguoiTao == nguoiTao &&
         other.nguoiCapNhat == nguoiCapNhat &&
-        other.isActive == isActive;
+        other.isActive == isActive &&
+        other.namSanXuat == namSanXuat;
   }
 
   @override
@@ -171,6 +178,7 @@ class DetailAssetHandoverDto {
         ngayCapNhat.hashCode ^
         nguoiTao.hashCode ^
         nguoiCapNhat.hashCode ^
-        isActive.hashCode;
+        isActive.hashCode ^
+        namSanXuat.hashCode;
   }
 }
