@@ -29,6 +29,18 @@ class TabelAssetTransferConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
+          name: 'Trích yếu',
+          key: 'trich_yeu',
+          width: 150,
+          flex: 1,
+          isFixed: false,
+        ),
+        builder: (item) {
+          return TableCellData(widget: Text(item.tenPhieu ?? ''));
+        },
+      ),
+      ColumnDefinition(
+        config: TableColumnData.select(
           name: 'Ngày có hiệu lực',
           key: 'effective_date',
           width: 150,

@@ -81,6 +81,52 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   PdfDocument? _document;
   List<AssetManagementDto> assetByDepartment = [];
 
+  /// Merge assetByDepartment với các asset từ chiTietDieuDongTaiSans
+  /// Logic:
+  /// - Khi VIEW (không edit): Ưu tiên asset từ chiTietDieuDongTaiSans (để hiển thị chi tiết đã chọn)
+  /// - Khi EDIT: Merge cả assetByDepartment (để chọn thêm) + asset từ chiTietDieuDongTaiSans (để hiển thị đã chọn)
+  List<AssetManagementDto> _getCombinedAssets() {
+    final Map<String, AssetManagementDto> combinedMap = {};
+    
+    // Bước 1: Ưu tiên lấy asset từ chiTietDieuDongTaiSans (chi tiết đã chọn)
+    // Điều này đảm bảo luôn hiển thị được chi tiết ngay cả khi asset đã được bàn giao
+    final chiTietList = state.item?.chiTietDieuDongTaiSans;
+    if (chiTietList != null && chiTietList.isNotEmpty) {
+      for (final chiTiet in chiTietList) {
+        final idTaiSanRaw = chiTiet.idTaiSan;
+        if (idTaiSanRaw.isEmpty) continue;
+        
+        final idTaiSan = idTaiSanRaw.replaceAll(RegExp(r"\s+"), "");
+        if (idTaiSan.isNotEmpty) {
+          // Tạo AssetManagementDto từ ChiTietDieuDongTaiSan
+          final assetFromChiTiet = AssetManagementDto(
+            id: idTaiSan,
+            tenTaiSan: chiTiet.tenTaiSan,
+            donViTinh: chiTiet.donViTinh,
+            soLuong: chiTiet.soLuong,
+            hienTrang: chiTiet.hienTrang,
+            ghiChu: chiTiet.ghiChu,
+            // Có thể thêm các field khác nếu cần
+          );
+          combinedMap[idTaiSan] = assetFromChiTiet;
+        }
+      }
+    }
+
+    // Bước 2: Nếu đang EDIT, thêm assetByDepartment để có thể chọn thêm asset mới
+    // (Asset từ chiTiet sẽ được giữ nguyên, assetByDepartment chỉ bổ sung thêm)
+    if (state.isEditing) {
+      for (final asset in assetByDepartment) {
+        if (asset.id != null && !combinedMap.containsKey(asset.id!)) {
+          combinedMap[asset.id!] = asset;
+        }
+      }
+    }
+
+    // Trả về list kết hợp
+    return combinedMap.values.toList();
+  }
+
   bool _validateForm() {
     setState(() {
       validation.validateForm(
@@ -778,7 +824,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 context,
                 isEditing: state.isEditing,
                 initialDetails: state.item?.chiTietDieuDongTaiSans ?? [],
-                allAssets: assetByDepartment,
+                allAssets: _getCombinedAssets(),
                 onDataChanged: (data) {
                   setState(() {
                     state.listNewDetails =
@@ -994,6 +1040,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
       return;
     }
+    widget.provider.loadingMessage = 'Đang lưu dữ liệu...';
+    widget.provider.isLoading = true;
     if (state.item == null) {
       final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
