@@ -207,6 +207,8 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           idDonVi: asset.idDonVi,
           donViTinh: donViTinh,
           namSanXuat: namSX,
+          soKyHieu: asset.soKyHieu,
+          kyHieu: asset.kyHieu,
           soLuong: c.soLuongXuat - c.soLuongDaBanGiao,
           soLuongDaBanGiao: c.soLuongDaBanGiao,
           soLuongXuat: 0,
@@ -250,6 +252,8 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             namSanXuat: detail.namSanXuat ?? 2010,
             soLuong: soLuong,
             ghiChu: asset.ghiChu,
+            soKyHieu: asset.soKyHieu,
+            kyHieu: asset.kyHieu,
             asset: asset,
           );
         },
@@ -341,6 +345,8 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                           ?.tenDonVi ??
                       '';
                   item.namSanXuat = value.namSanXuat;
+                  item.soKyHieu = value.soKyHieu;
+                  item.kyHieu = value.kyHieu;
                   item.soLuong = value.soLuongXuat - value.soLuongDaBanGiao;
                   item.ghiChu = value.ghiChu;
                   item.soLuongXuat = value.soLuongXuat;

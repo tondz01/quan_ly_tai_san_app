@@ -619,7 +619,7 @@ class AssetTransferRepository extends ApiBase {
     try {
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=3&idDonViGiao=$idDepartment',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=3&idDonViGiao=$idDepartment&chuaBanGiaoHet=true',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

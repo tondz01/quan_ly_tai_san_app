@@ -58,7 +58,9 @@
         regs.forEach(r => r.unregister());
       }
 
-      // Xóa cache storage
+      // Xóa cache storage (Cache API - chỉ xóa HTTP cache, KHÔNG xóa localStorage)
+      // ⚠️ LƯU Ý: caches.delete() chỉ xóa Cache API (service worker cache cho assets/HTTP requests)
+      // localStorage (nơi lưu token, user_info) KHÔNG bị ảnh hưởng
       if ('caches' in window) {
         const keys = await caches.keys();
         for (let key of keys) {
@@ -66,7 +68,29 @@
         }
       }
       
-      if (!window.location.pathname.startsWith("/login")) {
+      // Chỉ redirect về login nếu user chưa đăng nhập (không có token)
+      // GetStorage trên web lưu data, kiểm tra xem có token hoặc user_info không
+      const hasToken = () => {
+        try {
+          // GetStorage thường lưu với prefix hoặc key trực tiếp
+          // Kiểm tra các key có thể có
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('token') || key.includes('user_info') || key.includes('USER_INFO'))) {
+              const value = localStorage.getItem(key);
+              if (value && value !== 'null' && value !== 'undefined' && value !== '{}') {
+                return true;
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Error checking token:', e);
+        }
+        return false;
+      };
+      
+      // Chỉ redirect nếu không có token và không đang ở trang login
+      if (!hasToken() && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
     })();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -47,19 +48,13 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
     _isLoadingCount = true;
     try {
       // Gọi API getCountByDvGiao để lấy count
-      final newCount = await _repository.getCountByDvGiao(idDonViGiao);
+      final newCount = await _repository.getDataPageByBanGiao(0, 20, -1, '', idDonViGiao);
       if (!mounted) return;
-      
-      // Chỉ setState khi giá trị thực sự thay đổi
-      if (newCount != quyetDinhCount) {
-        setState(() {
-          quyetDinhCount = newCount;
-        });
-      }
+      setState(() {
+        quyetDinhCount = newCount['totalItems'] ?? 0;
+      });
     } catch (e) {
-      // Log error nếu cần
-    } finally {
-      _isLoadingCount = false;
+      log('Error at _loadCount: $e');
     }
   }
 

@@ -45,7 +45,7 @@ class TableAssetTransferByHandoverProvider
 
   // Trạng thái filter/search hiện tại
   String _currentSearchTerm = '';
-  int _currentType = 1; // lưu type hiện tại
+  int _currentType = 3; // lưu type hiện tại
 
   // Lưu dữ liệu gốc của page hiện tại (chưa filter offline)
   List<DieuDongTaiSanDto> _rawPageData = [];

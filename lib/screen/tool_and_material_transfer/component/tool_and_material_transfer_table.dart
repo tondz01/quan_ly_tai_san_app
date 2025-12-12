@@ -98,6 +98,8 @@ class _DetailToolAndMaterialTransferTableState
           namSanXuat: detailAsset.namSanXuat ?? 2010,
           soLuong: e.soLuong,
           ghiChu: asset.ghiChu,
+          soKyHieu: asset.soKyHieu,
+          kyHieu: asset.kyHieu,
           soLuongDaBanGiao: 0,
           asset: asset,
         ),
@@ -181,6 +183,8 @@ class _DetailToolAndMaterialTransferTableState
                 soLuong: c.soLuong,
                 soLuongXuat: 0,
                 ghiChu: asset.ghiChu,
+                soKyHieu: asset.soKyHieu,
+                kyHieu: asset.kyHieu,
                 asset: asset,
               ),
         );

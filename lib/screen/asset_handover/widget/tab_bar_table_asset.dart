@@ -41,27 +41,35 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
 
   Future<void> _loadCount() async {
     // Đảm bảo userInfoDTO đã được khởi tạo
-    userInfoDTO ??= widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
-    
+    userInfoDTO ??=
+        widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
+
     // Lấy idDonViGiao từ NhanVien (phòng ban của user)
-    NhanVien? nhanVien = AccountHelper.instance
-        .getNhanVienById(userInfoDTO?.tenDangNhap ?? '');
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(
+      userInfoDTO?.tenDangNhap ?? '',
+    );
     final idDonViGiao = nhanVien?.phongBanId ?? '';
-    
+
     if (idDonViGiao.isEmpty || _isLoadingCount) return;
 
     _isLoadingCount = true;
     try {
       // Gọi API getCountByDvGiao để lấy count
-      final newCount = await _repository.getCountByDvGiao(idDonViGiao);
+      final newCount = await _repository.getDataPageByBanGiao(
+        0,
+        20,
+        -1,
+        '',
+        idDonViGiao,
+      );
       if (!mounted) return;
 
       // Chỉ setState khi giá trị thực sự thay đổi
-      if (newCount != quyetDinhCount) {
+      setState(() {
         setState(() {
-          quyetDinhCount = newCount;
+          quyetDinhCount = newCount['totalItems'] ?? 0;
         });
-      }
+      });
     } catch (e) {
       // Log error nếu cần
     } finally {
@@ -82,8 +90,7 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
   void initState() {
     super.initState();
     userInfoDTO = widget.provider.userInfo;
-    userInfoDTO ??=
-        AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
+    userInfoDTO ??= AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
     // Load count ngay lập tức khi vào màn hình
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {

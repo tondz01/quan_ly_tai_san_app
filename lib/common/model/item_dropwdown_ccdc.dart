@@ -12,6 +12,8 @@ class ItemDropdownDetailCcdc {
   int namSanXuat;
   int soLuong;
   String ghiChu;
+  String soKyHieu;
+  String kyHieu;
   int soLuongXuat; // Thêm field này
   int soLuongDaBanGiao;
   ToolsAndSuppliesDto? asset;
@@ -28,6 +30,8 @@ class ItemDropdownDetailCcdc {
     required this.namSanXuat,
     required this.soLuong,
     required this.ghiChu,
+    required this.soKyHieu,
+    required this.kyHieu,
     this.soLuongXuat = 0, // Thêm parameter này
     this.soLuongDaBanGiao = 0,
     this.asset,
@@ -46,6 +50,8 @@ class ItemDropdownDetailCcdc {
       namSanXuat: json['namSanXuat'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
+      soKyHieu: json['soKyHieu'] ?? '',
+      kyHieu: json['kyHieu'] ?? '',
       soLuongXuat: json['soLuongXuat'] ?? 0,
       soLuongDaBanGiao: json['soLuongDaBanGiao'] ?? 0,
       asset:
@@ -73,6 +79,8 @@ class ItemDropdownDetailCcdc {
       'namSanXuat': namSanXuat,
       'soLuong': soLuong,
       'ghiChu': ghiChu,
+      'soKyHieu': soKyHieu,
+      'kyHieu': kyHieu,
       'soLuongXuat': soLuongXuat,
       'soLuongDaBanGiao': soLuongDaBanGiao,
       'asset': asset?.toJson(),
@@ -94,6 +102,8 @@ class ItemDropdownDetailCcdc {
     String? idDonVi,
     String? donViTinh,
     int? namSanXuat,
+    String? soKyHieu,
+    String? kyHieu,
     int? soLuong,
     String? ghiChu,
     int? soLuongDaBanGiao,
@@ -109,6 +119,8 @@ class ItemDropdownDetailCcdc {
       idDonVi: idDonVi ?? this.idDonVi,
       donViTinh: donViTinh ?? this.donViTinh,
       namSanXuat: namSanXuat ?? this.namSanXuat,
+      soKyHieu: soKyHieu ?? this.soKyHieu,
+      kyHieu: kyHieu ?? this.kyHieu,
       soLuong: soLuong ?? this.soLuong,
       ghiChu: ghiChu ?? this.ghiChu,
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
@@ -129,6 +141,8 @@ class ItemDropdownDetailCcdc {
       idDonVi: '',
       donViTinh: '',
       namSanXuat: 2010,
+      soKyHieu: '',
+      kyHieu: '',
       soLuong: 0,
       ghiChu: '',
       soLuongXuat: 0,

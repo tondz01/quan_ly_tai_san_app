@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
@@ -41,7 +42,8 @@ class AccountHelper {
   Map<String, NhanVien>? _nhanVienByIdCache; // O(1) lookup instead of O(n)
 
   // Cache cho counts để tránh tính toán lại nhiều lần
-  Map<String, int> _countCache = {}; // Key: "assetTransfer_1_userId", "toolMaterialTransfer_2_userId", etc.
+  Map<String, int> _countCache =
+      {}; // Key: "assetTransfer_1_userId", "toolMaterialTransfer_2_userId", etc.
   String? _cachedUserTenDangNhap; // Cache user để detect khi user thay đổi
   int _dataVersion = 0; // Version để invalidate cache khi data thay đổi
 
@@ -142,17 +144,18 @@ class AccountHelper {
       if (raw is List<PhongBan>) {
         result = raw;
       } else if (raw is List) {
-        result = raw
-            .map((e) {
-              if (e is PhongBan) return e;
-              if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
-              if (e is Map) {
-                return PhongBan.fromJson(Map<String, dynamic>.from(e));
-              }
-              return null;
-            })
-            .whereType<PhongBan>()
-            .toList();
+        result =
+            raw
+                .map((e) {
+                  if (e is PhongBan) return e;
+                  if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
+                  if (e is Map) {
+                    return PhongBan.fromJson(Map<String, dynamic>.from(e));
+                  }
+                  return null;
+                })
+                .whereType<PhongBan>()
+                .toList();
       }
 
       // Cache the result
@@ -252,14 +255,15 @@ class AccountHelper {
       result = raw;
     } else if (raw is List) {
       try {
-        result = raw
-            .map(
-              (e) =>
-                  e is NhanVien
-                      ? e
-                      : NhanVien.fromJson(e as Map<String, dynamic>),
-            )
-            .toList();
+        result =
+            raw
+                .map(
+                  (e) =>
+                      e is NhanVien
+                          ? e
+                          : NhanVien.fromJson(e as Map<String, dynamic>),
+                )
+                .toList();
       } catch (e) {
         log('Error at getNhanVien: $e');
         return null;
@@ -515,11 +519,11 @@ class AccountHelper {
 
   int getAssetTransferCount(int type) {
     _checkUserChange(); // Kiểm tra user có thay đổi không
-    
+
     // Cache key: type + user + dataVersion
     final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
     final cacheKey = 'assetTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
-    
+
     // Trả về cached count nếu có
     if (_countCache.containsKey(cacheKey)) {
       return _countCache[cacheKey]!;
@@ -533,57 +537,66 @@ class AccountHelper {
 
     // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
     final userTenDangNhapCached = userTenDangNhap;
-    
+
     // Tối ưu: combine tất cả filters thành một where() duy nhất
-    final listAssetTransfer = assetTransfer.where((item) {
-      // Filter 1: share hoặc người tạo
-      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
-        return false;
-      }
-      
-      // Filter 2: loại
-      if (item.loai != type) {
-        return false;
-      }
-      
-      // Filter 3: signature check (chỉ check nếu cần)
-      // Tối ưu: chỉ build signature group khi cần thiết
-      final idSignatureGroup = <Map<String, dynamic>>[];
-      
-      if (item.nguoiLapPhieuKyNhay == true) {
-        idSignatureGroup.add({
-          "id": item.idNguoiKyNhay,
-          "signed": item.trangThaiKyNhay == true,
-        });
-      }
-      
-      idSignatureGroup.add({
-        "id": item.idTrinhDuyetCapPhong,
-        "signed": item.trinhDuyetCapPhongXacNhan == true,
-      });
-      
-      if (item.listSignatory != null) {
-        for (var signatory in item.listSignatory!) {
+    final listAssetTransfer =
+        assetTransfer.where((item) {
+          // Filter 1: share hoặc người tạo
+          if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+            return false;
+          }
+
+          // Filter 2: loại
+          if (item.loai != type) {
+            return false;
+          }
+
+          // Filter 3: signature check (chỉ check nếu cần)
+          // Tối ưu: chỉ build signature group khi cần thiết
+          // Thứ tự người ký: 1. Người lập phiếu ký nhảy (nếu có) -> 2. Trình duyệt cấp phòng -> 3. Danh sách người ký (sort theo id) -> 4. Trình duyệt giám đốc
+          final idSignatureGroup = <Map<String, dynamic>>[];
+
+          // 1. Người lập phiếu ký nhảy (nếu có)
+          if (item.nguoiLapPhieuKyNhay == true) {
+            idSignatureGroup.add({
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
+            });
+          }
+
+          // 2. Trình duyệt cấp phòng
           idSignatureGroup.add({
-            "id": signatory.idNguoiKy,
-            "signed": signatory.trangThai == 1,
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
           });
-        }
-      }
-      
-      idSignatureGroup.add({
-        "id": item.idTrinhDuyetGiamDoc,
-        "signed": item.trinhDuyetGiamDocXacNhan == true,
-      });
 
-      final userSignature = idSignatureGroup.firstWhere(
-        (e) => e["id"] == userTenDangNhapCached,
-        orElse: () => {"id": null, "signed": false},
-      );
+          // 3. Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
+            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
+              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            for (var signatory in sortedSignatories) {
+              idSignatureGroup.add({
+                "id": signatory.idNguoiKy,
+                "signed": signatory.trangThai == 1,
+              });
+            }
+          }
 
-      return userSignature["id"] != null && userSignature["signed"] == false;
-    }).toList();
-    
+          // 4. Trình duyệt giám đốc
+          idSignatureGroup.add({
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+          });
+
+          final userSignature = idSignatureGroup.firstWhere(
+            (e) => e["id"] == userTenDangNhapCached,
+            orElse: () => {"id": null, "signed": false},
+          );
+
+          return userSignature["id"] != null &&
+              userSignature["signed"] == false;
+        }).toList();
+
     final count = listAssetTransfer.length;
     _countCache[cacheKey] = count; // Cache kết quả
     return count;
@@ -637,11 +650,12 @@ class AccountHelper {
 
   int getToolAndMaterialTransferCount(int type) {
     _checkUserChange(); // Kiểm tra user có thay đổi không
-    
+
     // Cache key: type + user + dataVersion
     final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
-    final cacheKey = 'toolMaterialTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
-    
+    final cacheKey =
+        'toolMaterialTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
+
     // Trả về cached count nếu có
     if (_countCache.containsKey(cacheKey)) {
       return _countCache[cacheKey]!;
@@ -655,56 +669,65 @@ class AccountHelper {
 
     // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
     final userTenDangNhapCached = userTenDangNhap;
-    
+
     // Tối ưu: combine tất cả filters thành một where() duy nhất
-    final listToolAndSupplies = toolAndSupplies.where((item) {
-      // Filter 1: loại
-      if (item.loai != type) {
-        return false;
-      }
-      
-      // Filter 2: share hoặc người tạo
-      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
-        return false;
-      }
-      
-      // Filter 3: signature check (chỉ build khi cần)
-      final idSignatureGroup = <Map<String, dynamic>>[];
-      
-      if (item.nguoiLapPhieuKyNhay == true) {
-        idSignatureGroup.add({
-          "id": item.idNguoiKyNhay,
-          "signed": item.trangThaiKyNhay == true,
-        });
-      }
-      
-      idSignatureGroup.add({
-        "id": item.idTrinhDuyetCapPhong,
-        "signed": item.trinhDuyetCapPhongXacNhan == true,
-      });
-      
-      if (item.listSignatory != null) {
-        for (var signatory in item.listSignatory!) {
+    final listToolAndSupplies =
+        toolAndSupplies.where((item) {
+          // Filter 1: loại
+          if (item.loai != type) {
+            return false;
+          }
+
+          // Filter 2: share hoặc người tạo
+          if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+            return false;
+          }
+
+          // Filter 3: signature check (chỉ build khi cần)
+          // Thứ tự người ký: 1. Người lập phiếu ký nhảy (nếu có) -> 2. Trình duyệt cấp phòng -> 3. Danh sách người ký (sort theo id) -> 4. Trình duyệt giám đốc
+          final idSignatureGroup = <Map<String, dynamic>>[];
+
+          // 1. Người lập phiếu ký nhảy (nếu có)
+          if (item.nguoiLapPhieuKyNhay == true) {
+            idSignatureGroup.add({
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
+            });
+          }
+
+          // 2. Trình duyệt cấp phòng
           idSignatureGroup.add({
-            "id": signatory.idNguoiKy,
-            "signed": signatory.trangThai == 1,
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
           });
-        }
-      }
-      
-      idSignatureGroup.add({
-        "id": item.idTrinhDuyetGiamDoc,
-        "signed": item.trinhDuyetGiamDocXacNhan == true,
-      });
 
-      final userSignature = idSignatureGroup.firstWhere(
-        (e) => e["id"] == userTenDangNhapCached,
-        orElse: () => {"id": null, "signed": false},
-      );
+          // 3. Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
+            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
+              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            for (var signatory in sortedSignatories) {
+              idSignatureGroup.add({
+                "id": signatory.idNguoiKy,
+                "signed": signatory.trangThai == 1,
+              });
+            }
+          }
 
-      return userSignature["id"] != null && userSignature["signed"] == false;
-    }).toList();
-    
+          // 4. Trình duyệt giám đốc
+          idSignatureGroup.add({
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+          });
+
+          final userSignature = idSignatureGroup.firstWhere(
+            (e) => e["id"] == userTenDangNhapCached,
+            orElse: () => {"id": null, "signed": false},
+          );
+
+          return userSignature["id"] != null &&
+              userSignature["signed"] == false;
+        }).toList();
+
     final count = listToolAndSupplies.length;
     _countCache[cacheKey] = count; // Cache kết quả
     return count;
@@ -748,11 +771,11 @@ class AccountHelper {
 
   int getAssetHandoverCount() {
     _checkUserChange(); // Kiểm tra user có thay đổi không
-    
+
     // Cache key: user + dataVersion
     final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
     final cacheKey = 'assetHandover_${userTenDangNhap}_v$_dataVersion';
-    
+
     // Trả về cached count nếu có
     if (_countCache.containsKey(cacheKey)) {
       return _countCache[cacheKey]!;
@@ -766,49 +789,54 @@ class AccountHelper {
 
     // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
     final userTenDangNhapCached = userTenDangNhap;
-    
+
     // Tối ưu: combine tất cả filters thành một where() duy nhất
-    final listAssetHandover = assetHandover.where((item) {
-      // Filter 1: share hoặc người tạo
-      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
-        return false;
-      }
-      
-      // Filter 2: signature check (chỉ build khi cần)
-      final idSignatureGroup = <Map<String, dynamic>>[];
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDiendonviBanHanhQD,
-        "signed": item.daXacNhan == true,
-      });
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDienBenGiao,
-        "signed": item.daiDienBenGiaoXacNhan == true,
-      });
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDienBenNhan,
-        "signed": item.daiDienBenNhanXacNhan == true,
-      });
-      
-      if (item.listSignatory != null) {
-        for (var signatory in item.listSignatory!) {
+    final listAssetHandover =
+        assetHandover.where((item) {
+          // Filter 1: share hoặc người tạo
+          if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+            return false;
+          }
+
+          // Filter 2: signature check (chỉ build khi cần)
+          final idSignatureGroup = <Map<String, dynamic>>[];
+
           idSignatureGroup.add({
-            "id": signatory.idNguoiKy,
-            "signed": signatory.trangThai == 1,
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
           });
-        }
-      }
 
-      final userSignature = idSignatureGroup.firstWhere(
-        (e) => e["id"] == userTenDangNhapCached,
-        orElse: () => {"id": null, "signed": false},
-      );
+          idSignatureGroup.add({
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+          });
 
-      return userSignature["id"] != null && userSignature["signed"] == false;
-    }).toList();
-    
+          // Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
+            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
+              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            for (var signatory in sortedSignatories) {
+              idSignatureGroup.add({
+                "id": signatory.idNguoiKy,
+                "signed": signatory.trangThai == 1,
+              });
+            }
+          }
+
+          idSignatureGroup.add({
+            "id": item.idGiamDoc,
+            "signed": item.giamDocKy == true,
+          });
+
+          final userSignature = idSignatureGroup.firstWhere(
+            (e) => e["id"] == userTenDangNhapCached,
+            orElse: () => {"id": null, "signed": false},
+          );
+
+          return userSignature["id"] != null &&
+              userSignature["signed"] == false;
+        }).toList();
+
     final count = listAssetHandover.length;
     _countCache[cacheKey] = count; // Cache kết quả
     return count;
@@ -850,11 +878,11 @@ class AccountHelper {
 
   int getToolAndMaterialHandoverCount() {
     _checkUserChange(); // Kiểm tra user có thay đổi không
-    
+
     // Cache key: user + dataVersion
     final userTenDangNhap = getUserInfo()?.tenDangNhap ?? '';
     final cacheKey = 'toolMaterialHandover_${userTenDangNhap}_v$_dataVersion';
-    
+
     // Trả về cached count nếu có
     if (_countCache.containsKey(cacheKey)) {
       return _countCache[cacheKey]!;
@@ -868,49 +896,54 @@ class AccountHelper {
 
     // Cache userTenDangNhap để tránh gọi getUserInfo() nhiều lần
     final userTenDangNhapCached = userTenDangNhap;
-    
+
     // Tối ưu: combine tất cả filters thành một where() duy nhất
-    final listToolAndSuppliesHandover = toolAndSuppliesHandover.where((item) {
-      // Filter 1: share hoặc người tạo
-      if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
-        return false;
-      }
-      
-      // Filter 2: signature check (chỉ build khi cần)
-      final idSignatureGroup = <Map<String, dynamic>>[];
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDiendonviBanHanhQD,
-        "signed": item.daXacNhan == true,
-      });
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDienBenGiao,
-        "signed": item.daiDienBenGiaoXacNhan == true,
-      });
-      
-      idSignatureGroup.add({
-        "id": item.idDaiDienBenNhan,
-        "signed": item.daiDienBenNhanXacNhan == true,
-      });
-      
-      if (item.listSignatory != null) {
-        for (var signatory in item.listSignatory!) {
+    final listToolAndSuppliesHandover =
+        toolAndSuppliesHandover.where((item) {
+          // Filter 1: share hoặc người tạo
+          if (item.share != true && item.nguoiTao != userTenDangNhapCached) {
+            return false;
+          }
+
+          // Filter 2: signature check (chỉ build khi cần)
+          final idSignatureGroup = <Map<String, dynamic>>[];
+
           idSignatureGroup.add({
-            "id": signatory.idNguoiKy,
-            "signed": signatory.trangThai == 1,
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
           });
-        }
-      }
 
-      final userSignature = idSignatureGroup.firstWhere(
-        (e) => e["id"] == userTenDangNhapCached,
-        orElse: () => {"id": null, "signed": false},
-      );
+          idSignatureGroup.add({
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+          });
 
-      return userSignature["id"] != null && userSignature["signed"] == false;
-    }).toList();
-    
+          // Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
+            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
+              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            for (var signatory in sortedSignatories) {
+              idSignatureGroup.add({
+                "id": signatory.idNguoiKy,
+                "signed": signatory.trangThai == 1,
+              });
+            }
+          }
+
+          idSignatureGroup.add({
+            "id": item.idGiamDoc,
+            "signed": item.giamDocKy == true,
+          });
+
+          final userSignature = idSignatureGroup.firstWhere(
+            (e) => e["id"] == userTenDangNhapCached,
+            orElse: () => {"id": null, "signed": false},
+          );
+
+          return userSignature["id"] != null &&
+              userSignature["signed"] == false;
+        }).toList();
+
     final count = listToolAndSuppliesHandover.length;
     _countCache[cacheKey] = count; // Cache kết quả
     return count;
@@ -1135,23 +1168,26 @@ class AccountHelper {
       try {
         // Convert to List<Map> before saving to ensure GetStorage handles it correctly
         // This also helps reduce storage size and improve compatibility
-        final List<Map<String, dynamic>> assetsAsMap = assets
-            .map((asset) => asset.toJson())
-            .toList();
-        
+        final List<Map<String, dynamic>> assetsAsMap =
+            assets.map((asset) => asset.toJson()).toList();
+
         log('Converted ${assetsAsMap.length} assets to Map format');
-        
+
         // Await write to ensure data is saved before reading
         await StorageService.write(StorageKey.ASSETS, assetsAsMap);
-        
+
         // Wait a bit to ensure write is complete
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         final raw = StorageService.read(StorageKey.ASSETS);
         if (raw != null) {
-          log('message result setListAsset: ${raw is List ? raw.length : "not a list"}');
+          log(
+            'message result setListAsset: ${raw is List ? raw.length : "not a list"}',
+          );
         } else {
-          log('WARNING: setListAsset: StorageService.read returned null after write');
+          log(
+            'WARNING: setListAsset: StorageService.read returned null after write',
+          );
         }
       } catch (e) {
         log('ERROR in setListAsset: $e');
