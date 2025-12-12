@@ -40,10 +40,14 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
   bool _isLoadingCount = false;
 
   Future<void> _loadCount() async {
-    // Lấy idDonViGiao từ provider (phòng ban của user)
+    // Đảm bảo userInfoDTO đã được khởi tạo
+    userInfoDTO ??= widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
+    
+    // Lấy idDonViGiao từ NhanVien (phòng ban của user)
     NhanVien? nhanVien = AccountHelper.instance
         .getNhanVienById(userInfoDTO?.tenDangNhap ?? '');
     final idDonViGiao = nhanVien?.phongBanId ?? '';
+    
     if (idDonViGiao.isEmpty || _isLoadingCount) return;
 
     _isLoadingCount = true;
