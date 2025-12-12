@@ -148,20 +148,23 @@ class AssetTransferRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-
       final dynamic respData = response.data;
+      final String idDDTS =
+          (respData is Map<String, dynamic> && respData.containsKey('data'))
+              ? (respData['data']['id']?.toString() ?? '')
+              : (respData['id']?.toString() ?? '');
+      if (idDDTS.isEmpty) {
+        result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+        result['message'] = 'Không nhận được ID từ response';
+        return result;
+      }
 
       if (requestDetail.isNotEmpty) {
         final responseDetail = await post(
           '${EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN}/batch',
           data:
               requestDetail
-                  .map(
-                    (e) =>
-                        e
-                            .copyWith(idDieuDongTaiSan: respData['id'] ?? '')
-                            .toJson(),
-                  )
+                  .map((e) => e.copyWith(idDieuDongTaiSan: idDDTS).toJson())
                   .toList(),
         );
         final int? statusDetail = responseDetail.statusCode;
@@ -176,7 +179,8 @@ class AssetTransferRepository extends ApiBase {
       }
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
-          idTaiLieu: respData['id'] ?? '',
+          idTaiLieu: idDDTS,
+          trangThai: 0,
         );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
