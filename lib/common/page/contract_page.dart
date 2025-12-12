@@ -605,13 +605,13 @@ class ContractPage {
 
         SGText(
           text:
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.soQuyetDinh ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.diaDiemQuyetDinh ?? ''}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ QĐ số: ${assetHandoverDto.soQuyetDinh ?? ''} / ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ PX${assetHandoverDto.tenDonViGiao ?? ''}  đến PX ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} tại ${assetHandoverDto.diaDiemQuyetDinh ?? ''}.",
           style: SettingPage.textStyle,
         ),
 
         SGText(
-          text: "Chúng tôi gồm có:",
+          text: "Chúng tôi gồm:",
           style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.start,
         ),
@@ -634,7 +634,7 @@ class ContractPage {
         SizedBox(height: 2 * SettingPage.scale),
         SGText(
           text:
-              "Tiến hành giao nhận tài sản từ: ${assetHandoverDto.tenDonViGiao ?? ''} giao cho ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
+              "Tiến hành giao nhận tài sản từ phân xưởng ${assetHandoverDto.tenDonViGiao ?? ''} giao cho phân xưởng ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
           style: SettingPage.textStyle,
         ),
         SizedBox(height: 4 * SettingPage.scale),
@@ -659,7 +659,7 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Đơn vị tính",
+                  "Mã hiệu, quy cách",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -729,6 +729,7 @@ class ContractPage {
               ),
           ],
         ),
+        SGText(text: "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.",),
         SizedBox(height: 20 * SettingPage.scale),
         IntrinsicHeight(
           child: Row(
@@ -830,15 +831,14 @@ class ContractPage {
         ),
 
         SizedBox(height: 24 * SettingPage.scale),
-
         SGText(
           text:
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${banGiaoCCDCVatTu.soQuyetDinh ?? ''}, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến  ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} , tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ QĐ số: ${banGiaoCCDCVatTu.soQuyetDinh ?? ''} / ${SettingPage.formatted(banGiaoCCDCVatTu.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ PX${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến PX ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
           style: SettingPage.textStyle,
         ),
         SGText(
-          text: "Chúng tôi gồm có:",
+          text: "Chúng tôi gồm:",
           style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
           textAlign: TextAlign.start,
         ),
@@ -861,7 +861,7 @@ class ContractPage {
         SizedBox(height: 2 * SettingPage.scale),
         SGText(
           text:
-              "Tiến hành giao nhận tài sản từ: ${banGiaoCCDCVatTu.tenDonViGiao ?? ''} giao cho ${banGiaoCCDCVatTu.tenDonViNhan ?? ''} cụ thể như sau:",
+              "Tiến hành giao nhận tài sản từ phân xưởng ${banGiaoCCDCVatTu.tenDonViGiao ?? ''} giao cho phân xưởng ${banGiaoCCDCVatTu.tenDonViNhan ?? ''} cụ thể như sau:",
           style: SettingPage.textStyle,
         ),
         SizedBox(height: 4 * SettingPage.scale),
@@ -886,7 +886,7 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Đơn vị tính",
+                  "Mã hiệu, quy cách",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
