@@ -19,6 +19,11 @@
 
   <title>quan_ly_tai_san_app</title>
   <link rel="manifest" href="manifest.json" />
+
+  <!-- Force browser not to cache HTML -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 </head>
 
 <body>
@@ -43,6 +48,28 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
+
+  <!--  🔥Xóa toàn bộ cache + service worker -->
+  <script>
+    (async () => {
+      // Xóa service worker
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        regs.forEach(r => r.unregister());
+      }
+
+      // Xóa cache storage
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (let key of keys) {
+          await caches.delete(key);
+        }
+      }
+      window.location.href = "/login";
+      
+    })();
+  </script>
+
   <!-- Flutter Web bootstrap -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
