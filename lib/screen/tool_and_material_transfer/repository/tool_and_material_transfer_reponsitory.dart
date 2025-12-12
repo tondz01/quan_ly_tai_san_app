@@ -334,31 +334,31 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       AccountHelper.instance.clearToolAndMaterialTransfer();
       AccountHelper.instance.setToolAndMaterialTransfer(res.data);
       AccountHelper.refreshAllCounts();
-      await Future.wait(
-        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-          try {
-            toolAndMaterialTransfer
-                .detailToolAndMaterialTransfers = await _detailCcdcVt.getAll(
-              toolAndMaterialTransfer.id.toString(),
-            );
-          } catch (e) {
-            toolAndMaterialTransfer.detailToolAndMaterialTransfers = [];
-          }
-        }),
-      );
+      // await Future.wait(
+      //   toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+      //     try {
+      //       toolAndMaterialTransfer
+      //           .detailToolAndMaterialTransfers = await _detailCcdcVt.getAll(
+      //         toolAndMaterialTransfer.id.toString(),
+      //       );
+      //     } catch (e) {
+      //       toolAndMaterialTransfer.detailToolAndMaterialTransfers = [];
+      //     }
+      //   }),
+      // );
 
-      await Future.wait(
-        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-          try {
-            final signatories = await _signatoryRepository.getAll(
-              toolAndMaterialTransfer.id.toString(),
-            );
-            toolAndMaterialTransfer.listSignatory = signatories;
-          } catch (e) {
-            toolAndMaterialTransfer.listSignatory = [];
-          }
-        }),
-      );
+      // await Future.wait(
+      //   toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+      //     try {
+      //       final signatories = await _signatoryRepository.getAll(
+      //         toolAndMaterialTransfer.id.toString(),
+      //       );
+      //       toolAndMaterialTransfer.listSignatory = signatories;
+      //     } catch (e) {
+      //       toolAndMaterialTransfer.listSignatory = [];
+      //     }
+      //   }),
+      // );
 
       return toolAndMaterialTransfers;
     } catch (e) {

@@ -29,7 +29,7 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
   final AssetHandoverRepository _repo = AssetHandoverRepository();
   List<AssetHandoverDto> _list = [];
   bool _isLoading = true;
-  bool _isExporting = false;
+  bool isExporting = false;
   final GlobalKey _repaintKey = GlobalKey();
   late HomeScrollController _scrollController;
 
@@ -60,8 +60,8 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
     });
   }
 
-  Future<void> _exportToExcel() async {
-    setState(() => _isExporting = true);
+  Future<void> exportToExcel() async {
+    setState(() => isExporting = true);
 
     try {
       await ScreenshotToExcelService.exportReportToExcel(
@@ -78,7 +78,7 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isExporting = false);
+        setState(() => isExporting = false);
       }
     }
   }

@@ -29,7 +29,7 @@ class BienBanKiemKeTaiSanCoDinhScreen extends StatefulWidget {
 class _BienBanKiemKeTaiSanCoDinhScreenState
     extends State<BienBanKiemKeTaiSanCoDinhScreen> {
   List<InventoryMinutes> _list = [];
-  List<InventoryMinutes> _fullList = []; // Dữ liệu đầy đủ để xuất Excel/In
+  List<InventoryMinutes> fullList = []; // Dữ liệu đầy đủ để xuất Excel/In
   List<List<InventoryMinutes>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
@@ -119,7 +119,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
       final fullData = (result['data'] as List).cast<InventoryMinutes>();
-      _fullList = fullData;
+      fullList = fullData;
 
       // Giới hạn hiển thị tối đa 50 items
       final displayData = fullData.length > _maxDisplayItems

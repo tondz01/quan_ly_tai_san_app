@@ -13,18 +13,18 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
+// import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverRepository extends ApiBase {
-  late final SignatoryRepository _signatoryRepository;
+  // late final SignatoryRepository _signatoryRepository;
   final jsonMsg = MessageServiceRealtime().listenLatestJson();
 
   AssetHandoverRepository() {
-    _signatoryRepository = SignatoryRepository();
+    // _signatoryRepository = SignatoryRepository();
   }
 
   Future<Map<String, dynamic>> getListAssetHandover() async {
@@ -51,18 +51,18 @@ class AssetHandoverRepository extends ApiBase {
       AccountHelper.instance.clearAssetHandover();
       AccountHelper.instance.setAssetHandover(assetHandover);
       AccountHelper.refreshAllCounts();
-      await Future.wait(
-        assetHandover.map((assetHandover) async {
-          try {
-            final signatories = await _signatoryRepository.getAll(
-              assetHandover.id.toString(),
-            );
-            assetHandover.listSignatory = signatories;
-          } catch (e) {
-            assetHandover.listSignatory = [];
-          }
-        }),
-      );
+      // await Future.wait(
+      //   assetHandover.map((assetHandover) async {
+      //     try {
+      //       final signatories = await _signatoryRepository.getAll(
+      //         assetHandover.id.toString(),
+      //       );
+      //       assetHandover.listSignatory = signatories;
+      //     } catch (e) {
+      //       assetHandover.listSignatory = [];
+      //     }
+      //   }),
+      // );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       result['data'] = assetHandover;

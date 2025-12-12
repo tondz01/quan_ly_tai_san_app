@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
+// import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
@@ -19,10 +19,10 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolAndSuppliesHandoverRepository extends ApiBase {
-  late final SignatoryRepository _signatoryRepository;
+  // late final SignatoryRepository _signatoryRepository;
 
   ToolAndSuppliesHandoverRepository() {
-    _signatoryRepository = SignatoryRepository();
+    // _signatoryRepository = SignatoryRepository();
   }
 
   Future<Map<String, dynamic>> getListToolAndSuppliesHandover() async {
@@ -50,16 +50,16 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       AccountHelper.instance.setToolAndMaterialHandover(handoverList);
       AccountHelper.refreshAllCounts();
       // Tối ưu: Gọi song song cả signatory và detail supplies trong cùng một Future.wait
-      await Future.wait(
-        handoverList.map((item) async {
-          await Future.wait([
-            // Load signatories
-            _loadSignatories(item),
-            // Load detail supplies handover
-            _loadDetailSupplies(item),
-          ]);
-        }),
-      );
+      // await Future.wait(
+      //   handoverList.map((item) async {
+      //     await Future.wait([
+      //       // Load signatories
+      //       _loadSignatories(item),
+      //       // Load detail supplies handover
+      //       _loadDetailSupplies(item),
+      //     ]);
+      //   }),
+      // );
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
@@ -658,52 +658,52 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
-  // Helper methods để tối ưu performance
-  Future<void> _loadSignatories(ToolAndSuppliesHandoverDto item) async {
-    try {
-      final signatories = await _signatoryRepository.getAll(item.id.toString());
-      item.listSignatory = signatories;
-    } catch (e) {
-      item.listSignatory = [];
-      SGLog.error(
-        "ToolAndSuppliesHandoverRepository",
-        "Error loading signatories for ID ${item.id}: $e",
-      );
-    }
-  }
+  // // Helper methods để tối ưu performance
+  // Future<void> _loadSignatories(ToolAndSuppliesHandoverDto item) async {
+  //   try {
+  //     final signatories = await _signatoryRepository.getAll(item.id.toString());
+  //     item.listSignatory = signatories;
+  //   } catch (e) {
+  //     item.listSignatory = [];
+  //     SGLog.error(
+  //       "ToolAndSuppliesHandoverRepository",
+  //       "Error loading signatories for ID ${item.id}: $e",
+  //     );
+  //   }
+  // }
 
-  Future<void> _loadDetailSupplies(ToolAndSuppliesHandoverDto item) async {
-    try {
-      final detailSuppliesHandover = await getChiTietBanGiaoCCDCVatTu(
-        idbangiaoccdcvattu: item.id.toString(),
-        iddieudongccdcvattu: item.lenhDieuDong.toString(),
-      );
+  // Future<void> _loadDetailSupplies(ToolAndSuppliesHandoverDto item) async {
+  //   try {
+  //     final detailSuppliesHandover = await getChiTietBanGiaoCCDCVatTu(
+  //       idbangiaoccdcvattu: item.id.toString(),
+  //       iddieudongccdcvattu: item.lenhDieuDong.toString(),
+  //     );
 
-      final dynamic rawData = detailSuppliesHandover['data'];
-      if (rawData is List) {
-        if (rawData.isEmpty) {
-          item.listDetailSubppliesHandover = [];
-        } else if (rawData.first is DetailSubppliesHandoverDto) {
-          item.listDetailSubppliesHandover =
-              List<DetailSubppliesHandoverDto>.from(rawData);
-        } else {
-          item.listDetailSubppliesHandover =
-              ResponseParser.parseToList<DetailSubppliesHandoverDto>(
-                rawData,
-                DetailSubppliesHandoverDto.fromJson,
-              );
-        }
-      } else {
-        item.listDetailSubppliesHandover = [];
-      }
-    } catch (e) {
-      item.listDetailSubppliesHandover = [];
-      SGLog.error(
-        "ToolAndSuppliesHandoverRepository",
-        "Error loading detail supplies handover for ID ${item.id}: $e",
-      );
-    }
-  }
+  //     final dynamic rawData = detailSuppliesHandover['data'];
+  //     if (rawData is List) {
+  //       if (rawData.isEmpty) {
+  //         item.listDetailSubppliesHandover = [];
+  //       } else if (rawData.first is DetailSubppliesHandoverDto) {
+  //         item.listDetailSubppliesHandover =
+  //             List<DetailSubppliesHandoverDto>.from(rawData);
+  //       } else {
+  //         item.listDetailSubppliesHandover =
+  //             ResponseParser.parseToList<DetailSubppliesHandoverDto>(
+  //               rawData,
+  //               DetailSubppliesHandoverDto.fromJson,
+  //             );
+  //       }
+  //     } else {
+  //       item.listDetailSubppliesHandover = [];
+  //     }
+  //   } catch (e) {
+  //     item.listDetailSubppliesHandover = [];
+  //     SGLog.error(
+  //       "ToolAndSuppliesHandoverRepository",
+  //       "Error loading detail supplies handover for ID ${item.id}: $e",
+  //     );
+  //   }
+  // }
 
   Future<Map<String, dynamic>> updateDetailHandoverCCDC(
     Map<String, dynamic> request,
