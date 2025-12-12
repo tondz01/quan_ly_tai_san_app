@@ -365,9 +365,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // _dataAsset = AccountHelper.instance.getAllAssets();
 
     // Batch update để chỉ notify 1 lần
-    _batchUpdate(() {
+    _batchUpdate(() async {
       _itemPreview = null;
       _item = item;
+      if(item!=null){
+        await onReloadDataAssetByCurrentUnit(item.idDonViGiao ?? '');
+      }
       _isShowInput = true;
       _isShowCollapse = true;
       _isLoading = false;

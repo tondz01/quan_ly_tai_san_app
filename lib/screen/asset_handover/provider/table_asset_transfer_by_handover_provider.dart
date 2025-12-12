@@ -198,9 +198,10 @@ class TableAssetTransferByHandoverProvider
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
       totalCP = response['totalCP'] as int? ?? 0;
-      totalDC = response['totalApprove'] as int? ?? 0;
-      totalTH = response['totalCancel'] as int? ?? 0;
-
+      totalDC = response['totalDC'] as int? ?? 0;
+      totalTH = response['totalTH'] as int? ?? 0;
+      final total = getTotals();
+      print('getDataPageByBanGiao Totals fetched: $total');
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
         _reapplyOfflineFilters();
@@ -211,7 +212,6 @@ class TableAssetTransferByHandoverProvider
     } catch (error) {
       if (_isDisposed) return;
 
-      log('Error loading AssetTransfer data: $error');
       _safeUpdateState(
         state.copyWith(
           isLoading: false,
