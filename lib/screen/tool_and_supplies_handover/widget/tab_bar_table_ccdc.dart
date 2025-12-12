@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
@@ -35,8 +37,11 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   bool _isLoadingCount = false;
 
   Future<void> _loadCount() async {
-    // Lấy idDonViGiao từ provider (phòng ban của user)
-    final idDonViGiao = widget.provider.userInfo?.idPhongBan ?? '';
+    // Lấy idDonViGiao từ NhanVien (phòng ban của user)
+    final userInfo = widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(userInfo?.tenDangNhap ?? '');
+    final idDonViGiao = nhanVien?.phongBanId ?? '';
+    
     if (idDonViGiao.isEmpty || _isLoadingCount) return;
     
     _isLoadingCount = true;

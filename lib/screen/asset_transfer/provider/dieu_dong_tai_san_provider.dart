@@ -136,6 +136,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _isShowCollapse = true;
   bool _isLoading = false;
   bool _isLoadingAsset = false; // Flag chống gọi onGetDataAsset nhiều lần
+  bool _isLoadingAssetByUnit = false; // Flag chống gọi onReloadDataAssetByCurrentUnit nhiều lần
+  String? _lastLoadedUnitId; // Cache id đơn vị đã load để tránh load lại
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
@@ -726,41 +728,65 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
+    // Bỏ qua nếu id rỗng
+    if (idDonViHienthoi.isEmpty) {
+      log('onReloadDataAssetByCurrentUnit: SKIPPED - id rỗng');
+      return;
+    }
+    
+    // Chống gọi nhiều lần liên tiếp
+    if (_isLoadingAssetByUnit) {
+      log('onReloadDataAssetByCurrentUnit: SKIPPED - đang loading');
+      return;
+    }
+    
+    // Kiểm tra cache: nếu đã load đơn vị này rồi và có dữ liệu thì không load lại
+    if (_lastLoadedUnitId == idDonViHienthoi && _dataAsset != null && _dataAsset!.isNotEmpty) {
+      log('onReloadDataAssetByCurrentUnit: SKIPPED - đã có cache cho $idDonViHienthoi');
+      return;
+    }
+    
+    _isLoadingAssetByUnit = true;
     _batchUpdate(() {
       _isLoading = true;
       _loadingMessage = 'Đang tải dữ liệu tài sản...';
     });
 
     log('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
-    Map<String, dynamic> result;
-    if (typeDieuDongTaiSan == 1) {
-      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
-    } else {
-      result = await AssetTransferRepository().getAssetByCurrentUnit(
-        idDonViHienthoi,
-      );
-    }
+    
+    try {
+      Map<String, dynamic> result;
+      if (typeDieuDongTaiSan == 1) {
+        result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+      } else {
+        result = await AssetTransferRepository().getAssetByCurrentUnit(
+          idDonViHienthoi,
+        );
+      }
 
-    _batchUpdate(() {
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _dataAsset = result['data'];
-        if (typeDieuDongTaiSan == 1) {
-          _dataAsset =
-              _dataAsset
-                  ?.where((element) => element.idDonViHienThoi == '')
-                  .toList();
-        }
-        _isLoading = false;
-        _loadingMessage = 'Đang tải dữ liệu...';
+        _lastLoadedUnitId = idDonViHienthoi; // Cache lại id đã load
+        // if (typeDieuDongTaiSan == 1) {
+        //   _dataAsset =
+        //       _dataAsset
+        //           ?.where((element) => element.idDonViHienThoi == '')
+        //           .toList();
+        // }
       } else {
         SGLog.debug(
           "AssetTransferProvider",
           "Error at onReloadDataAssetByCurrentUnit: ${result['message']}",
         );
-        _isLoading = false;
-        _loadingMessage = 'Đang tải dữ liệu...';
       }
-    });
+    } catch (e) {
+      log('onReloadDataAssetByCurrentUnit error: $e');
+    } finally {
+      _isLoadingAssetByUnit = false;
+      _isLoading = false;
+      _loadingMessage = 'Đang tải dữ liệu...';
+      notifyListeners();
+    }
   }
 
   void onPushMessage(DieuDongTaiSanDto item) {
