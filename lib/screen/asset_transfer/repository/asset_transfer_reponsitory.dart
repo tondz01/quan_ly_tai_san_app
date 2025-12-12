@@ -12,7 +12,6 @@ import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -23,9 +22,11 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferRepository extends ApiBase {
-  final SignatoryRepository _signatoryRepository = SignatoryRepository();
   // Get danh sách tài sản
-  Future<Map<String, dynamic>> getListDieuDongTaiSan({int? type = -1}) async {
+  Future<Map<String, dynamic>> getListDieuDongTaiSan({
+    int? type = -1,
+    bool? isloadDetail = true,
+  }) async {
     final userInfo = AccountHelper.instance.getUserInfo();
     final idCongTy = userInfo?.idCongTy;
     List<DieuDongTaiSanDto> list = [];
@@ -58,27 +59,27 @@ class AssetTransferRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      await Future.wait(
-        dieuDongTaiSans.map((dieuDongTaiSan) async {
-          Map<String, dynamic> result = await getChiTietDieuDongTaiSan(
-            dieuDongTaiSan.id.toString(),
-          );
-          dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
-        }),
-      );
-      await Future.wait(
-        dieuDongTaiSans.map((dieuDongTaiSan) async {
-          try {
-            final signatories = await _signatoryRepository.getAll(
-              dieuDongTaiSan.id.toString(),
-            );
-            // Đảm bảo listSignatory được khởi tạo
-            dieuDongTaiSan.listSignatory = signatories;
-          } catch (e) {
-            dieuDongTaiSan.listSignatory = [];
-          }
-        }),
-      );
+      // await Future.wait(
+      //   dieuDongTaiSans.map((dieuDongTaiSan) async {
+      //     Map<String, dynamic> result = await getChiTietDieuDongTaiSan(
+      //       dieuDongTaiSan.id.toString(),
+      //     );
+      //     dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
+      //   }),
+      // );
+      // await Future.wait(
+      //   dieuDongTaiSans.map((dieuDongTaiSan) async {
+      //     try {
+      //       final signatories = await _signatoryRepository.getAll(
+      //         dieuDongTaiSan.id.toString(),
+      //       );
+      //       // Đảm bảo listSignatory được khởi tạo
+      //       dieuDongTaiSan.listSignatory = signatories;
+      //     } catch (e) {
+      //       dieuDongTaiSan.listSignatory = [];
+      //     }
+      //   }),
+      // );
       result['data'] = dieuDongTaiSans;
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
@@ -86,6 +87,7 @@ class AssetTransferRepository extends ApiBase {
 
     return result;
   }
+
   Future<Map<String, dynamic>> getListDieuDongTaiSanByHandover() async {
     List<DieuDongTaiSanDto> list = [];
     Map<String, dynamic> result = {
@@ -112,7 +114,9 @@ class AssetTransferRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = dieuDongTaiSans.where((e) => e.trangThai == 3).toList();
     } catch (e) {
-      log("Error at getListDieuDongTaiSanByHandover - AssetTransferRepository: $e");
+      log(
+        "Error at getListDieuDongTaiSanByHandover - AssetTransferRepository: $e",
+      );
     }
 
     return result;
@@ -150,7 +154,15 @@ class AssetTransferRepository extends ApiBase {
       if (requestDetail.isNotEmpty) {
         final responseDetail = await post(
           '${EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN}/batch',
-          data: requestDetail.map((e) => e.copyWith(idDieuDongTaiSan: respData['id'] ?? '').toJson()).toList(),
+          data:
+              requestDetail
+                  .map(
+                    (e) =>
+                        e
+                            .copyWith(idDieuDongTaiSan: respData['id'] ?? '')
+                            .toJson(),
+                  )
+                  .toList(),
         );
         final int? statusDetail = responseDetail.statusCode;
         final bool isOkDetail =
@@ -502,10 +514,10 @@ class AssetTransferRepository extends ApiBase {
     int size,
     int type,
     String search,
-    int trangThai,
-    [String idDepartment = '',
-    bool isSearchUser = true]
-  ) async {
+    int trangThai, [
+    String idDepartment = '',
+    bool isSearchUser = true,
+  ]) async {
     Map<String, dynamic> result = {
       'data': <DieuDongTaiSanDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -549,7 +561,7 @@ class AssetTransferRepository extends ApiBase {
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety
-      final groupCounts = response.data['groupCounts'];
+      final groupCounts = response.data['trangThaiCounts'];
       if (groupCounts is Map<String, dynamic>) {
         // Helper function để parse giá trị từ groupCounts
         int parseGroupCount(String key, [String? altKey]) {
@@ -572,6 +584,82 @@ class AssetTransferRepository extends ApiBase {
         result['totalApprove'] = 0;
         result['totalCancel'] = 0;
         result['totalComplete'] = 0;
+      }
+    } catch (e) {
+      log("Error at getDataWithPagination - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  //get data with pagination
+  Future<Map<String, dynamic>> getDataPageByBanGiao(
+    int page,
+    int size,
+    int type,
+    String search, [
+    String idDepartment = '',
+  ]) async {
+    Map<String, dynamic> result = {
+      'data': <DieuDongTaiSanDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+      'totalAll': 0,
+      'totalCP': 0,
+      'totalDC': 0,
+      'totalTH': 0,
+    };
+
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=3&idDonViGiao=$idDepartment',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+          itemsData,
+          DieuDongTaiSanDto.fromJson,
+        );
+      } else {
+        result['data'] = <DieuDongTaiSanDto>[];
+      }
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['trangThaiCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalCP'] = parseGroupCount('0', 'capPhat');
+        result['totalDC'] = parseGroupCount('1', 'dieuChuyen');
+        result['totalTH'] = parseGroupCount('2', 'thuHoi');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalCP'] = 0;
+        result['totalDC'] = 0;
+        result['totalTH'] = 0;
       }
     } catch (e) {
       log("Error at getDataWithPagination - AssetTransferRepository: $e");
@@ -717,5 +805,23 @@ class AssetTransferRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<int> getCountByDvGiao(String idDonViGiao) async {
+    try {
+      final response = await get(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/count-by-don-vi-giao?trangThai=3&idDonViGiao=$idDonViGiao',
+      );
+      // Response có cấu trúc: {success: true, data: {count: 3, ...}}
+      final dynamic respData = response.data;
+      if (respData is Map && respData.containsKey('data')) {
+        return respData['data']?['count'] ?? 0;
+      }
+      // Fallback nếu không có cấu trúc data
+      return respData['count'] ?? 0;
+    } catch (e) {
+      log("Error at getCountByDvGiao - ToolAndMaterialTransferRepository: $e");
+      return 0;
+    }
   }
 }

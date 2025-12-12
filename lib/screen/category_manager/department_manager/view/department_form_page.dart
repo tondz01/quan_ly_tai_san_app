@@ -218,10 +218,18 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             : (v) {
                               setState(() {
                                 isKho = v;
+                                // Nếu chọn là kho thì bỏ chọn phòng ban lãnh đạo
+                                if (v) {
+                                  isLanhDao = false;
+                                } else {
+                                  // Nếu bỏ chọn kho thì reset loại kho
+                                  typeKhoCP = false;
+                                  typeKhoTH = false;
+                                }
                               });
                             },
                     isEditing: isEdit,
-                    isDisabled: isEdit,
+                    isDisabled: isEdit || isLanhDao,
                   ),
 
                   const SizedBox(width: 32),
@@ -271,10 +279,16 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             : (v) {
                               setState(() {
                                 isLanhDao = v;
+                                // Nếu chọn là phòng ban lãnh đạo thì bỏ chọn kho
+                                if (v) {
+                                  isKho = false;
+                                  typeKhoCP = false;
+                                  typeKhoTH = false;
+                                }
                               });
                             },
                     isEditing: isEdit,
-                    isDisabled: isEdit,
+                    isDisabled: isEdit || isKho,
                   ),
                 ],
               ),
@@ -347,7 +361,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         typeKhoTH = false;
       }
     });
-    print('Type kho: $type - CP: $typeKhoCP - TH: $typeKhoTH');
   }
 }
 

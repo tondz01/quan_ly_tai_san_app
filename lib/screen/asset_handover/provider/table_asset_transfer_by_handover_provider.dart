@@ -25,10 +25,9 @@ extension TableAssetTransferTotals on TableAssetTransferByHandoverProvider {
   Map<String, int> getTotals() {
     return {
       'totalAll': totalAll,
-      'totalDraft': totalDraft,
-      'totalApprove': totalApprove,
-      'totalCancel': totalCancel,
-      'totalComplete': totalComplete,
+      'totalCP': totalCP,
+      'totalDC': totalDC,
+      'totalTH': totalTH,
     };
   }
 }
@@ -40,15 +39,13 @@ class TableAssetTransferByHandoverProvider
   // Tổng theo API
   int totalItems = 0;
   int totalAll = 0;
-  int totalDraft = 0;
-  int totalApprove = 0;
-  int totalCancel = 0;
-  int totalComplete = 0;
+  int totalCP = 0;
+  int totalDC = 0;
+  int totalTH = 0;
 
   // Trạng thái filter/search hiện tại
   String _currentSearchTerm = '';
   int _currentType = 1; // lưu type hiện tại
-  int _currentTrangThai = 3; // lưu trạng thái hiện tại
 
   // Lưu dữ liệu gốc của page hiện tại (chưa filter offline)
   List<DieuDongTaiSanDto> _rawPageData = [];
@@ -103,7 +100,7 @@ class TableAssetTransferByHandoverProvider
 
     // Bật API pagination
     enableApiPagination(true);
-    loadDataFromApi(0, _currentType, _currentTrangThai);
+    loadDataFromApi(0, _currentType);
   }
 
   // Tìm kiếm với API
@@ -112,7 +109,7 @@ class TableAssetTransferByHandoverProvider
 
     if (state.paginationState.useApiPagination) {
       // API mode: luôn gọi lại API từ trang 0
-      loadDataFromApi(0, _currentType, _currentTrangThai);
+      loadDataFromApi(0, _currentType);
     } else {
       // Local mode (nếu sau này bỏ API pagination)
       search(value);
@@ -122,8 +119,7 @@ class TableAssetTransferByHandoverProvider
   // Load dữ liệu từ API cho 1 page (KHÔNG liên quan tới filter offline)
   Future<void> loadDataFromApi(
     int page,
-    int type,
-    int trangThai, [
+    int type, [
     bool isRefresh = true,
   ]) async {
     // Kiểm tra đã dispose chưa trước khi bắt đầu
@@ -152,11 +148,10 @@ class TableAssetTransferByHandoverProvider
     _lastApiCallTime = now;
 
     log(
-      'loadDataFromApi AssetTransfer: page=$page -- type=$type -- trangThai=$trangThai -- isRefresh=$isRefresh',
+      'loadDataFromApi AssetTransfer: page=$page -- type=$type -- isRefresh=$isRefresh',
     );
 
     _currentType = type; // cập nhật type
-    _currentTrangThai = 3; // cập nhật trạng thái
     UserInfoDTO userInfo =
         AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
     NhanVien? nhanVien = AccountHelper.instance.getNhanVienById( 
@@ -176,12 +171,11 @@ class TableAssetTransferByHandoverProvider
     }
 
     try {
-      final response = await repository.getDataWithPagination(
+      final response = await repository.getDataPageByBanGiao(
         page,
         state.paginationState.itemsPerPage,
         _currentType,
         _currentSearchTerm,
-        _currentTrangThai,
         idDepartment
       );
 
@@ -203,10 +197,9 @@ class TableAssetTransferByHandoverProvider
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
-      totalDraft = response['totalDraft'] as int? ?? 0;
-      totalApprove = response['totalApprove'] as int? ?? 0;
-      totalCancel = response['totalCancel'] as int? ?? 0;
-      totalComplete = response['totalComplete'] as int? ?? 0;
+      totalCP = response['totalCP'] as int? ?? 0;
+      totalDC = response['totalApprove'] as int? ?? 0;
+      totalTH = response['totalCancel'] as int? ?? 0;
 
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
@@ -237,24 +230,18 @@ class TableAssetTransferByHandoverProvider
     super.goToPage(page);
 
     if (state.paginationState.useApiPagination) {
-      loadDataFromApi(page, _currentType, _currentTrangThai);
+      loadDataFromApi(page, _currentType);
     }
   }
 
   // Refresh dữ liệu
-  Future<void> refreshData([bool isRefresh = true]) async {
-    _currentType = -1;
+  Future<void> refreshData(int type, [bool isRefresh = true]) async {
+    _currentType = type;
     await loadDataFromApi(
       state.paginationState.currentDisplayPage,
       _currentType,
-      _currentTrangThai,
       isRefresh,
     );
-  }
-
-  Future<void> fillterByStatus(int status) async {
-    _currentTrangThai = status;
-    await loadDataFromApi(0, -1, _currentTrangThai);
   }
 
   // ================== FILTER OFFLINE TRÊN PAGE HIỆN TẠI ==================

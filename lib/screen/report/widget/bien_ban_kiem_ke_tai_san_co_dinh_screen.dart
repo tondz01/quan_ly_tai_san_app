@@ -29,7 +29,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     extends State<BienBanKiemKeTaiSanCoDinhScreen> {
   List<TaiSanCoDinhDto> _taiSanCoDinhList = [];
   bool _isLoading = true;
-  bool _isExporting = false;
+  bool isExporting = false;
   final GlobalKey _repaintKey = GlobalKey();
   String? _error;
 
@@ -70,8 +70,8 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     }
   }
 
-  Future<void> _exportToExcel() async {
-    setState(() => _isExporting = true);
+  Future<void> exportToExcel() async {
+    setState(() => isExporting = true);
 
     try {
       await ScreenshotToExcelService.exportReportToExcel(
@@ -89,7 +89,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
       }
     } finally {
       if (mounted) {
-        setState(() => _isExporting = false);
+        setState(() => isExporting = false);
       }
     }
   }

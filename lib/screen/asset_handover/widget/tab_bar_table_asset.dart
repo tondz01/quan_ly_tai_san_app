@@ -1,72 +1,142 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_list_by_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
-class TabBarTableAsset extends StatefulWidget {
+class TabBarTableAsset extends riverpod.ConsumerStatefulWidget {
   final AssetHandoverProvider provider;
   const TabBarTableAsset({super.key, required this.provider});
 
   @override
-  State<TabBarTableAsset> createState() => _TabBarTableAssetState();
+  riverpod.ConsumerState<TabBarTableAsset> createState() =>
+      _TabBarTableAssetState();
 }
 
-class _TabBarTableAssetState extends State<TabBarTableAsset> {
+class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
   List<DieuDongTaiSanDto> dataAssetTransfer = [];
-  UserInfoDTO? userInfo;
   int quyetDinhCount = 0;
+  UserInfoDTO? userInfoDTO;
+  riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
+
+  final AssetTransferRepository _repository = AssetTransferRepository();
+  Timer? _debounceTimer;
+
+  // Cache constants để tránh lookup nhiều lần
+  static const int _assetTransferType = FunctionType.ASSET_TRANSFER;
+  static const int _allFunctionType = FunctionType.ALL_FUNCTION;
+
+  // Cache message timestamp để tránh xử lý duplicate
+  int? _lastProcessedMessageTime;
+  bool _isLoadingCount = false;
+
+  Future<void> _loadCount() async {
+    // Lấy idDonViGiao từ provider (phòng ban của user)
+    NhanVien? nhanVien = AccountHelper.instance
+        .getNhanVienById(userInfoDTO?.tenDangNhap ?? '');
+    final idDonViGiao = nhanVien?.phongBanId ?? '';
+    if (idDonViGiao.isEmpty || _isLoadingCount) return;
+
+    _isLoadingCount = true;
+    try {
+      // Gọi API getCountByDvGiao để lấy count
+      final newCount = await _repository.getCountByDvGiao(idDonViGiao);
+      if (!mounted) return;
+
+      // Chỉ setState khi giá trị thực sự thay đổi
+      if (newCount != quyetDinhCount) {
+        setState(() {
+          quyetDinhCount = newCount;
+        });
+      }
+    } catch (e) {
+      // Log error nếu cần
+    } finally {
+      _isLoadingCount = false;
+    }
+  }
+
+  void _debouncedLoadCount() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _loadCount();
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    userInfo = AccountHelper.instance.getUserInfo();
-    _getDataAssetTransfer();
+    userInfoDTO = widget.provider.userInfo;
+    userInfoDTO ??=
+        AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
+    // Load count ngay lập tức khi vào màn hình
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadCount();
+      }
+    });
+
+    // Listen Firebase realtime messages với early return tối ưu
+    _messageSub = ref.listenManual(messageLatestJsonProvider, (previous, next) {
+      // Early return: kiểm tra null/empty trước
+      if (next == null || next.isEmpty || !mounted) return;
+
+      // Early return: lấy typeFunc và check ngay, tránh parse không cần thiết
+      final typeFunc = next['type_func'];
+      if (typeFunc is! int) return;
+
+      // Fast comparison với cached constants
+      if (typeFunc != _assetTransferType && typeFunc != _allFunctionType) {
+        return; // Không phải message cần xử lý
+      }
+
+      // Tránh xử lý duplicate message: check timestamp
+      final messageTime = next['time'];
+      if (messageTime is int && _lastProcessedMessageTime != null) {
+        if (messageTime <= _lastProcessedMessageTime!) {
+          return; // Message cũ hơn hoặc bằng message đã xử lý
+        }
+        _lastProcessedMessageTime = messageTime;
+      } else if (messageTime is int) {
+        _lastProcessedMessageTime = messageTime;
+      }
+
+      // Chỉ debounce khi thực sự cần refresh
+      _debouncedLoadCount();
+    });
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
+    _messageSub?.close();
     super.dispose();
-    dataAssetTransfer = [];
   }
 
   @override
   void didUpdateWidget(TabBarTableAsset oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _getDataAssetTransfer();
-  }
-
-  void _getDataAssetTransfer() {
-    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(
-      userInfo?.id ?? '',
-    );
-    dataAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 3)
-            .where((element) => element.daBanGiao == false)
-            .where((element) {
-              return userInfo?.tenDangNhap == 'admin'
-                  ? true
-                  : element.idDonViGiao ==
-                      (nhanVien?.phongBanId ?? nhanVien?.boPhan);
-            })
-            .toList() ??
-        [];
-    quyetDinhCount = dataAssetTransfer.length;
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-        child: Container(
-          // Sửa: Loại bỏ +250 để tránh layout overflow, để Expanded tự điều chỉnh
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
+      child: Container(
+        // Sửa: Loại bỏ +250 để tránh layout overflow, để Expanded tự điều chỉnh
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300, width: 1),

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
-import 'package:quan_ly_tai_san_app/core/services/count_service.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_transfer_list.dart';
@@ -23,7 +23,8 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   int quyetDinhCount = 0;
   riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
   
-  final CountService _countService = CountService();
+  final ToolAndMaterialTransferRepository _repository = ToolAndMaterialTransferRepository();
+  Timer? _debounceTimer;
   
   // Cache constants để tránh lookup nhiều lần
   static const int _toolAndMaterialTransferType = FunctionType.TOOL_AND_MATERIAL_TRANSFER;
@@ -31,30 +32,35 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   
   // Cache message timestamp để tránh xử lý duplicate
   int? _lastProcessedMessageTime;
+  bool _isLoadingCount = false;
 
-  void _loadCount({bool force = false, bool immediate = false}) {
-    // Sử dụng CountService để load count (đã được tối ưu)
-    _countService.loadAllCounts(force: force).then((counts) {
+  Future<void> _loadCount() async {
+    // Lấy idDonViGiao từ provider (phòng ban của user)
+    final idDonViGiao = widget.provider.userInfo?.idPhongBan ?? '';
+    if (idDonViGiao.isEmpty || _isLoadingCount) return;
+    
+    _isLoadingCount = true;
+    try {
+      // Gọi API getCountByDvGiao để lấy count
+      final newCount = await _repository.getCountByDvGiao(idDonViGiao);
       if (!mounted) return;
       
-      final newCount = counts['toolMaterialTransfer'] ?? 0;
       // Chỉ setState khi giá trị thực sự thay đổi
       if (newCount != quyetDinhCount) {
         setState(() {
           quyetDinhCount = newCount;
         });
       }
-    }).catchError((error) {
+    } catch (e) {
       // Log error nếu cần
-    });
+    } finally {
+      _isLoadingCount = false;
+    }
   }
 
   void _debouncedLoadCount() {
-    // Sử dụng CountService debounce method
-    _countService.debouncedLoadAllCounts();
-    
-    // Cập nhật UI sau khi debounce
-    Future.delayed(const Duration(milliseconds: 600), () {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted) {
         _loadCount();
       }
@@ -65,22 +71,10 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   void initState() {
     super.initState();
     
-    // Đăng ký callback để nhận count updates từ CountService
-    _countService.registerCallback(
-      'toolMaterialTransfer-${widget.provider.userInfo?.id}',
-      (count) {
-        if (mounted && count != quyetDinhCount) {
-          setState(() {
-            quyetDinhCount = count;
-          });
-        }
-      },
-    );
-    
     // Load count ngay lập tức khi vào màn hình
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _loadCount(force: true, immediate: true);
+        _loadCount();
       }
     });
     
@@ -117,8 +111,7 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
 
   @override
   void dispose() {
-    // Hủy đăng ký callback
-    _countService.unregisterCallback('toolMaterialTransfer-${widget.provider.userInfo?.id}');
+    _debounceTimer?.cancel();
     _messageSub?.close();
     super.dispose();
   }
