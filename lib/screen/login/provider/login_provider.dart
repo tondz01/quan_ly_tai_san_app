@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/model/permission_dto.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
+import 'package:quan_ly_tai_san_app/core/utils/cross_tab_auth_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -140,6 +141,10 @@ class LoginProvider with ChangeNotifier {
     _error = null;
     _isLoggedIn = true;
     _userInfo = data.data;
+
+    // Broadcast cho các tab khác biết user đã login
+    CrossTabAuthService.instance.updateCurrentUser(_userInfo?.tenDangNhap);
+
     notifyListeners();
 
     // Rebuild menu items after permissions are saved during login
@@ -174,6 +179,10 @@ class LoginProvider with ChangeNotifier {
   void logout(BuildContext context) {
     // Reset flag counts để đảm bảo lần login tiếp theo sẽ load lại
     App.resetCountsLoadedFlag();
+
+    // Broadcast cho các tab khác biết user đã logout
+    CrossTabAuthService.instance.updateCurrentUser(null);
+
     try {
       // Reset trạng thái đăng nhập
       _isLoggedIn = false;

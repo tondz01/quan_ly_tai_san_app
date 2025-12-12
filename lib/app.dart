@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
+import 'package:quan_ly_tai_san_app/core/utils/cross_tab_auth_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
@@ -72,6 +73,10 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     _setupRealtimeMessageListener();
     _getDataAssetAndCCDCIfNeeded();
     _loadAllCountsIfNeeded();
+    // Init CrossTabAuthService để xử lý multi-tab login conflict
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      CrossTabAuthService.instance.init(context);
+    });
   }
 
   @override
