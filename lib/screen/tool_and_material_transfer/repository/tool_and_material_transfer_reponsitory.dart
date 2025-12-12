@@ -38,7 +38,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     List<ChiTietBanGiaoRequest> requestDetail,
     List<SignatoryDto> listSignatory,
   ) async {
-    
     ToolAndMaterialTransferDto? data;
     Map<String, dynamic> result = {
       'data': data,
@@ -52,9 +51,10 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       );
       // Parse id từ nested data object: response.data['data']['id']
       final dynamic respData = response.data;
-      final String idTMT = (respData is Map<String, dynamic> && respData.containsKey('data'))
-          ? (respData['data']['id']?.toString() ?? '')
-          : (respData['id']?.toString() ?? '');
+      final String idTMT =
+          (respData is Map<String, dynamic> && respData.containsKey('data'))
+              ? (respData['data']['id']?.toString() ?? '')
+              : (respData['id']?.toString() ?? '');
       final int? status = response.statusCode;
       final bool isOk =
           status == Numeral.STATUS_CODE_SUCCESS ||
@@ -73,7 +73,10 @@ class ToolAndMaterialTransferRepository extends ApiBase {
 
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
-        data: requestDetail.map((e) => e.copyWith(idDieuDongCCDCVatTu: idTMT).toJson()).toList(),
+        data:
+            requestDetail
+                .map((e) => e.copyWith(idDieuDongCCDCVatTu: idTMT).toJson())
+                .toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
@@ -86,9 +89,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
 
       for (var signatory in listSignatory) {
-        final signatoryCopy = signatory.copyWith(
-          idTaiLieu: idTMT,
-        );
+        final signatoryCopy = signatory.copyWith(idTaiLieu: idTMT);
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
@@ -563,10 +564,10 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     int size,
     int type,
     String search,
-    int trangThai,
-    [String idDonViBanGiao = '',
-    bool isSearchUser = true]
-  ) async {
+    int trangThai, [
+    String idDonViBanGiao = '',
+    bool isSearchUser = true,
+  ]) async {
     Map<String, dynamic> result = {
       'data': <ToolAndMaterialTransferDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -635,7 +636,86 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         result['totalComplete'] = 0;
       }
     } catch (e) {
-      log("Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e");
+      log(
+        "Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getDataPageByBanGiao(
+    int page,
+    int size,
+    int type,
+    String search, [
+    String idDepartment = '',
+  ]) async {
+    Map<String, dynamic> result = {
+      'data': <ToolAndMaterialTransferDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+      'totalAll': 0,
+      'totalCP': 0,
+      'totalDC': 0,
+      'totalTH': 0,
+    };
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=${type == -1 ? '' : type}&search=$search&trangThai=3&idDonViGiao=$idDepartment&chuaBanGiaoHet=true',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+          itemsData,
+          ToolAndMaterialTransferDto.fromJson,
+        );
+      } else {
+        log('ToolsAndMaterialTransferRepository: itemsData is not a List');
+        result['data'] = <ToolAndMaterialTransferDto>[];
+      }
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['loaiCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalCP'] = parseGroupCount('1', 'capPhat');
+        result['totalDC'] = parseGroupCount('2', 'dieuChuyen');
+        result['totalTH'] = parseGroupCount('3', 'thuHoi');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalCP'] = 0;
+        result['totalDC'] = 0;
+        result['totalTH'] = 0;
+      }
+    } catch (e) {
+      log(
+        "Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e",
+      );
     }
 
     return result;

@@ -639,6 +639,12 @@ class _ToolAndSuppliesHandoverDetailState
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
+                  "soKyHieu": e.soKyHieu,
+                  "kyHieu": e.kyHieu,
+                  "congSuat": e.congSuat,
+                  "nuocSanXuat": e.nuocSanXuat,
+                  "namSanXuat": e.namSanXuat,
+                  "ghiChu": e.chiTietDieuDongCCDCVatTuDTO?.ghiChu ?? '',
                   "nguoiCapNhat": e.nguoiCapNhat,
                   "active": e.isActive,
                 },
@@ -978,6 +984,8 @@ class _ToolAndSuppliesHandoverDetailState
                                   soLuong: e.soLuongXuat,
                                   idChiTietCCDCVatTu: e.idDetaiAsset,
                                   iddieudongccdcvattu: e.id,
+                                  soKyHieu: e.soKyHieu,
+                                  kyHieu: e.kyHieu,
                                   ngayTao: AppUtility.formatDateString(
                                     DateTime.now(),
                                   ),
@@ -996,6 +1004,7 @@ class _ToolAndSuppliesHandoverDetailState
                               )
                               .toList();
                       getToolAndSuppliesHandoverPreview();
+                      print("listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}");
                       // Chỉ setState cho preview, không rebuild table
                       // Table đã tự quản lý state riêng, không cần rebuild từ parent
                       setState(() {});
@@ -1617,6 +1626,12 @@ class _ToolAndSuppliesHandoverDetailState
           "idChiTietDieuDong":
               newVal.idChiTietDieuDong ?? newVal.iddieudongccdcvattu,
           "iddieudongccdcvattu": newVal.iddieudongccdcvattu,
+          "soKyHieu": newVal.soKyHieu,
+          "kyHieu": newVal.kyHieu,
+          "congSuat": newVal.congSuat,
+          "nuocSanXuat": newVal.nuocSanXuat,
+          "namSanXuat": newVal.namSanXuat,
+          "ghiChu": newVal.chiTietDieuDongCCDCVatTuDTO?.ghiChu ?? '',
           "ngayTao": newVal.ngayTao,
           "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
           "nguoiTao": newVal.nguoiTao,

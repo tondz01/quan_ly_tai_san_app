@@ -320,6 +320,8 @@ class TableToolAndSuppliesHandoverConfig {
                         )
                         .toList() ??
                     []),
+              if (item.idGiamDoc != null && item.idGiamDoc!.isNotEmpty)
+                {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,

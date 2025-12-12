@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -405,7 +406,8 @@ class _ToolAndSuppliesHandoverTransferListState
                           widget.provider.onChangeDetail(
                             context,
                             ToolAndSuppliesHandoverDto(
-                              banGiaoCCDCVatTu: 'Phiếu bàn giao ccdc-vật tư ngày ${DateFormat('dd/MM/yyyy').format(now)}',
+                              banGiaoCCDCVatTu:
+                                  'Phiếu bàn giao ccdc-vật tư ngày ${DateFormat('dd/MM/yyyy').format(now)}',
                               quyetDinhDieuDongSo: '',
                               lenhDieuDong: item.id,
                               idDonViGiao: item.idDonViGiao,
@@ -460,18 +462,33 @@ class _ToolAndSuppliesHandoverTransferListState
             ),
           ],
         ),
-        FindByTypeToolAndSupplies(
-          isCapPhat: isCapPhat,
-          isDieuChuyen: isDieuChuyen,
-          isThuHoi: isThuHoi,
-          allCount: allCount,
-          capPhatCount: capPhatCount,
-          dieuChuyenCount: dieuChuyenCount,
-          thuHoiCount: thuHoiCount,
-          onFilterChanged: (status, value) {
-            setState(() {
-              setFilterStatus(status, value);
-            });
+        riverpod.Consumer(
+          builder: (context, ref, _) {
+            final isLoading = ref.watch(
+              tableToolAndSuppliesHandoverTransferProvider.select(
+                (s) => s.isLoading,
+              ),
+            );
+            final totals =
+                ref
+                    .watch(
+                      tableToolAndSuppliesHandoverTransferProvider.notifier,
+                    )
+                    .getTotals();
+            return FindByTypeToolAndSupplies(
+              isCapPhat: isCapPhat,
+              isDieuChuyen: isDieuChuyen,
+              isThuHoi: isThuHoi,
+              allCount: isLoading ? 0 : totals['totalAll'] ?? 0,
+              capPhatCount: isLoading ? 0 : totals['totalCP'] ?? 0,
+              dieuChuyenCount: isLoading ? 0 : totals['totalDC'] ?? 0,
+              thuHoiCount: isLoading ? 0 : totals['totalTH'] ?? 0,
+              onFilterChanged: (status, value) {
+                setState(() {
+                  setFilterStatus(status, value);
+                });
+              },
+            );
           },
         ),
       ],
@@ -479,55 +496,26 @@ class _ToolAndSuppliesHandoverTransferListState
   }
 
   void setFilterStatus(FilterType status, bool? value) {
-    _filterStatus[status] = value ?? false;
+    final isChecked = value ?? false;
+    _filterStatus[status] = isChecked;
 
-    if (status == FilterType.all && value == true) {
-      for (var key in _filterStatus.keys) {
-        if (key != FilterType.all) {
-          _filterStatus[key] = false;
-        }
-      }
-    } else if (status != FilterType.all && value == true) {
-      _filterStatus[FilterType.all] = false;
+    // Chỉ cho phép duy nhất 1 filter được chọn
+    if (isChecked) {
+      _filterStatus.updateAll((key, _) => key == status);
     }
 
-    _applyFilters();
-  }
-
-  void _applyFilters() {
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterType.capPhat)
-        .any((entry) => entry.value == true);
-
-    // Lọc theo trạng thái
-    List<ToolAndMaterialTransferDto> statusFiltered;
-    if (_filterStatus[FilterType.all] == true || !hasActiveFilter) {
-      statusFiltered = List.from(dataAssetTransfer);
-    } else {
-      statusFiltered =
-          dataAssetTransfer.where((item) {
-            int itemStatus = item.loai ?? -1;
-
-            if (_filterStatus[FilterType.capPhat] == true &&
-                (itemStatus == 1)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterType.dieuChuyen] == true &&
-                (itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterType.thuHoi] == true && (itemStatus == 3)) {
-              return true;
-            }
-
-            return false;
-          }).toList();
+    int type = -1;
+    if (isCapPhat) {
+      type = 1;
+    } else if (isDieuChuyen) {
+      type = 2;
+    } else if (isThuHoi) {
+      type = 3;
     }
 
-    setState(() {
-      dataAssetTransferFilter = statusFiltered;
-    });
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+        .refreshData(type);
   }
 }
