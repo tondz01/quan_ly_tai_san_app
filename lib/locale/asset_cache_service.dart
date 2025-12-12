@@ -1,6 +1,5 @@
 import 'package:idb_shim/idb_browser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 
 class AssetListCacheService {
   static const String dbName = "asset_cache_db";
@@ -73,35 +72,6 @@ class AssetListCacheService {
         "AssetListCacheService:👉 Loaded from cache: ${cachedList.length} items",
       );
     }
-
-    /// Gọi API song song (không chờ)
-    AssetManagementRepository().getListAssetManagement('ct001').then((
-      fresh,
-    ) async {
-      // Convert List<AssetManagementDto> to List<Map<String, dynamic>>
-      final freshData = fresh['data'] as List<dynamic>;
-      final freshList = freshData
-          .map((item) {
-            if (item is AssetManagementDto) {
-              return item.toJson();
-            } else if (item is Map<String, dynamic>) {
-              return item;
-            } else if (item is Map) {
-              return Map<String, dynamic>.from(item);
-            } else {
-              return <String, dynamic>{};
-            }
-          })
-          .where((map) => map.isNotEmpty)
-          .toList();
-
-      await saveAssetList(freshList);
-
-      print(
-        "AssetListCacheService:🔥 API loaded & cached again: ${freshList.length} items",
-      );
-    });
-
     /// Trả về cache ngay lập tức
     return cachedList.map((e) => AssetManagementDto.fromJson(e)).toList();
   }
