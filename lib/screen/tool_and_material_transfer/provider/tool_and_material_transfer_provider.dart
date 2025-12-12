@@ -507,7 +507,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     UpdateSigningTAMTStatusSuccessState state,
   ) {
     onCloseDetail(context);
-    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
     // getDataAll(context);
     onReloadData(context);
     notifyListeners();

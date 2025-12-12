@@ -564,7 +564,7 @@ class ContractPage {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Align(
@@ -574,45 +574,65 @@ class ContractPage {
                   children: [
                     SGText(
                       text: "TẬP ĐOÀN CÔNG NGHIỆP\nTHAN - KHOÁNG SẢN VIỆT NAM",
-                      style: SettingPage.textStyle,
+                      style: SettingPage.textStyle.copyWith(fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                     SGText(
                       text: "CÔNG TY THAN UÔNG BÍ - TKV",
                       style: SettingPage.textStyle.copyWith(
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
+                    Container(
+                      width: 70,
+                      color: Colors.black,
+                      height: 1,
+                    )
                   ],
                 ),
               ),
             ),
             Expanded(
-              child: SGText(
-                text: "BIÊN BẢN\nGIAO NHẬN TÀI SẢN",
-                style: SettingPage.textStyle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14 * SettingPage.scale,
-                ),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SGText(
+                        text: "Mẫu số 17/BBGN-TS",
+                        style: SettingPage.textStyle.copyWith(fontSize: 11),
+                        textAlign: TextAlign.end,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  SGText(
+                    text: "BIÊN BẢN\nGIAO NHẬN TÀI SẢN",
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
         ),
-
-        SizedBox(height: 24 * SettingPage.scale),
-
+        SizedBox(height: 10 * SettingPage.scale),
         SGText(
           text:
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.soQuyetDinh ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.diaDiemQuyetDinh ?? ''}.",
-          style: SettingPage.textStyle,
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ QĐ số: ${assetHandoverDto.soQuyetDinh ?? ''} ${SettingPage.formatted(assetHandoverDto.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ PX ${assetHandoverDto.tenDonViGiao ?? ''} đến PX ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} tại ${assetHandoverDto.diaDiemQuyetDinh ?? ''}.",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
         ),
 
         SGText(
-          text: "Chúng tôi gồm có:",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+          text: "Chúng tôi gồm:",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
           textAlign: TextAlign.start,
         ),
         SizedBox(height: 2 * SettingPage.scale),
@@ -624,8 +644,8 @@ class ContractPage {
               if ((listSigneInfo?.length ?? 0) > 0)
                 SignersTable(
                   signers: listSigneInfo!,
-                  scale: SettingPage.scale,
-                  textStyle: SettingPage.textStyle,
+                  scale: 1,
+                  textStyle: SettingPage.textStyle.copyWith(fontSize: 12),
                   gapAfterValue: 18.0,
                 ),
             ],
@@ -634,49 +654,54 @@ class ContractPage {
         SizedBox(height: 2 * SettingPage.scale),
         SGText(
           text:
-              "Tiến hành giao nhận tài sản từ: ${assetHandoverDto.tenDonViGiao ?? ''} giao cho ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
-          style: SettingPage.textStyle,
+              "Tiến hành giao nhận tài sản từ phân xưởng ${assetHandoverDto.tenDonViGiao ?? ''} giao cho phân xưởng ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
         ),
         SizedBox(height: 4 * SettingPage.scale),
         Table(
-          border: TableBorder.all(),
+          border: TableBorder.all(width: 0.5, color: Colors.black),
           columnWidths: const {
             0: FixedColumnWidth(40),
-            1: FlexColumnWidth(2),
+            1: FlexColumnWidth(2.5),
             2: FlexColumnWidth(2),
-            3: FlexColumnWidth(1.5),
+            3: FlexColumnWidth(1),
             4: FlexColumnWidth(1),
-            5: FlexColumnWidth(1.5),
-            6: FlexColumnWidth(1.5),
+            5: FlexColumnWidth(1),
+            6: FlexColumnWidth(1),
           },
           children: [
             TableRow(
               children: [
-                tableHeader("STT", SettingPage.scale, SettingPage.textStyle),
+                tableHeader("STT", 1, SettingPage.textStyle.copyWith(fontSize: 12)),
                 tableHeader(
                   "TÊN TÀI SẢN",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
+                ),
+                tableHeader(
+                  "Mã hiệu, quy cách",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
+                ),
+                tableHeader(
+                  "Nước sản xuất",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
                   "Đơn vị tính",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
                   "Số lượng",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
-                  "Tình trạng kỹ thuật",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
                   "Ghi chú",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
               ],
             ),
@@ -687,13 +712,24 @@ class ContractPage {
                 children: [
                   tableCell(
                     (i + 1).toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization![i].tenTaiSan ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].kyHieu ??
+                        '',
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
+                  ),
+                  tableCell(
+                    '',
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     AccountHelper.instance
@@ -702,34 +738,28 @@ class ContractPage {
                             )
                             ?.tenDonVi ??
                         '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization[i].soLuong == 0
                         ? '1'
                         : listDetailAssetMobilization[i].soLuong?.toString() ??
                             '1',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    AppUtility.getHienTrang(
-                      listDetailAssetMobilization[i].hienTrang ?? 0,
-                    ).name,
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization[i].moTa ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                 ],
               ),
           ],
         ),
-        SizedBox(height: 20 * SettingPage.scale),
+        SGText(text: "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.", style: SettingPage.textStyle.copyWith(fontSize: 12),),
+        SizedBox(height: 10 * SettingPage.scale),
         IntrinsicHeight(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -750,7 +780,7 @@ class ContractPage {
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(
-                              fontSize: 12 * SettingPage.scale,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -802,44 +832,64 @@ class ContractPage {
                   children: [
                     SGText(
                       text: "TẬP ĐOÀN CÔNG NGHIỆP\nTHAN - KHOÁNG SẢN VIỆT NAM",
-                      style: SettingPage.textStyle,
+                      style: SettingPage.textStyle.copyWith(fontSize: 12),
                       textAlign: TextAlign.center,
                     ),
                     SGText(
                       text: "CÔNG TY THAN UÔNG BÍ - TKV",
                       style: SettingPage.textStyle.copyWith(
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
+                    Container(
+                      width: 70,
+                      color: Colors.black,
+                      height: 1,
+                    )
                   ],
                 ),
               ),
             ),
             Expanded(
-              child: SGText(
-                text: "BIÊN BẢN\nGIAO NHẬN TÀI SẢN",
-                style: SettingPage.textStyle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14 * SettingPage.scale,
-                ),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SGText(
+                        text: "Mẫu số 17/BBGN-CCDC-VT",
+                        style: SettingPage.textStyle.copyWith(fontSize: 11),
+                        textAlign: TextAlign.end,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  SGText(
+                    text: "BIÊN BẢN\nBÀN GIAO CCDC - VẬT TƯ",
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
         ),
-
-        SizedBox(height: 24 * SettingPage.scale),
-
+        SizedBox(height: 10 * SettingPage.scale),
         SGText(
           text:
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${banGiaoCCDCVatTu.soQuyetDinh ?? ''}, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến  ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} , tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
-          style: SettingPage.textStyle,
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ QĐ số: ${banGiaoCCDCVatTu.soQuyetDinh ?? ''} ${SettingPage.formatted(banGiaoCCDCVatTu.ngayQuyetDinh ?? '')} của Giám đốc Công ty V/v điều động tài sản từ PX ${banGiaoCCDCVatTu.tenDonViGiao ?? ''} đến PX ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} tại ${banGiaoCCDCVatTu.diaDiemQuyetDinh ?? ''}.",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
         ),
         SGText(
-          text: "Chúng tôi gồm có:",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+          text: "Chúng tôi gồm:",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
           textAlign: TextAlign.start,
         ),
         SizedBox(height: 2 * SettingPage.scale),
@@ -851,8 +901,8 @@ class ContractPage {
               if ((listSigneInfo?.length ?? 0) > 0)
                 SignersTable(
                   signers: listSigneInfo!,
-                  scale: SettingPage.scale,
-                  textStyle: SettingPage.textStyle,
+                  scale: 1,
+                  textStyle: SettingPage.textStyle.copyWith(fontSize: 12),
                   gapAfterValue: 18.0,
                 ),
             ],
@@ -861,49 +911,54 @@ class ContractPage {
         SizedBox(height: 2 * SettingPage.scale),
         SGText(
           text:
-              "Tiến hành giao nhận tài sản từ: ${banGiaoCCDCVatTu.tenDonViGiao ?? ''} giao cho ${banGiaoCCDCVatTu.tenDonViNhan ?? ''} cụ thể như sau:",
-          style: SettingPage.textStyle,
+              "Tiến hành giao nhận tài sản từ phân xưởng ${banGiaoCCDCVatTu.tenDonViGiao ?? ''} giao cho phân xưởng ${banGiaoCCDCVatTu.tenDonViNhan ?? ''} cụ thể như sau:",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
         ),
         SizedBox(height: 4 * SettingPage.scale),
         Table(
-          border: TableBorder.all(),
+          border: TableBorder.all(width: 0.5, color: Colors.black),
           columnWidths: const {
             0: FixedColumnWidth(40),
-            1: FlexColumnWidth(2),
+            1: FlexColumnWidth(2.5),
             2: FlexColumnWidth(2),
-            3: FlexColumnWidth(1.5),
+            3: FlexColumnWidth(1),
             4: FlexColumnWidth(1),
-            5: FlexColumnWidth(1.5),
-            6: FlexColumnWidth(1.5),
+            5: FlexColumnWidth(1),
+            6: FlexColumnWidth(1),
           },
           children: [
             TableRow(
               children: [
-                tableHeader("STT", SettingPage.scale, SettingPage.textStyle),
+                tableHeader("STT", 1, SettingPage.textStyle),
                 tableHeader(
                   "Tên ccdc - vật tư",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
+                ),
+                tableHeader(
+                  "Mã hiệu, quy cách",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
+                ),
+                tableHeader(
+                  "Nước sản xuất",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
                   "Đơn vị tính",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
-                  "Số lượng cần bàn giao",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
-                  "Số lượng xuất",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  "Số lượng",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
                 tableHeader(
                   "Ghi chú",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
                 ),
               ],
             ),
@@ -914,16 +969,27 @@ class ContractPage {
                 children: [
                   tableCell(
                     (i + 1).toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization![i]
                             .chiTietDieuDongCCDCVatTuDTO
                             ?.tenCCDCVatTu ??
                         '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].kyHieu ??
+                        '',
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
+                  ),
+                  tableCell(
+                    '',
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     AccountHelper.instance
@@ -935,18 +1001,13 @@ class ContractPage {
                             )
                             ?.tenDonVi ??
                         '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    "${(listDetailAssetMobilization[i].chiTietDieuDongCCDCVatTuDTO?.soLuongXuat ?? 0) - (listDetailAssetMobilization[i].chiTietDieuDongCCDCVatTuDTO?.soLuongDaBanGiao ?? 0)}",
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization[i].soLuong.toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
                     listDetailAssetMobilization[i]
@@ -954,14 +1015,15 @@ class ContractPage {
                             ?.ghiChu
                             .toString() ??
                         '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
+                    1,
+                    SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                 ],
               ),
           ],
         ),
-        SizedBox(height: 20 * SettingPage.scale),
+        SGText(text: "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.", style: SettingPage.textStyle.copyWith(fontSize: 12),),
+        SizedBox(height: 10 * SettingPage.scale),
         IntrinsicHeight(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -982,7 +1044,7 @@ class ContractPage {
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(
-                              fontSize: 12 * SettingPage.scale,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -998,7 +1060,7 @@ class ContractPage {
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(
-                              fontSize: 11 * SettingPage.scale,
+                              fontSize: 11,
                             ),
                           ),
                         ),

@@ -22,9 +22,10 @@ class SignersTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SizedBox(height: 4.0 * scale),
         for (int i = 0; i < signers.length; i++)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.0 * scale),
+            padding: EdgeInsets.only(bottom: 4.0 * scale),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -36,14 +37,33 @@ class SignersTable extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Wrap(
-                    spacing: gapAfterValue * scale, // Khoảng cách giữa các phần tử
-                    runSpacing: 4.0 * scale, // Khoảng cách khi xuống dòng
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _buildInlineItem(label: "Ông (bà):", value: signers[i].hoTen),
-                      _buildInlineItem(label: "Chức vụ:", value: signers[i].chucVu),
-                      _buildInlineItem(label: "Đại diện:", value: signers[i].donVi),
+                      Expanded(
+                        child: Table(
+                          defaultVerticalAlignment: TableCellVerticalAlignment.top,
+                          children: [
+                            TableRow(
+                              children: [
+                                TableCell(
+                                  verticalAlignment: TableCellVerticalAlignment.top,
+                                  child: _buildInlineItem(label: "Ông (bà):", value: signers[i].hoTen),
+                                ),
+                                TableCell(
+                                  verticalAlignment: TableCellVerticalAlignment.top,
+                                  child: _buildInlineItem(label: "Chức vụ:", value: signers[i].chucVu),
+                                ),
+                                TableCell(
+                                  verticalAlignment: TableCellVerticalAlignment.top,
+                                  child: _buildInlineItem(label: "Phòng:", value: signers[i].donVi),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -56,18 +76,19 @@ class SignersTable extends StatelessWidget {
 
   Widget _buildInlineItem({required String label, required String value}) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: textStyle,
         ),
-        SizedBox(width: 4.0 * scale),
-        Text(
-          value,
-          style: textStyle,
-          softWrap: true,
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            value,
+            style: textStyle,
+            softWrap: true,
+          ),
         ),
       ],
     );
