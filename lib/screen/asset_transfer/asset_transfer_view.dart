@@ -266,6 +266,8 @@ class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> 
           );
         }
         if (state is CreateDieuDongFailedState) {
+          context.read<DieuDongTaiSanProvider>().loadingMessage = '';
+          context.read<DieuDongTaiSanProvider>().isLoading = false;
           AppUtility.showSnackBar(context, state.message);
         }
         if (state is UpdateDieuDongSuccessState) {

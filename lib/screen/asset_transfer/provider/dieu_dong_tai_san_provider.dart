@@ -62,7 +62,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   get itemsDVNhan => _itemsDVNhan;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
-  get loadingMessage => _loadingMessage;
+  String get loadingMessage => _loadingMessage;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -167,6 +167,17 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   set isShowCollapse(bool value) {
     if (_isShowCollapse == value) return;
     _isShowCollapse = value;
+    if (!_isBatching) notifyListeners();
+  }
+
+  set isLoading(bool value) {
+    if (_isLoading == value) return;
+    _isLoading = value;
+    if (!_isBatching) notifyListeners();
+  }
+  set loadingMessage(String value) {
+    if (_loadingMessage == value) return;
+    _loadingMessage = value;
     if (!_isBatching) notifyListeners();
   }
 
@@ -518,6 +529,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Tạo mới thành công!');
+    loadingMessage = '';
+    isLoading = false;
     // getDataAll(context);
     // AccountHelper.refreshAllCounts();
     onReloadDataPage(context);
@@ -552,6 +565,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    loadingMessage = '';
+    isLoading = false;
     // getDataAll(context);
     onReloadDataPage(context);
     notifyListeners();
@@ -563,6 +578,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
+    loadingMessage = '';
+    isLoading = false;
     // getDataAll(context);
     onReloadDataPage(context);
     notifyListeners();
@@ -574,6 +591,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
+    loadingMessage = '';
+    isLoading = false;
     // getDataAll(context);
     onReloadDataPage(context);
     notifyListeners();
@@ -584,6 +603,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     PutPostDeleteFailedState state,
   ) {
     AppUtility.showSnackBar(context, state.message);
+    loadingMessage = '';
+    isLoading = false;
     notifyListeners();
   }
 

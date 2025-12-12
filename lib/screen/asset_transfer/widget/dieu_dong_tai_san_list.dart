@@ -204,6 +204,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       case 'type':
         // Return human-readable name for searching/sorting consistency
         return item.tenPhieu;
+      case 'trich_yeu':
+        return item.trichYeu;
       case 'effective_date':
         return item.tggnTuNgay;
       case 'approver':
