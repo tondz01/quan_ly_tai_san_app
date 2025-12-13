@@ -190,12 +190,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
       final ten =
           (c.tenCCDCVatTu?.isNotEmpty ?? false) ? c.tenCCDCVatTu! : asset.ten;
-      final soKyHieu = c.soKyHieu ?? asset.soKyHieu;
       final namSX = c.namSanXuat ?? asset.namSanXuat;
       final donViTinh = c.donViTinh ?? asset.donViTinh;
 
       final tenDetail =
-          ten.isNotEmpty ? '$ten($soKyHieu) - $namSX' : c.idChiTietCCDCVatTu;
+          ten.isNotEmpty ? '$ten - (${c.idChiTietCCDCVatTu}) - $namSX' : c.idChiTietCCDCVatTu;
 
       result.add(
         ItemDropdownDetailCcdc(
@@ -209,7 +208,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           namSanXuat: namSX,
           soKyHieu: asset.soKyHieu,
           kyHieu: asset.kyHieu,
-          soLuong: c.soLuongXuat - c.soLuongDaBanGiao,
+          soLuong: c.soLuongXuat < 0 ? c.soLuongXuat : c.soLuongXuat - c.soLuongDaBanGiao,
           soLuongDaBanGiao: c.soLuongDaBanGiao,
           soLuongXuat: 0,
           ghiChu: c.ghiChu.isNotEmpty ? c.ghiChu : asset.ghiChu,
