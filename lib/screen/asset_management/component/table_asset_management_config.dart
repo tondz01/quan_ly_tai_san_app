@@ -214,7 +214,7 @@ class TableAssetManagementConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Ký hiệu',
+          name: 'Mã hiệu',
           key: 'ky_hieu',
           width: 100,
           flex: 1,
@@ -226,7 +226,7 @@ class TableAssetManagementConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Số ký hiệu',
+          name: 'Số mã hiệu',
           key: 'so_ky_hieu',
           width: 120,
           flex: 1,

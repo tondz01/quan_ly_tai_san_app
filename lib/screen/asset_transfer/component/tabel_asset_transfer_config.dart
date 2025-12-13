@@ -36,7 +36,7 @@ class TabelAssetTransferConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenPhieu ?? ''));
+          return TableCellData(widget: Text(item.trichYeu ?? ''));
         },
       ),
       ColumnDefinition(
