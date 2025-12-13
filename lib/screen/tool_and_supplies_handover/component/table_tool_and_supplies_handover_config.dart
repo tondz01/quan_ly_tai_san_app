@@ -134,7 +134,7 @@ class TableToolAndSuppliesHandoverConfig {
         builder:
             (item) => TableCellData(
               widget: AppUtility.showPermissionSigning(
-                getPermissionSigning(item, userInfo),
+                getPermissionSigning(item),
               ),
             ),
       ),
@@ -296,10 +296,7 @@ class TableToolAndSuppliesHandoverConfig {
         : 'Cần ký';
   }
 
-  static int getPermissionSigning(
-    ToolAndSuppliesHandoverDto item,
-    UserInfoDTO userInfo,
-  ) {
+  static int getPermissionSigning(ToolAndSuppliesHandoverDto item) {
     final signatureFlow =
         [
               {
@@ -326,18 +323,30 @@ class TableToolAndSuppliesHandoverConfig {
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
             )
             .toList();
+    final userInfo = AccountHelper.instance.getUserInfo();
     final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo.tenDangNhap,
+      (s) => s["id"] == userInfo?.tenDangNhap,
     );
     if (currentIndex == -1) return 2;
-    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
-        signatureFlow[currentIndex]["signed"] != -1) {
-      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
+
+    // Lấy trạng thái ký của user hiện tại (đảm bảo type safety)
+    final currentSigned = signatureFlow[currentIndex]["signed"] as bool;
+    print(
+      'getPermissionSigning currentSigned: $currentSigned for user ${userInfo?.tenDangNhap}',
+    );
+
+    // Nếu user là người tạo và có trong signatureFlow
+    if (item.nguoiTao == userInfo?.tenDangNhap) {
+      return currentSigned == true ? 4 : 5;
     }
-    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+
+    // Nếu đã ký rồi
+    if (currentSigned == true) return 3;
+
+    // Kiểm tra xem có người ký trước chưa ký không
     final previousNotSigned = signatureFlow
         .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+        .firstWhere((s) => (s["signed"] as bool) == false, orElse: () => {});
 
     if (previousNotSigned.isNotEmpty) return 1;
     return 0;

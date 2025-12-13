@@ -421,8 +421,8 @@ class TableAssetHandoverConfig {
       (s) => s["id"] == userInfo.tenDangNhap,
     );
     if (currentIndex == -1) return 2;
-    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
-        signatureFlow[currentIndex]["signed"] != -1) {
+    // Nếu user là người đại diện đơn vị ban hành quyết định và có trong signatureFlow
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap) {
       return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
     }
     if (signatureFlow[currentIndex]["signed"] == true) return 3;

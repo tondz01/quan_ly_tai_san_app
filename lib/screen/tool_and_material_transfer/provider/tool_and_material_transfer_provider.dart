@@ -876,7 +876,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String newSignatory =
         item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
     String idNeedToDo =
-        "${item.idDonViGiao},${item.idDonViNhan},${item.idNguoiKyNhay},${item.idTrinhDuyetGiamDoc},$newSignatory, admin,${item.nguoiTao}";
+        "${item.idNguoiKyNhay},${item.idTrinhDuyetCapPhong},${item.idTrinhDuyetGiamDoc},$newSignatory, admin,${item.nguoiTao}";
     Future.delayed(const Duration(milliseconds: 200)).then((_) {
       MessageServiceRealtime().pushJsonMessage(
         typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,

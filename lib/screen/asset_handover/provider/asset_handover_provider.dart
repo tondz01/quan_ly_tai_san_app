@@ -643,7 +643,7 @@ class AssetHandoverProvider with ChangeNotifier {
         item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
     //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
     String idNeedToDo =
-        "${item.idDaiDiendonviBanHanhQD},${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin,${item.nguoiTao}";
+        "${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin,${item.nguoiTao}";
     Future.delayed(const Duration(milliseconds: 200)).then((_) {
       MessageServiceRealtime().pushJsonMessage(
         typeFunc: FunctionType.ASSET_HANDOVER,
