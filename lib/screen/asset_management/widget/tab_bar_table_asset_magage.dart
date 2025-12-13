@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -21,24 +23,49 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
     with SingleTickerProviderStateMixin {
   ScrollController horizontalController = ScrollController();
   String? idNhomTaiSan;
+  late TabController _tabController;
+  int _currentTabIndex = 1; // Default tab index
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
-    // _tabController = TabController(length: 2, vsync: this);
-    // _tabController.addListener(() {
-    //   if (_tabController.indexIsChanging) return;
-    //   final idx = _tabController.index;
-    //   try {
-    //     widget.provider.onReloadTab(context, idx);
-    //   } catch (_) {}
-    //   setState(() {});
-    // });
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   try {
-    //     widget.provider.onReloadTab(context, 0);
-    //   } catch (_) {}
-    // });
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+    _tabController.addListener(_onTabChanged);
+
+    // Load data cho tab mặc định sau khi build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshTabData(_currentTabIndex);
+    });
+  }
+
+  void _onTabChanged() {
+    // Chỉ xử lý khi tab thực sự thay đổi (không phải đang animation)
+    if (!_tabController.indexIsChanging && _tabController.index != _currentTabIndex) {
+      _currentTabIndex = _tabController.index;
+
+      // Debounce để tránh gọi API quá nhiều khi switch tab liên tục
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        _refreshTabData(_currentTabIndex);
+      });
+    }
+  }
+
+  void _refreshTabData(int tabIndex) {
+    final ref = riverpod.ProviderScope.containerOf(context);
+    final notifier = ref.read(tableAssetManagementProvider.notifier);
+    // Set đúng typeTab và refresh data với loading
+    notifier.refreshTab(tabIndex, true);
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    horizontalController.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,10 +78,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
     final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
-    return DefaultTabController(
-      initialIndex: 1, // Default to tab 2 on load
-      length: 3,
-      child: Container(
+    return Container(
       height: MediaQuery.of(context).size.height + 250,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -86,7 +110,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
                 SizedBox(
                   width: 400,
                   child: TabBar(
-                    // controller: _tabController,
+                    controller: _tabController,
                     indicatorColor: ColorValue.link,
                     labelColor: ColorValue.link,
                     unselectedLabelColor: Colors.grey.shade600,
@@ -111,6 +135,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
           ),
           Expanded(
             child: TabBarView(
+              controller: _tabController,
               physics: NeverScrollableScrollPhysics(),
               children: [
                 // Tab 1: Bàn giao tài sản
@@ -122,7 +147,6 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
           ),
         ],
       ),
-    ),
     );
   }
 

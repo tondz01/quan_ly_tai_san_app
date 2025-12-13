@@ -20,6 +20,10 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   String _currentSearchTerm = '';
   String? _currentIdNhomTaiSan = '';
   Map<String, dynamic> _groupCounts = {};
+
+  // Request ID để tránh race condition khi switch tab liên tục
+  int _currentRequestId = 0;
+
   TableAssetManagementProvider(this.repository);
   // FIXED: Signature đúng với named parameters
   @override
@@ -53,18 +57,27 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
     String? idNhomTaiSan, [
     bool isRefresh = true,
   ]) async {
+    // Tăng request ID để cancel các request cũ
+    _currentRequestId++;
+    final thisRequestId = _currentRequestId;
+    final requestTypeTab = typeTab; // Lưu typeTab tại thời điểm request
+
     state = state.copyWith(isLoading: isRefresh, errorMessage: null);
-    // setApiLoading();
     try {
       Map<String, dynamic> response = {};
-      // Gọi API của bạn
       response = await repository.getDataWithPagination(
         page,
         state.paginationState.itemsPerPage,
         _currentSearchTerm,
         idNhomTaiSan,
-        typeTab,
+        requestTypeTab,
       );
+
+      // Chỉ cập nhật nếu đây là request mới nhất VÀ typeTab vẫn đúng
+      if (thisRequestId != _currentRequestId || typeTab != requestTypeTab) {
+        log('Skipping stale response: requestId=$thisRequestId, current=$_currentRequestId, tab=$requestTypeTab, currentTab=$typeTab');
+        return;
+      }
 
       // Cập nhật data và pagination info
       setApiData(
@@ -76,11 +89,14 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
       _groupCounts = response['groupCounts'];
       totalItems = response['totalItems'];
     } catch (error) {
-      log('Error loading data AssetManagement: $error');
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Lỗi tải dữ liệu: $error',
-      );
+      // Chỉ hiển thị lỗi nếu đây là request mới nhất
+      if (thisRequestId == _currentRequestId) {
+        log('Error loading data AssetManagement: $error');
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Lỗi tải dữ liệu: $error',
+        );
+      }
     }
   }
 
@@ -112,8 +128,10 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   Future<void> refreshTab(int typeTab, [bool isRefresh = true]) async {
     this.typeTab = typeTab;
     log('API URL Tab: $typeTab');
+    // Clear search term và reset về page 0 khi switch tab
+    _currentSearchTerm = '';
     await loadDataFromApi(
-      state.paginationState.currentDisplayPage,
+      0, // Reset về page đầu tiên
       _currentIdNhomTaiSan,
       isRefresh,
     );
