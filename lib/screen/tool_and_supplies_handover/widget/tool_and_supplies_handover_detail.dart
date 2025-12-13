@@ -1004,7 +1004,7 @@ class _ToolAndSuppliesHandoverDetailState
                               )
                               .toList();
                       getToolAndSuppliesHandoverPreview();
-                      print("listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}");
+                      
                       // Chỉ setState cho preview, không rebuild table
                       // Table đã tự quản lý state riêng, không cần rebuild từ parent
                       setState(() {});

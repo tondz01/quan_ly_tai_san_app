@@ -588,13 +588,33 @@ class AccountHelper {
             "signed": item.trinhDuyetGiamDocXacNhan == true,
           });
 
-          final userSignature = idSignatureGroup.firstWhere(
+          // Tìm vị trí của user trong danh sách người ký
+          final userIndex = idSignatureGroup.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
-            orElse: () => {"id": null, "signed": false},
           );
 
-          return userSignature["id"] != null &&
-              userSignature["signed"] == false;
+          // Nếu user không có trong danh sách, không tính
+          if (userIndex == -1) {
+            return false;
+          }
+
+          // Kiểm tra user chưa ký
+          final userSignature = idSignatureGroup[userIndex];
+          if (userSignature["signed"] == true) {
+            return false; // User đã ký rồi
+          }
+
+          // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
+          // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
+          for (int i = 0; i < userIndex; i++) {
+            final previousSigner = idSignatureGroup[i];
+            if (previousSigner["signed"] != true) {
+              return false; // Có người ký trước chưa ký
+            }
+          }
+
+          // Tất cả người ký trước đã ký và user chưa ký
+          return true;
         }).toList();
 
     final count = listAssetTransfer.length;
@@ -719,13 +739,33 @@ class AccountHelper {
             "signed": item.trinhDuyetGiamDocXacNhan == true,
           });
 
-          final userSignature = idSignatureGroup.firstWhere(
+          // Tìm vị trí của user trong danh sách người ký
+          final userIndex = idSignatureGroup.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
-            orElse: () => {"id": null, "signed": false},
           );
 
-          return userSignature["id"] != null &&
-              userSignature["signed"] == false;
+          // Nếu user không có trong danh sách, không tính
+          if (userIndex == -1) {
+            return false;
+          }
+
+          // Kiểm tra user chưa ký
+          final userSignature = idSignatureGroup[userIndex];
+          if (userSignature["signed"] == true) {
+            return false; // User đã ký rồi
+          }
+
+          // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
+          // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
+          for (int i = 0; i < userIndex; i++) {
+            final previousSigner = idSignatureGroup[i];
+            if (previousSigner["signed"] != true) {
+              return false; // Có người ký trước chưa ký
+            }
+          }
+
+          // Tất cả người ký trước đã ký và user chưa ký
+          return true;
         }).toList();
 
     final count = listToolAndSupplies.length;
@@ -828,13 +868,33 @@ class AccountHelper {
             "signed": item.giamDocKy == true,
           });
 
-          final userSignature = idSignatureGroup.firstWhere(
+          // Tìm vị trí của user trong danh sách người ký
+          final userIndex = idSignatureGroup.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
-            orElse: () => {"id": null, "signed": false},
           );
 
-          return userSignature["id"] != null &&
-              userSignature["signed"] == false;
+          // Nếu user không có trong danh sách, không tính
+          if (userIndex == -1) {
+            return false;
+          }
+
+          // Kiểm tra user chưa ký
+          final userSignature = idSignatureGroup[userIndex];
+          if (userSignature["signed"] == true) {
+            return false; // User đã ký rồi
+          }
+
+          // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
+          // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
+          for (int i = 0; i < userIndex; i++) {
+            final previousSigner = idSignatureGroup[i];
+            if (previousSigner["signed"] != true) {
+              return false; // Có người ký trước chưa ký
+            }
+          }
+
+          // Tất cả người ký trước đã ký và user chưa ký
+          return true;
         }).toList();
 
     final count = listAssetHandover.length;
@@ -935,13 +995,33 @@ class AccountHelper {
             "signed": item.giamDocKy == true,
           });
 
-          final userSignature = idSignatureGroup.firstWhere(
+          // Tìm vị trí của user trong danh sách người ký
+          final userIndex = idSignatureGroup.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
-            orElse: () => {"id": null, "signed": false},
           );
 
-          return userSignature["id"] != null &&
-              userSignature["signed"] == false;
+          // Nếu user không có trong danh sách, không tính
+          if (userIndex == -1) {
+            return false;
+          }
+
+          // Kiểm tra user chưa ký
+          final userSignature = idSignatureGroup[userIndex];
+          if (userSignature["signed"] == true) {
+            return false; // User đã ký rồi
+          }
+
+          // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
+          // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
+          for (int i = 0; i < userIndex; i++) {
+            final previousSigner = idSignatureGroup[i];
+            if (previousSigner["signed"] != true) {
+              return false; // Có người ký trước chưa ký
+            }
+          }
+
+          // Tất cả người ký trước đã ký và user chưa ký
+          return true;
         }).toList();
 
     final count = listToolAndSuppliesHandover.length;

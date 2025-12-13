@@ -154,7 +154,9 @@ class _ToolAndSuppliesHandoverListState
                 ?.hoTen ??
             '';
       case 'trang_thai_ky':
-       return 'Trạng thái ký';
+        return TableToolAndSuppliesHandoverConfig.getPermissionSigningText(
+          getPermissionSigning(item),
+        );
       case 'trang_thai_phieu':
         return TableToolAndSuppliesHandoverConfig.getStatusHandoverText(
           item.trangThaiPhieu ?? 0,
@@ -502,7 +504,11 @@ class _ToolAndSuppliesHandoverListState
                               },
                               showActionsColumn: _showActionsColumn,
                               onDelete: onDelete,
-                              blockDelete: (item) => !TableToolAndSuppliesHandoverConfig.isCheckShowDelete(item),
+                              blockDelete:
+                                  (item) =>
+                                      !TableToolAndSuppliesHandoverConfig.isCheckShowDelete(
+                                        item,
+                                      ),
                               customActions: [
                                 CustomAction(
                                   tooltip: 'Xem',
