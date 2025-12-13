@@ -208,11 +208,9 @@ class _ToolAndSuppliesHandoverListState
     for (int i = 0; i < list1.length; i++) {
       int statusSign1 = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
         list1[i],
-        userInfo!,
       );
       int statusSign2 = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
         list2[i],
-        userInfo!,
       );
       if (list1[i].id != list2[i].id) return false;
       if (list1[i].trangThai != list2[i].trangThai) return false;
@@ -892,9 +890,11 @@ class _ToolAndSuppliesHandoverListState
             )
             .toList();
     final current = flow.indexWhere((s) => s["id"] == userInfo?.tenDangNhap);
+    print('getPermissionSigning current: $current');
+    print('getPermissionSigning flow: $flow');
     if (current == -1) return 2;
-    if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&
-        flow[current]["signed"] != -1) {
+    // Nếu user là người đại diện đơn vị ban hành quyết định và có trong signatureFlow
+    if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap) {
       return flow[current]["signed"] == true ? 4 : 5;
     }
     if (flow[current]["signed"] == true) return 3;
@@ -902,6 +902,7 @@ class _ToolAndSuppliesHandoverListState
         .take(current)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
     if (prevNotSigned.isNotEmpty) return 1;
+
     return 0;
   }
 }
