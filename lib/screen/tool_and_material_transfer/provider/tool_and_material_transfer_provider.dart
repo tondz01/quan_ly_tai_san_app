@@ -231,6 +231,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     // _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
   }
+  
 
   void onRealtimeUpdate(dynamic jsonMsg, BuildContext context) {
     if (jsonMsg['type_func'] == FunctionType.TOOL_AND_MATERIAL_TRANSFER) {

@@ -156,7 +156,7 @@ Widget buildOtherInformation(
       ),
 
       CommonFormInput(
-        label: 'Ký hiệu',
+        label: 'Mã hiệu',
         controller: ctrlKyHieu,
         isEditing: isEditing,
         textContent: ctrlKyHieu.text,
@@ -165,7 +165,7 @@ Widget buildOtherInformation(
       ),
 
       CommonFormInput(
-        label: 'Số ký hiệu',
+        label: 'Số mã hiệu',
         controller: ctrlSoKyHieu,
         isEditing: isEditing,
         textContent: ctrlSoKyHieu.text,

@@ -128,6 +128,7 @@ previewDocument({
                 userInfo.tenDangNhap,
               ),
             );
+            context.read<DieuDongTaiSanProvider>().onPushMessage(item);
           },
         ),
   );
@@ -199,6 +200,8 @@ previewDocumentView({
                 userInfo.tenDangNhap,
               ),
             );
+
+            context.read<DieuDongTaiSanProvider>().onPushMessage(item);
           },
         ),
   );

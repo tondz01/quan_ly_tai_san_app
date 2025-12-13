@@ -127,6 +127,6 @@ class ChiTietDieuDongTaiSan {
   }
   @override
   String toString() {
-    return tenTaiSan;
+    return '($idTaiSan) $tenTaiSan';
   }
 }
