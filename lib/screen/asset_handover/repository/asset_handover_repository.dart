@@ -649,6 +649,7 @@ class AssetHandoverRepository extends ApiBase {
     int size,
     String search,
     int trangThai,
+    [bool isSearchUser = true]
   ) async {
     Map<String, dynamic> result = {
       'data': <AssetHandoverDto>[],
@@ -669,7 +670,7 @@ class AssetHandoverRepository extends ApiBase {
       // Chỉ thêm tham số trangThai nếu không phải -1
       final trangThaiParam = trangThai == -1 ? '' : '&trangThai=$trangThai';
       final url =
-          '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search&userid=$userid$trangThaiParam';
+          '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&sortBy=ngayTao&sortDir=esc&search=$search${isSearchUser ? '&userid=$userid' : ''}$trangThaiParam';
 
       final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {

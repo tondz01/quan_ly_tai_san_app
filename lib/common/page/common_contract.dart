@@ -37,6 +37,7 @@ class CommonContract extends StatefulWidget {
   final bool isKySo;
   final Function()? eventSignature;
   final String? showTitle;
+  final bool showHeader;
 
   const CommonContract({
     super.key,
@@ -54,6 +55,7 @@ class CommonContract extends StatefulWidget {
     this.eventSignature,
     this.pin,
     this.isSavePin = false,
+    this.showHeader = true,
   });
 
   @override
@@ -1462,51 +1464,52 @@ class _CommonContractState extends State<CommonContract> {
           return Column(
             children: [
               // Thanh tiêu đề
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.description, color: Colors.green),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.showTitle ?? 'Soạn & Ký Tài Liệu',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+              if (widget.showHeader)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      '${widget.contractPages.length} trang',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: _exportToPdf,
-                      icon: const Icon(Icons.picture_as_pdf),
-                      label: const Text('Xuất PDF'),
-                    ),
-                    IconButton(
-                      tooltip: 'Đóng',
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: Colors.green),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.description, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.showTitle ?? 'Soạn & Ký Tài Liệu',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        '${widget.contractPages.length} trang',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: _exportToPdf,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('Xuất PDF'),
+                      ),
+                      IconButton(
+                        tooltip: 'Đóng',
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close, color: Colors.green),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               // Nội dung chính
               Expanded(
