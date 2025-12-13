@@ -70,8 +70,14 @@ class _AssetManagementListState extends State<AssetManagementList> {
     if (_providerContainer != container || _currentTypeTab != widget.typeTab) {
       _providerContainer = container;
       _currentTypeTab = widget.typeTab;
-      container.read(tableAssetManagementProvider.notifier).typeTab =
-          widget.typeTab;
+    }
+  }
+
+  /// Đảm bảo provider có đúng typeTab trước khi load data
+  void _ensureCorrectTypeTab(riverpod.WidgetRef ref) {
+    final notifier = ref.read(tableAssetManagementProvider.notifier);
+    if (notifier.typeTab != widget.typeTab) {
+      notifier.typeTab = widget.typeTab;
     }
   }
 
@@ -329,9 +335,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
                         return BoxSearch(
                           width: (availableWidth * 0.35).toDouble(),
                           onSearch: (value) {
-                            ref
-                                .read(tableAssetManagementProvider.notifier)
-                                .searchTerm = value;
+                            final notifier = ref.read(tableAssetManagementProvider.notifier);
+                            // Đảm bảo typeTab đúng với tab hiện tại trước khi search
+                            notifier.typeTab = widget.typeTab;
+                            notifier.searchTerm = value;
                           },
                         );
                       },
@@ -412,19 +419,13 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                // WidgetsBinding.instance.addPostFrameCallback((_) {
-                //   ref
-                //       .read(tableAssetManagementProvider.notifier)
-                //       .loadDataFromApi(0, 1);
-                // });
+                // Đảm bảo typeTab đúng trước khi load data
+                _ensureCorrectTypeTab(ref);
                 totalItems = ref.watch(
                   tableAssetManagementProvider.select(
                     (s) => s.paginationState.totalItems,
                   ),
                 );
-                // setState(() {
-                //   totalItems = totalItems;
-                // });
                 return RiverpodTable<AssetManagementDto>(
                   tableProvider: tableAssetManagementProvider,
                   columns: _columns,

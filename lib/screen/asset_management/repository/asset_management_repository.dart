@@ -636,10 +636,18 @@ class AssetManagementRepository extends ApiBase {
         url = 'paged-chua-ban-giao';
       }
       log('API URL: $url -- tab: $typeAsset');
-      final response = await get(
-        // Đổi từ post thành get
-        '${EndPointAPI.ASSET_MANAGEMENT}/$url?idcongty=ct001&page=$page&size=$size$urlByDonviHienthoi&search=$search&idNhomTaiSan=$idNhomTaiSan',
-      );
+      // Xây dựng query string - chỉ thêm search và idNhomTaiSan khi có giá trị
+      String queryString = '${EndPointAPI.ASSET_MANAGEMENT}/$url?idcongty=ct001&page=$page&size=$size$urlByDonviHienthoi';
+      // Kho thu hồi (typeAsset == 0) luôn cần key search
+      if (typeAsset == 0) {
+        queryString += '&search=$search';
+      } else if (search.isNotEmpty) {
+        queryString += '&search=$search';
+      }
+      if (idNhomTaiSan != null && idNhomTaiSan.isNotEmpty) {
+        queryString += '&idNhomTaiSan=$idNhomTaiSan';
+      }
+      final response = await get(queryString);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -648,9 +656,24 @@ class AssetManagementRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       // Lấy data từ response.data['data'] vì API trả về cấu trúc bọc trong data
       final responseData = response.data;
-      final paginationData = (responseData is Map && responseData['data'] is Map) 
-          ? responseData['data'] 
-          : responseData;
+
+      // Xử lý null safety cho paginationData
+      Map<String, dynamic>? paginationData;
+      if (responseData is Map<String, dynamic>) {
+        if (responseData['data'] is Map<String, dynamic>) {
+          paginationData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          paginationData = responseData;
+        }
+      } else if (responseData is Map) {
+        paginationData = Map<String, dynamic>.from(responseData);
+      }
+
+      // Nếu paginationData vẫn null, return kết quả mặc định
+      if (paginationData == null) {
+        log('Warning: paginationData is null for typeAsset: $typeAsset');
+        return result;
+      }
 
       // Parse response data using the correct key 'items', chỉ parse nếu là List
       final itemsData = paginationData['items'];
@@ -660,10 +683,10 @@ class AssetManagementRepository extends ApiBase {
           AssetManagementDto.fromJson,
         );
       }
-      result['totalPages'] = paginationData['totalPages'];
-      result['currentPage'] = paginationData['page'] ?? paginationData['currentPage'];
-      result['totalItems'] = paginationData['totalItems'];
-      result['groupCounts'] = paginationData['groupCounts'];
+      result['totalPages'] = paginationData['totalPages'] ?? 0;
+      result['currentPage'] = paginationData['page'] ?? paginationData['currentPage'] ?? 0;
+      result['totalItems'] = paginationData['totalItems'] ?? 0;
+      result['groupCounts'] = paginationData['groupCounts'] ?? <String, dynamic>{};
     } catch (e) {
       log("Error at getDataWithPagination - AssetManagementRepository: $e");
     }
