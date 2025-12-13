@@ -103,6 +103,8 @@ class _CommonContractState extends State<CommonContract> {
     double left,
     bool isEdit, {
     bool isNew = true,
+    double initialScale = 1.0,
+    double? initialWidth,
   }) {
     // Convert absolute coordinates to normalized (0-1 range)
     final normalizedTop = _toNormalizedY(top);
@@ -118,6 +120,8 @@ class _CommonContractState extends State<CommonContract> {
           normalizedLeft: normalizedLeft,
           isEdit: isEdit,
           isNew: isNew,
+          initialScale: initialScale,
+          initialWidth: initialWidth,
         ),
       );
     });
@@ -271,6 +275,9 @@ class _CommonContractState extends State<CommonContract> {
       final String? idNguoiKy = sig["idNguoiKy"]?.toString();
       final String? tenNguoiKy = sig["tenNguoiKy"]?.toString();
       final String? ngayKy = sig["ngayKy"]?.toString();
+      // Đọc scale và width từ dữ liệu đã lưu
+      final double savedScale = sig["scale"]?.toDouble() ?? 1.0;
+      final double? savedWidth = sig["width"]?.toDouble();
       String signatureUrl = "";
       String rawUrlPrimary = "";
       String rawUrlFallback = "";
@@ -338,6 +345,8 @@ class _CommonContractState extends State<CommonContract> {
             absoluteX,
             false,
             isNew: false,
+            initialScale: savedScale,
+            initialWidth: savedWidth,
           );
         }
       } else {
@@ -363,6 +372,8 @@ class _CommonContractState extends State<CommonContract> {
                 absoluteX,
                 false,
                 isNew: false,
+                initialScale: savedScale,
+                initialWidth: savedWidth,
               );
             } else {
               SGLog.error(
@@ -411,6 +422,8 @@ class _CommonContractState extends State<CommonContract> {
                     absoluteX,
                     false,
                     isNew: false,
+                    initialScale: savedScale,
+                    initialWidth: savedWidth,
                   );
                   SGLog.info(
                     'Load signature',
@@ -683,7 +696,8 @@ class _CommonContractState extends State<CommonContract> {
                   : null,
           "ngayKy": DateTime.now().toIso8601String(),
           "stt": i + 1,
-          // Có thể thêm "Scale": state.scale nếu DB cần
+          "scale": state.scale, // Lưu scale để restore khi fill lại
+          "width": state.imageWidth, // Lưu width để restore khi fill lại
         });
       }
     }
@@ -1903,6 +1917,8 @@ class _CommonContractState extends State<CommonContract> {
                                               isNew: img.isNew,
                                               containerWidth: containerWidth,
                                               containerHeight: containerHeight,
+                                              initialScale: img.initialScale,
+                                              initialWidth: img.initialWidth,
                                             ),
                                           ),
                                         ],
@@ -1981,6 +1997,8 @@ class DraggableImage extends StatefulWidget {
   final bool isNew;
   final double containerWidth; // Actual container width for calculation
   final double containerHeight; // Actual container height for calculation
+  final double initialScale; // Scale từ dữ liệu đã lưu
+  final double? initialWidth; // Width từ dữ liệu đã lưu (nếu có)
 
   const DraggableImage({
     super.key,
@@ -1992,6 +2010,8 @@ class DraggableImage extends StatefulWidget {
     this.isNew = true,
     this.containerWidth = 900.0,
     this.containerHeight = 1260.0,
+    this.initialScale = 1.0,
+    this.initialWidth,
   });
 
   @override
@@ -2001,7 +2021,8 @@ class DraggableImage extends StatefulWidget {
 class _DraggableImageState extends State<DraggableImage> {
   late double normalizedTop; // Store normalized position (0-1)
   late double normalizedLeft; // Store normalized position (0-1)
-  double scale = 1.0;
+  late double scale;
+  late double imageWidth;
   bool isSelected = false;
   Offset? lastPanPosition;
   Offset? lastScaleDragPosition;
@@ -2011,6 +2032,8 @@ class _DraggableImageState extends State<DraggableImage> {
     super.initState();
     normalizedTop = widget.normalizedTop;
     normalizedLeft = widget.normalizedLeft;
+    scale = widget.initialScale;
+    imageWidth = widget.initialWidth ?? 120; // Default width nếu không có
   }
 
   // Convert normalized to absolute coordinates
@@ -2059,7 +2082,8 @@ class _DraggableImageState extends State<DraggableImage> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                // Không đặt color để giữ background trong suốt (ảnh đã xóa nền)
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(10),
                 border:
                     isSelected ? Border.all(color: accent, width: 1.2) : null,
@@ -2069,15 +2093,10 @@ class _DraggableImageState extends State<DraggableImage> {
               child: Transform.scale(
                 scale: scale,
                 alignment: Alignment.center, // Zoom từ giữa ảnh
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Image.memory(
-                    widget.bytes,
-                    width: 150,
-                    fit: BoxFit.contain, // Không crop ảnh
-                  ),
+                child: Image.memory(
+                  widget.bytes,
+                  width: imageWidth, // Sử dụng width từ dữ liệu đã lưu hoặc default
+                  fit: BoxFit.contain, // Không crop ảnh, giữ tỷ lệ
                 ),
               ),
             ),
