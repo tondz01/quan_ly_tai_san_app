@@ -367,11 +367,6 @@ class AssetHandoverProvider with ChangeNotifier {
       AuthRepository().loadUserDepartments('ct001');
       _dataDepartment = AccountHelper.instance.getDepartment();
     }
-    if (kDebugMode) {
-      log(
-        'message [AssetHandoverProvider] dataStaff: ${jsonEncode(_dataStaff)}',
-      );
-    }
   }
 
   // onGetDataAsset() async {

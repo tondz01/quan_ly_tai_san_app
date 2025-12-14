@@ -531,6 +531,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 .onReloadDataAssetByCurrentUnit(
                                   state.donViGiao!.id ?? '',
                                 );
+                                print('dataAsset: ${widget.provider.dataAsset}');
                             setState(() {
                               assetByDepartment =
                                   widget.provider.dataAsset ?? [];

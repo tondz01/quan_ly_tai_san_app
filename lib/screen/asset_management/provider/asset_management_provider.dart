@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -146,8 +147,8 @@ class AssetManagementProvider with ChangeNotifier {
   List<DropdownMenuItem<LyDoTang>> _itemsLyDoTang = [];
 
   //Item dropdown hien trang
-  List<HienTrang> listHienTrang = AppUtility.listHienTrang;
-  List<DropdownMenuItem<HienTrang>> _itemsHienTrang = [];
+  List<CurrentStatus> listHienTrang = [];
+  List<DropdownMenuItem<CurrentStatus>> _itemsHienTrang = [];
 
   late int totalEntries;
   late int totalPages = 1;
@@ -185,15 +186,9 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   //Tài sản con
-  HienTrang getHienTrang(int id) {
-    return listHienTrang.firstWhere(
-      (element) => element.id == id,
-      orElse:
-          () =>
-              listHienTrang.isNotEmpty
-                  ? listHienTrang.first
-                  : HienTrang(id: 0, name: ''),
-    );
+  CurrentStatus getHienTrang(int id) {
+    return AccountHelper.instance.getCurrentStatusById(id.toString()) ??
+        CurrentStatus.empty();
   }
 
   LyDoTang getLyDoTang(int id) {
@@ -805,7 +800,10 @@ class AssetManagementProvider with ChangeNotifier {
     //Item dropdown hien trang
     _itemsHienTrang = [
       for (var element in listHienTrang)
-        DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
+        DropdownMenuItem<CurrentStatus>(
+          value: element,
+          child: Text(element.tenHTKT ?? ''),
+        ),
     ];
   }
 

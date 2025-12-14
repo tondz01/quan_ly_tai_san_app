@@ -287,9 +287,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                 width: (availableWidth * 0.35).toDouble(),
                                 onSearch: (value) {
                                   ref
-                                      .read(
-                                        tableAssetTransferProvider.notifier,
-                                      )
+                                      .read(tableAssetTransferProvider.notifier)
                                       .searchTerm = value;
                                 },
                               );
@@ -310,9 +308,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                 final selectedCount =
                                     tableState.selectedItems.length;
                                 selectedItems = tableState.selectedItems;
-                                final buttons = _buildButtonList(
-                                  selectedCount,
-                                );
+                                final buttons = _buildButtonList(selectedCount);
                                 final processedButtons =
                                     buttons.map((button) {
                                       if (button.text ==
@@ -337,7 +333,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                       }
                                       return button;
                                     }).toList();
-    
+
                                 final filteredButtons =
                                     hasFilters
                                         ? processedButtons
@@ -348,7 +344,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                                   'table.clear_filters'.tr,
                                             )
                                             .toList();
-    
+
                                 return ResponsiveButtonBar(
                                   buttons: filteredButtons,
                                   spacing: 12,
@@ -395,12 +391,12 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                       if (selected != null && currentPageData.isNotEmpty) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (!mounted) return;
-                          
+
                           final updatedItem = currentPageData.firstWhere(
                             (element) => element.id == selected?.id,
                             orElse: () => DieuDongTaiSanDto(),
                           );
-                          
+
                           if (updatedItem.id != null) {
                             setState(() {
                               selected = updatedItem;
@@ -409,7 +405,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                           }
                         });
                       }
-    
+
                       return RiverpodTable<DieuDongTaiSanDto>(
                         tableProvider: tableAssetTransferProvider,
                         columns: _columns,
@@ -441,13 +437,19 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                         },
                         // onEdit: (item) {},
                         onDelete: _onDelete,
-                        blockDelete: (item) => !TabelAssetTransferConfig.isCheckShowDelete(item),
+                        blockDelete:
+                            (item) =>
+                                !TabelAssetTransferConfig.isCheckShowDelete(
+                                  item,
+                                ),
                         showActionsColumn: _showActionsColumn,
                         customActions: [
                           CustomAction(
                             tooltip: 'Xem',
                             iconPath: 'assets/icons/building.svg',
                             color: Colors.blue,
+                            block: (item) => item.coPhieuBanGiao == false,
+                            blockTooltip: 'Không có phiếu bàn giao',
                             onPressed: (item) async {
                               // Hiển thị popup với danh sách biên bản bàn giao theo dạng page
                               ToolAndSuppliesHandoverPagesViewer.showPopup(

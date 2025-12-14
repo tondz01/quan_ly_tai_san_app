@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bl
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/bloc/current_status_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
@@ -58,5 +59,6 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<TypeCcdcBloc>(create: (_) => TypeCcdcBloc()),
     BlocProvider<UnitBloc>(create: (_) => UnitBloc()),
     BlocProvider<ReasonIncreaseBloc>(create: (_) => ReasonIncreaseBloc()),
+    BlocProvider<CurrentStatusBloc>(create: (_) => CurrentStatusBloc()),
   ];
 }

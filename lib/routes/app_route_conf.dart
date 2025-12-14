@@ -1,4 +1,5 @@
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/department_view.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/current_status_view.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/reason_increase_view.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_tscd_screen.dart';
@@ -297,6 +298,15 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   child: MauSo21Screen(),
+                  key: state.pageKey,
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.currentStatus.path,
+            name: AppRoute.currentStatus.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: CurrentStatusView(),
                   key: state.pageKey,
                 ),
           )

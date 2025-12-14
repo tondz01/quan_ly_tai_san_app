@@ -141,7 +141,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ''; // Loại tài sản
       case 'hien_trang':
         try {
-          return widget.provider.getHienTrang(item.hienTrang ?? 0).name;
+          return widget.provider.getHienTrang(item.hienTrang ?? 0).tenHTKT ?? '';
         } catch (e) {
           return 'Không xác định';
         }

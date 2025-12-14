@@ -134,6 +134,7 @@ class StorageKey {
   static const CONFIG_TIME_EXPIRE = 'config_time_expire';
   static const ROLES_KEY = "USER_ROLES";
   static const ASSET_GROUP = "ASSET_GROUP";
+  static const CURRENT_STATUS = "CURRENT_STATUS";
   static const CCDC_GROUP = "CCDC_GROUP";
   static const TYPE_ASSET = "TYPE_ASSET";
   static const TYPE_CCDCV = "TYPE_CCDCV";

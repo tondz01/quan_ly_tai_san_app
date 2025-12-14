@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -42,8 +43,7 @@ class AccountHelper {
   Map<String, NhanVien>? _nhanVienByIdCache; // O(1) lookup instead of O(n)
 
   // Cache cho counts để tránh tính toán lại nhiều lần
-  Map<String, int> _countCache =
-      {}; // Key: "assetTransfer_1_userId", "toolMaterialTransfer_2_userId", etc.
+  Map<String, int> countCache = {}; // Key: "assetTransfer_1_userId", "toolMaterialTransfer_2_userId", etc.
   String? _cachedUserTenDangNhap; // Cache user để detect khi user thay đổi
   int _dataVersion = 0; // Version để invalidate cache khi data thay đổi
 
@@ -58,7 +58,7 @@ class AccountHelper {
 
   // Clear count cache khi data thay đổi
   void _clearCountCache() {
-    _countCache.clear();
+    countCache.clear();
     _dataVersion++;
   }
 
@@ -162,7 +162,7 @@ class AccountHelper {
       _departmentCache = result;
       return result;
     } catch (e) {
-      print('Error parsing department data: $e');
+      log('Error parsing department data: $e');
       return null;
     }
   }
@@ -209,7 +209,7 @@ class AccountHelper {
       departments.insert(0, allCompany);
       return departments;
     } catch (e) {
-      print('Error parsing department data: $e');
+      log('Error parsing department data: $e');
       return [allCompany];
     }
   }
@@ -370,6 +370,48 @@ class AccountHelper {
       orElse: () => AssetGroupDto(),
     );
   }
+  //CURRENT STATUS
+  setCurrentStatus(List<CurrentStatus> currentStatuses) {
+    StorageService.write(
+      StorageKey.CURRENT_STATUS,
+      currentStatuses.map((e) => e.toJson()).toList(),
+    );
+  }
+
+  void clearCurrentStatus() {
+    StorageService.remove(StorageKey.CURRENT_STATUS);
+  }
+
+  List<CurrentStatus>? getCurrentStatus() {
+    final raw = StorageService.read(StorageKey.CURRENT_STATUS);
+    if (raw == null) return null;
+    if (raw is List<CurrentStatus>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map(
+              (e) =>
+                  CurrentStatus.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
+            .toList();
+      } catch (e) {
+        log('Error at getCurrentStatus: $e');
+        return null;
+      }
+    }
+    log('Error at getCurrentStatus: $raw');
+    return null;
+  }
+
+  CurrentStatus? getCurrentStatusById(String id) {
+    final list = getCurrentStatus();
+    if (list == null) return null;
+    return list.firstWhere(
+      (currentStatus) => currentStatus.id == id,
+      orElse: () => CurrentStatus(),
+    );
+  }
 
   //CCDC GROUP
   setCcdcGroup(List<CcdcGroup> ccdcGroups) {
@@ -525,13 +567,13 @@ class AccountHelper {
     final cacheKey = 'assetTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
 
     // Trả về cached count nếu có
-    if (_countCache.containsKey(cacheKey)) {
-      return _countCache[cacheKey]!;
+    if (countCache.containsKey(cacheKey)) {
+      return countCache[cacheKey]!;
     }
 
     final assetTransfer = getAssetTransfer();
     if (assetTransfer == null || assetTransfer.isEmpty) {
-      _countCache[cacheKey] = 0;
+      countCache[cacheKey] = 0;
       return 0;
     }
 
@@ -619,7 +661,7 @@ class AccountHelper {
         }).toList();
 
     final count = listAssetTransfer.length;
-    _countCache[cacheKey] = count; // Cache kết quả
+    countCache[cacheKey] = count; // Cache kết quả
     return count;
   }
 
@@ -678,13 +720,13 @@ class AccountHelper {
         'toolMaterialTransfer_${type}_${userTenDangNhap}_v$_dataVersion';
 
     // Trả về cached count nếu có
-    if (_countCache.containsKey(cacheKey)) {
-      return _countCache[cacheKey]!;
+    if (countCache.containsKey(cacheKey)) {
+      return countCache[cacheKey]!;
     }
 
     final toolAndSupplies = getToolAndMaterialTransfer();
     if (toolAndSupplies == null || toolAndSupplies.isEmpty) {
-      _countCache[cacheKey] = 0;
+      countCache[cacheKey] = 0;
       return 0;
     }
 
@@ -771,7 +813,7 @@ class AccountHelper {
         }).toList();
 
     final count = listToolAndSupplies.length;
-    _countCache[cacheKey] = count; // Cache kết quả
+    countCache[cacheKey] = count; // Cache kết quả
     return count;
   }
 
@@ -819,13 +861,13 @@ class AccountHelper {
     final cacheKey = 'assetHandover_${userTenDangNhap}_v$_dataVersion';
 
     // Trả về cached count nếu có
-    if (_countCache.containsKey(cacheKey)) {
-      return _countCache[cacheKey]!;
+    if (countCache.containsKey(cacheKey)) {
+      return countCache[cacheKey]!;
     }
 
     final assetHandover = getAssetHandover();
     if (assetHandover == null || assetHandover.isEmpty) {
-      _countCache[cacheKey] = 0;
+      countCache[cacheKey] = 0;
       return 0;
     }
 
@@ -910,7 +952,7 @@ class AccountHelper {
         }).toList();
 
     final count = listAssetHandover.length;
-    _countCache[cacheKey] = count; // Cache kết quả
+    countCache[cacheKey] = count; // Cache kết quả
     return count;
   }
 
@@ -956,13 +998,13 @@ class AccountHelper {
     final cacheKey = 'toolMaterialHandover_${userTenDangNhap}_v$_dataVersion';
 
     // Trả về cached count nếu có
-    if (_countCache.containsKey(cacheKey)) {
-      return _countCache[cacheKey]!;
+    if (countCache.containsKey(cacheKey)) {
+      return countCache[cacheKey]!;
     }
 
     final toolAndSuppliesHandover = getToolAndMaterialHandover();
     if (toolAndSuppliesHandover == null || toolAndSuppliesHandover.isEmpty) {
-      _countCache[cacheKey] = 0;
+      countCache[cacheKey] = 0;
       return 0;
     }
 
@@ -977,39 +1019,48 @@ class AccountHelper {
             return false;
           }
 
-          // Filter 2: signature check (chỉ build khi cần)
-          final idSignatureGroup = <Map<String, dynamic>>[];
+          // Filter 2: signature check - xây dựng signature flow theo thứ tự đúng
+          // Thứ tự: Đại diện đơn vị giao -> Đại diện đơn vị nhận -> listSignatory (giữ nguyên thứ tự) -> Giám đốc
+          final signatureFlow = <Map<String, dynamic>>[];
 
-          idSignatureGroup.add({
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-          });
+          // 1. Đại diện đơn vị giao
+          if (item.idDaiDienBenGiao != null && item.idDaiDienBenGiao!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idDaiDienBenGiao,
+              "signed": item.daiDienBenGiaoXacNhan == true,
+            });
+          }
 
-          idSignatureGroup.add({
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-          });
+          // 2. Đại diện đơn vị nhận
+          if (item.idDaiDienBenNhan != null && item.idDaiDienBenNhan!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idDaiDienBenNhan,
+              "signed": item.daiDienBenNhanXacNhan == true,
+            });
+          }
 
-          // Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          // 3. Danh sách người ký (GIỮ NGUYÊN THỨ TỰ, không sort)
           if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
-            final sortedSignatories = List<SignatoryDto>.from(
-              item.listSignatory!,
-            )..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
-            for (var signatory in sortedSignatories) {
-              idSignatureGroup.add({
-                "id": signatory.idNguoiKy,
-                "signed": signatory.trangThai == 1,
-              });
+            for (var signatory in item.listSignatory!) {
+              if (signatory.idNguoiKy != null && signatory.idNguoiKy!.isNotEmpty) {
+                signatureFlow.add({
+                  "id": signatory.idNguoiKy,
+                  "signed": signatory.trangThai == 1,
+                });
+              }
             }
           }
 
-          idSignatureGroup.add({
-            "id": item.idGiamDoc,
-            "signed": item.giamDocKy == true,
-          });
+          // 4. Giám đốc ký duyệt
+          if (item.idGiamDoc != null && item.idGiamDoc!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idGiamDoc,
+              "signed": item.giamDocKy == true,
+            });
+          }
 
           // Tìm vị trí của user trong danh sách người ký
-          final userIndex = idSignatureGroup.indexWhere(
+          final userIndex = signatureFlow.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
           );
 
@@ -1019,7 +1070,7 @@ class AccountHelper {
           }
 
           // Kiểm tra user chưa ký
-          final userSignature = idSignatureGroup[userIndex];
+          final userSignature = signatureFlow[userIndex];
           if (userSignature["signed"] == true) {
             return false; // User đã ký rồi
           }
@@ -1027,7 +1078,7 @@ class AccountHelper {
           // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
           // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
           for (int i = 0; i < userIndex; i++) {
-            final previousSigner = idSignatureGroup[i];
+            final previousSigner = signatureFlow[i];
             if (previousSigner["signed"] != true) {
               return false; // Có người ký trước chưa ký
             }
@@ -1038,7 +1089,7 @@ class AccountHelper {
         }).toList();
 
     final count = listToolAndSuppliesHandover.length;
-    _countCache[cacheKey] = count; // Cache kết quả
+    countCache[cacheKey] = count; // Cache kết quả
     return count;
   }
 

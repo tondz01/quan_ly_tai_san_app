@@ -5,6 +5,8 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 import '../repository/chi_tiet_dieu_dong_tai_san_repository.dart';
@@ -43,8 +45,8 @@ class _AssetTransferMovementTableState
   }
 
   // Cache HienTrang lookup để tránh O(n) search mỗi lần render
-  late final Map<int, HienTrang> _hienTrangCache;
-  late final HienTrang _defaultHienTrang;
+  late final Map<int, CurrentStatus> _hienTrangCache;
+  late final CurrentStatus _defaultHienTrang;
 
   @override
   void initState() {
@@ -64,24 +66,26 @@ class _AssetTransferMovementTableState
 
     /// Khởi tạo cache cho HienTrang lookup - O(1) thay vì O(n)
   void _initHienTrangCache() {
+    final listHienTrang = AccountHelper.instance.getCurrentStatus();
     _hienTrangCache = {
-      for (final ht in AppUtility.listHienTrang) ht.id: ht,
+      for (final ht in listHienTrang ?? []) ht.id: ht,
     };
-    _defaultHienTrang = AppUtility.listHienTrang.isNotEmpty
-        ? AppUtility.listHienTrang.first
-        : HienTrang(id: 0, name: '');
+    _defaultHienTrang = listHienTrang?.isNotEmpty ?? false
+        ? listHienTrang?.first ?? CurrentStatus.empty() : CurrentStatus.empty();
   }
 
   /// Khởi tạo dropdown items cho HienTrang
   void _initHienTrangItems() {
-    hienTrangItems = AppUtility.listHienTrang
-        .map(
+    final listHienTrang = AccountHelper.instance.getCurrentStatus();
+    hienTrangItems = listHienTrang
+        ?.map(
           (hienTrang) => DropdownMenuItem<dynamic>(
             value: hienTrang,
-            child: Text(hienTrang.name),
+            child: Text(hienTrang.tenHTKT ?? ''),
           ),
         )
-        .toList();
+        .toList() ??
+        [];
   }
 
   @override
@@ -249,7 +253,7 @@ class _AssetTransferMovementTableState
                   width: 50,
                   // O(1) lookup từ cache thay vì O(n) firstWhere
                   getValue: (item) => 
-                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).tenHTKT,
                   setValue: (item, value) {
                     if (value is! HienTrang) return;
                     item.hienTrang = value.id;
@@ -258,7 +262,7 @@ class _AssetTransferMovementTableState
                   getValueWithIndex: (item, rowIndex) =>
                       _hienTrangCache[item.hienTrang] ?? _defaultHienTrang,
                   sortValueGetter: (item) =>
-                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).name,
+                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).tenHTKT,
                   editor: EditableCellEditor.dropdown,
                   dropdownItems: hienTrangItems,
                 ),

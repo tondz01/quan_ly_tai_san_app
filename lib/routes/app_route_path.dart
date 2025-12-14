@@ -56,6 +56,7 @@ enum AppRoute {
   bienBanKiemKeTaiSanCoDinh(path: "/kiem-ke-tscd", name: 'kiem-ke-tscd'),
   mauSo01(path: '/mau-so-01', name: 'mau-so-01'),
   mauSo21(path: '/mau-so-21', name: 'mau-so-21'),
+  currentStatus(path: '/current-status', name: 'current-status'),
   ;
 
   final String path;

@@ -11,6 +11,7 @@ class ItemDropdownDetailCcdc {
   String donViTinh;
   int namSanXuat;
   int soLuong;
+  int soLuongConLai;
   String ghiChu;
   String soKyHieu;
   String kyHieu;
@@ -29,6 +30,7 @@ class ItemDropdownDetailCcdc {
     required this.donViTinh,
     required this.namSanXuat,
     required this.soLuong,
+    required this.soLuongConLai,
     required this.ghiChu,
     required this.soKyHieu,
     required this.kyHieu,
@@ -49,6 +51,7 @@ class ItemDropdownDetailCcdc {
       donViTinh: json['donViTinh'] ?? '',
       namSanXuat: json['namSanXuat'] ?? '',
       soLuong: json['soLuong'] ?? 0,
+      soLuongConLai: json['soLuongConLai'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       soKyHieu: json['soKyHieu'] ?? '',
       kyHieu: json['kyHieu'] ?? '',
@@ -78,6 +81,7 @@ class ItemDropdownDetailCcdc {
       'donViTinh': donViTinh,
       'namSanXuat': namSanXuat,
       'soLuong': soLuong,
+      'soLuongConLai': soLuongConLai,
       'ghiChu': ghiChu,
       'soKyHieu': soKyHieu,
       'kyHieu': kyHieu,
@@ -105,6 +109,7 @@ class ItemDropdownDetailCcdc {
     String? soKyHieu,
     String? kyHieu,
     int? soLuong,
+    int? soLuongConLai,
     String? ghiChu,
     int? soLuongDaBanGiao,
     ToolsAndSuppliesDto? asset,
@@ -122,6 +127,7 @@ class ItemDropdownDetailCcdc {
       soKyHieu: soKyHieu ?? this.soKyHieu,
       kyHieu: kyHieu ?? this.kyHieu,
       soLuong: soLuong ?? this.soLuong,
+      soLuongConLai: soLuongConLai ?? this.soLuongConLai,
       ghiChu: ghiChu ?? this.ghiChu,
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
       soLuongDaBanGiao: soLuongDaBanGiao ?? this.soLuongDaBanGiao,
@@ -144,6 +150,7 @@ class ItemDropdownDetailCcdc {
       soKyHieu: '',
       kyHieu: '',
       soLuong: 0,
+      soLuongConLai: 0,
       ghiChu: '',
       soLuongXuat: 0,
       soLuongDaBanGiao: 0,

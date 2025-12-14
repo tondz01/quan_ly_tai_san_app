@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/repository/current_status_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -146,6 +147,7 @@ class AuthRepository extends ApiBase {
       _loadTypeCcdc(idCongTy),
       _loadAssetCategory(idCongTy),
       loadUnit(idCongTy),
+      loadCurrentStatus(idCongTy),
     ]);
   }
 
@@ -346,6 +348,18 @@ class AuthRepository extends ApiBase {
       }
     } catch (e) {
       log('Error calling API ASSET_CATEGORY: $e');
+    }
+  }
+  Future<void> loadCurrentStatus(String idCongTy) async {
+    try {
+      final response = await CurrentStatusRepository().getListCurrentStatusRepository(idCongTy);
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        AccountHelper.instance.setCurrentStatus(response['data']);
+        log('message test: loadCurrentStatus: ${response['data'].length}');
+        SGLog.info('_loadData', 'loadCurrentStatus');
+      }
+    } catch (e) {
+      log('Error calling API CURRENT_STATUS: $e');
     }
   }
 

@@ -284,6 +284,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     if (AccountHelper.instance.getAllProject().isEmpty) {
       AssetManagementRepository().getListDuAn('ct001');
     }
+    if (AccountHelper.instance.getCurrentStatus()?.isEmpty ?? true) {
+      AuthRepository().loadCurrentStatus('ct001');
+    }
   }
 
   /// Load tất cả counts cho các biên bản khi vào màn hình

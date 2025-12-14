@@ -91,13 +91,6 @@ abstract class AppUtility {
     return '$day/$month/$year';
   }
 
-  static HienTrang getHienTrangById(int id) {
-    return listHienTrang.firstWhere(
-      (element) => element.id == id,
-      orElse: () => HienTrang(id: 0, name: 'Không xác định'),
-    );
-  }
-
   // SEARCH
   static bool fuzzySearch(String text, String searchTerm) {
     if (searchTerm.isEmpty) return true;
