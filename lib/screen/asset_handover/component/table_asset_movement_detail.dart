@@ -67,15 +67,26 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
   @override
   void didUpdateWidget(covariant TableAssetMovementDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.listDetailAssetHandover != oldWidget.listDetailAssetHandover ||
-        widget.listDetailAssetMobilization !=
-            oldWidget.listDetailAssetMobilization) {
+    // Kiểm tra thay đổi bằng cách so sánh reference và length
+    final listDetailAssetHandoverChanged = 
+        widget.listDetailAssetHandover != oldWidget.listDetailAssetHandover ||
+        (widget.listDetailAssetHandover?.length ?? 0) != 
+            (oldWidget.listDetailAssetHandover?.length ?? 0);
+    
+    final listDetailAssetMobilizationChanged = 
+        widget.listDetailAssetMobilization != oldWidget.listDetailAssetMobilization ||
+        (widget.listDetailAssetMobilization?.length ?? 0) != 
+            (oldWidget.listDetailAssetMobilization?.length ?? 0);
+    
+    if (listDetailAssetHandoverChanged || listDetailAssetMobilizationChanged) {
       _syncDetailAssets();
     }
   }
 
   /// Đồng bộ dữ liệu dropdown và danh sách hiển thị trong bảng
   void _syncDetailAssets() {
+    if (!mounted) return;
+    
     // Tạo dropdown items từ danh sách tài sản điều động
     items = widget.listDetailAssetMobilization
             ?.map(
@@ -90,17 +101,85 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
     // Nếu là chế độ xem chi tiết, map từ listDetailAssetHandover
     if (widget.isDetail) {
       final list = <ChiTietDieuDongTaiSan>[];
-      for (final d in widget.listDetailAssetHandover ?? []) {
-        final chiTiet = widget.listDetailAssetMobilization?.firstWhere(
-              (e) => e.idTaiSan == d.idTaiSan,
-              orElse: () => ChiTietDieuDongTaiSan.empty(),
-            ) ??
-            ChiTietDieuDongTaiSan.empty();
-        list.add(chiTiet);
+      final mobilizationList = widget.listDetailAssetMobilization ?? [];
+      
+      // Tạo map để lookup nhanh hơn O(1) thay vì O(n)
+      final mobilizationMap = <String, ChiTietDieuDongTaiSan>{};
+      for (final e in mobilizationList) {
+        if (e.idTaiSan.isNotEmpty) {
+          mobilizationMap[e.idTaiSan] = e;
+        }
       }
-      listDetailAssetMobilization = list;
+      
+      for (final d in widget.listDetailAssetHandover ?? []) {
+        if (d.idTaiSan == null || d.idTaiSan!.isEmpty) continue;
+        
+        // Tìm trong map trước, nếu không có thì tìm trong list
+        ChiTietDieuDongTaiSan? chiTiet = mobilizationMap[d.idTaiSan!];
+        
+        chiTiet ??= mobilizationList.firstWhere(
+            (e) => e.idTaiSan == d.idTaiSan,
+            orElse: () => ChiTietDieuDongTaiSan.empty(),
+          );
+        
+        // Nếu tìm thấy, copy dữ liệu từ DetailAssetHandoverDto vào ChiTietDieuDongTaiSan
+        if (chiTiet.idTaiSan.isNotEmpty) {
+          // Tạo bản copy và cập nhật các giá trị từ DetailAssetHandoverDto
+          final updatedChiTiet = ChiTietDieuDongTaiSan(
+            id: chiTiet.id,
+            idDieuDongTaiSan: chiTiet.idDieuDongTaiSan,
+            soQuyetDinh: chiTiet.soQuyetDinh,
+            tenPhieu: chiTiet.tenPhieu,
+            idTaiSan: chiTiet.idTaiSan,
+            tenTaiSan: chiTiet.tenTaiSan.isNotEmpty ? chiTiet.tenTaiSan : (d.tenTaiSan ?? ''),
+            donViTinh: chiTiet.donViTinh.isNotEmpty ? chiTiet.donViTinh : (d.donViTinh ?? ''),
+            hienTrang: d.hienTrang ?? chiTiet.hienTrang,
+            soLuong: d.soLuong ?? chiTiet.soLuong,
+            ghiChu: d.moTa ?? chiTiet.ghiChu,
+            kyHieu: chiTiet.kyHieu,
+            soKyHieu: chiTiet.soKyHieu,
+            namSanXuat: chiTiet.namSanXuat,
+            ngayTao: chiTiet.ngayTao,
+            ngayCapNhat: chiTiet.ngayCapNhat,
+            nguoiTao: chiTiet.nguoiTao,
+            nguoiCapNhat: chiTiet.nguoiCapNhat,
+            isActive: chiTiet.isActive,
+          );
+          list.add(updatedChiTiet);
+        } else {
+          // Nếu không tìm thấy trong mobilization list, tạo từ DetailAssetHandoverDto
+          final newChiTiet = ChiTietDieuDongTaiSan(
+            id: d.id ?? '',
+            idDieuDongTaiSan: d.quyetDinhDieuDongSo ?? '',
+            soQuyetDinh: d.quyetDinhDieuDongSo ?? '',
+            tenPhieu: '',
+            idTaiSan: d.idTaiSan ?? '',
+            tenTaiSan: d.tenTaiSan ?? '',
+            donViTinh: d.donViTinh ?? '',
+            hienTrang: d.hienTrang ?? 0,
+            soLuong: d.soLuong ?? 0,
+            ghiChu: d.moTa ?? '',
+            kyHieu: d.kyHieu ?? '',
+            soKyHieu: d.soKyHieu ?? '',
+            namSanXuat: d.namSanXuat ?? '',
+            ngayTao: d.ngayTao ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
+            ngayCapNhat: d.ngayCapNhat ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
+            nguoiTao: d.nguoiTao ?? '',
+            nguoiCapNhat: d.nguoiCapNhat ?? '',
+            isActive: d.isActive ?? true,
+          );
+          list.add(newChiTiet);
+        }
+      }
+      
+      setState(() {
+        listDetailAssetMobilization = list;
+      });
     } else {
-      listDetailAssetMobilization = widget.listDetailAssetMobilization ?? [];
+      // Chế độ editing: sử dụng trực tiếp listDetailAssetMobilization
+      setState(() {
+        listDetailAssetMobilization = widget.listDetailAssetMobilization ?? [];
+      });
     }
   }
 
@@ -153,6 +232,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
           AnimatedCrossFade(
             firstChild: SizedBox.shrink(),
             secondChild: SgEditableTable<ChiTietDieuDongTaiSan>(
+              key: ValueKey('${listDetailAssetMobilization.length}_${widget.isDetail}_${widget.listDetailAssetHandover?.length ?? 0}'),
               initialData: listDetailAssetMobilization,
               createEmptyItem: ChiTietDieuDongTaiSan.empty,
               rowHeight: 40.0,
@@ -174,7 +254,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   titleAlignment: TextAlign.center,
                   width: 120,
                   // Hiển thị tên tài sản trong cell
-                  getValue: (item) => item.tenTaiSan,
+                  getValue: (item) => item,
                   // Khi chọn item từ dropdown, copy dữ liệu vào row hiện tại
                   setValue: (item, value) {
                     // Ép kiểu value về ChiTietDieuDongTaiSan để type-safe

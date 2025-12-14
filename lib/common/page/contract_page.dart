@@ -792,11 +792,12 @@ class ContractPage {
                         child: Container(
                           alignment: Alignment.topCenter,
                           child: SGText(
-                            text: e.hoTen.toUpperCase(),
+                            text: e.hoTen,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: SettingPage.textStyle.copyWith(
-                              fontSize: 11 * SettingPage.scale,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),

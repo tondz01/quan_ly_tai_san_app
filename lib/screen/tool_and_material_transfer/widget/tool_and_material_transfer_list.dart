@@ -154,18 +154,6 @@ class _ToolAndMaterialTransferListState
     if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
       _onFilteredDataChanged(oldData, newData);
     }
-
-    setState(() {
-      if (selected != null && widget.provider.dataPage != null) {
-        selected = widget.provider.dataPage?.firstWhere(
-          (element) => element.id == selected?.id,
-          orElse: () => ToolAndMaterialTransferDto(),
-        );
-        if (selected!.id != null) {
-          _buildDetailDepartmentTree(selected!);
-        }
-      }
-    });
   }
 
   // Helper method để so sánh 2 list
@@ -390,6 +378,33 @@ class _ToolAndMaterialTransferListState
                             (s) => s.paginationState.totalItems,
                           ),
                         );
+
+                        // Watch currentPageData để reload detail department tree khi data thay đổi
+                        final currentPageData = ref.watch(
+                          tableToolAndMaterialTransferProvider.select(
+                            (s) => s.currentPageData,
+                          ),
+                        );
+
+                        // Reload detail department tree khi data thay đổi và có selected item
+                        if (selected != null && currentPageData.isNotEmpty) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            
+                            final updatedItem = currentPageData.firstWhere(
+                              (element) => element.id == selected?.id,
+                              orElse: () => ToolAndMaterialTransferDto(),
+                            );
+                            
+                            if (updatedItem.id != null) {
+                              setState(() {
+                                selected = updatedItem;
+                                _buildDetailDepartmentTree(updatedItem);
+                              });
+                            }
+                          });
+                        }
+
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
                           columns: _columns,
@@ -621,6 +636,7 @@ class _ToolAndMaterialTransferListState
   }
 
   void _buildDetailDepartmentTree(ToolAndMaterialTransferDto item) {
+    widget.provider.buildThreadNodes(item);
     listSignatoryDetail.clear();
     selected = item;
     listSignatoryDetail = [

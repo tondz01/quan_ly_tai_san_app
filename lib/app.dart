@@ -236,18 +236,18 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
     switch (functionType) {
       case FunctionType.ASSET_TRANSFER:
-        await AssetTransferRepository().getListDieuDongTaiSan();
+        await AssetTransferRepository().getCountUseSign();
         break;
       case FunctionType.ASSET_HANDOVER:
-        await AssetHandoverRepository().getListAssetHandover();
+        await AssetHandoverRepository().getCountUseSign();
         break;
       case FunctionType.TOOL_AND_MATERIAL_TRANSFER:
         await ToolAndMaterialTransferRepository()
-            .getAllToolAndMeterialTransfer(-1);
+            .getCountUseSign();
         break;
       case FunctionType.TOOL_AND_SUPPLIES_HANDOVER:
         await ToolAndSuppliesHandoverRepository()
-            .getListToolAndSuppliesHandover();
+            .getCountUseSign();
         break;
       default:
         log('[App] Unknown function type: $functionType');

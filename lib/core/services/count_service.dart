@@ -63,10 +63,10 @@ class CountService {
       // Load tất cả danh sách các phiếu song song (parallel)
       // Các method này sẽ tự động lưu vào AccountHelper và trigger refreshAllCounts()
       await Future.wait([
-        AssetTransferRepository().getListDieuDongTaiSan(),
-        AssetHandoverRepository().getListAssetHandover(),
-        ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(-1),
-        ToolAndSuppliesHandoverRepository().getListToolAndSuppliesHandover(),
+        AssetTransferRepository().getCountUseSign(),
+        AssetHandoverRepository().getCountUseSign(),
+        ToolAndMaterialTransferRepository().getCountUseSign(),
+        ToolAndSuppliesHandoverRepository().getCountUseSign(),
       ], eagerError: false);
 
       // Sau khi load xong, AccountHelper đã tự động tính count từ danh sách

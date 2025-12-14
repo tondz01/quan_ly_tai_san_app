@@ -107,7 +107,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
       String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
       String idNeedToDo =
-          "${request.idDonViGiao},${request.idDonViNhan},${request.idNguoiKyNhay},${request.idTrinhDuyetGiamDoc},$newSignatory, admin,${request.nguoiTao}";
+          "${request.idNguoiKyNhay}${request.idTrinhDuyetCapPhong},,${request.idTrinhDuyetGiamDoc},$newSignatory, admin,${request.nguoiTao}";
       Future.delayed(const Duration(milliseconds: 200)).then((_) {
         MessageServiceRealtime().pushJsonMessage(
           typeFunc: FunctionType.TOOL_AND_MATERIAL_TRANSFER,
@@ -460,15 +460,13 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     try {
       final allIds = <String>{};
       for (var item in items) {
-        final id1 = item.idDonViGiao;
-        final id2 = item.idDonViNhan;
-        final id3 = item.idNguoiKyNhay;
-        final id4 = item.idTrinhDuyetGiamDoc;
+        final id1 = item.idNguoiKyNhay;
+        final id2 = item.idTrinhDuyetCapPhong;
+        final id3 = item.idTrinhDuyetGiamDoc;
 
-        if (id1 != null && id1.isNotEmpty) allIds.add(id1);
-        if (id2 != null && id2.isNotEmpty) allIds.add(id2);
-        if (id3 != null && id3.isNotEmpty) allIds.add(id3);
-        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
+        if (id1 != null && id1.trim().isNotEmpty) allIds.add(id1);
+        if (id2 != null && id2.trim().isNotEmpty) allIds.add(id2);
+        if (id3 != null && id3.trim().isNotEmpty) allIds.add(id3);
         final signatories = item.listSignatory;
         if (signatories != null) {
           for (var s in signatories) {
@@ -811,5 +809,37 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       log("Error at getCountByDvGiao - ToolAndMaterialTransferRepository: $e");
       return 0;
     }
+  }
+  
+  Future<Map<String, dynamic>> getCountUseSign() async {
+    int count = 0;
+    try {
+      final userInfo = AccountHelper.instance.getUserInfo();
+      String userid = userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final url =
+          '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=0&size=999999&userid=$userid';
+
+      final response = await get(url);
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        count = response.data['totalItems'] ?? 0;
+      }
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      List<ToolAndMaterialTransferDto> toolAndMaterialTransfer = [];
+      if (itemsData is List) {
+        toolAndMaterialTransfer = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+          itemsData,
+          ToolAndMaterialTransferDto.fromJson,
+        );
+      } else {
+        toolAndMaterialTransfer = [];
+      }
+      AccountHelper.instance.clearToolAndMaterialTransfer();
+      AccountHelper.instance.setToolAndMaterialTransfer(toolAndMaterialTransfer);
+      AccountHelper.refreshAllCounts();
+    } catch (e) {
+      log("Error at getCountUseSign - ToolAndMaterialTransferRepository: $e");
+    }
+    return {'data': count, 'status_code': Numeral.STATUS_CODE_SUCCESS};
   }
 }

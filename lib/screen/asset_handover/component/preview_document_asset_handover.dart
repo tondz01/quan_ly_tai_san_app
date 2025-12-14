@@ -257,6 +257,7 @@ previewDocumentDecisionHandover({
 
     builder: (context) {
       return CommonContract(
+        isShowKy: false,
         contractPages: [
           if (document != null)
             for (var index = 0; index < document.pages.length; index++)

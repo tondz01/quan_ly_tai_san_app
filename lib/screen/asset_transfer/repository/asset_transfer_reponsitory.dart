@@ -138,6 +138,7 @@ class AssetTransferRepository extends ApiBase {
         EndPointAPI.DIEU_DONG_TAI_SAN,
         data: request.toJson(),
       );
+      final allIds = <String>{};
 
       final int? status = response.statusCode;
       final bool isOk =
@@ -149,6 +150,7 @@ class AssetTransferRepository extends ApiBase {
         return result;
       }
       final dynamic respData = response.data;
+
       final String idDDTS =
           (respData is Map<String, dynamic> && respData.containsKey('data'))
               ? (respData['data']['id']?.toString() ?? '')
@@ -177,7 +179,10 @@ class AssetTransferRepository extends ApiBase {
           return result;
         }
       }
+
       for (var signatory in listSignatory) {
+        final id = signatory.idNguoiKy;
+        if (id != null && id.isNotEmpty) allIds.add(id);
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: idDDTS,
           trangThai: 0,
@@ -201,6 +206,25 @@ class AssetTransferRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       if (respData is Map<String, dynamic>) {
         result['data'] = DieuDongTaiSanDto.fromJson(respData);
+        final id1 = request.idNguoiKyNhay;
+        final id2 = request.idTrinhDuyetCapPhong;
+        final id3 = request.idTrinhDuyetGiamDoc;
+        if (id1.trim().isNotEmpty) allIds.add(id1);
+        if (id2.trim().isNotEmpty) allIds.add(id2);
+        if (id3.trim().isNotEmpty) allIds.add(id3);
+        if (allIds.isNotEmpty) {
+          final recipients = {
+            ...allIds.where((id) => id.trim().isNotEmpty),
+            'admin,${request.nguoiTao}',
+          };
+          Future.delayed(const Duration(milliseconds: 200)).then((_) {
+            MessageServiceRealtime().pushJsonMessage(
+              typeFunc: FunctionType.ASSET_TRANSFER,
+              typeAction: ActionType.CREATE,
+              idNeedToDo: recipients.join(','),
+            );
+          });
+        }
       } else {
         result['data'] = DieuDongTaiSanDto();
       }
@@ -431,15 +455,13 @@ class AssetTransferRepository extends ApiBase {
     try {
       final allIds = <String>{};
       for (var item in items) {
-        final id1 = item.idDonViGiao;
-        final id2 = item.idDonViNhan;
-        final id3 = item.idNguoiKyNhay;
-        final id4 = item.idTrinhDuyetGiamDoc;
+        final id1 = item.idNguoiKyNhay;
+        final id2 = item.idTrinhDuyetCapPhong;
+        final id3 = item.idTrinhDuyetGiamDoc;
 
         if (id1 != null && id1.isNotEmpty) allIds.add(id1);
         if (id2 != null && id2.isNotEmpty) allIds.add(id2);
         if (id3 != null && id3.isNotEmpty) allIds.add(id3);
-        if (id4 != null && id4.isNotEmpty) allIds.add(id4);
         final signatories = item.listSignatory;
         if (signatories != null) {
           for (var s in signatories) {
@@ -827,5 +849,38 @@ class AssetTransferRepository extends ApiBase {
       log("Error at getCountByDvGiao - ToolAndMaterialTransferRepository: $e");
       return 0;
     }
+  }
+
+  Future<Map<String, dynamic>> getCountUseSign() async {
+    int count = 0;
+    try {
+      final userInfo = AccountHelper.instance.getUserInfo();
+      String userid =
+          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=0&size=999999&userid=$userid',
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        count = response.data['totalItems'] ?? 0;
+      }
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      List<DieuDongTaiSanDto> dieuDongTaiSans = [];
+      if (itemsData is List) {
+        dieuDongTaiSans = ResponseParser.parseToList<DieuDongTaiSanDto>(
+          itemsData,
+          DieuDongTaiSanDto.fromJson,
+        );
+      } else {
+        dieuDongTaiSans = [];
+      }
+      AccountHelper.instance.clearAssetTransfer();
+      AccountHelper.instance.setAssetTransfer(dieuDongTaiSans);
+      AccountHelper.refreshAllCounts();
+    } catch (e) {
+      log("Error at getCountUseSign - AssetTransferRepository: $e");
+    }
+    return {'data': count, 'status_code': Numeral.STATUS_CODE_SUCCESS};
   }
 }

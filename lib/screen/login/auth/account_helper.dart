@@ -572,8 +572,9 @@ class AccountHelper {
 
           // 3. Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
           if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
-            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
-              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            final sortedSignatories = List<SignatoryDto>.from(
+              item.listSignatory!,
+            )..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
             for (var signatory in sortedSignatories) {
               idSignatureGroup.add({
                 "id": signatory.idNguoiKy,
@@ -723,8 +724,9 @@ class AccountHelper {
 
           // 3. Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
           if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
-            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
-              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            final sortedSignatories = List<SignatoryDto>.from(
+              item.listSignatory!,
+            )..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
             for (var signatory in sortedSignatories) {
               idSignatureGroup.add({
                 "id": signatory.idNguoiKy,
@@ -838,38 +840,48 @@ class AccountHelper {
             return false;
           }
 
-          // Filter 2: signature check (chỉ build khi cần)
-          final idSignatureGroup = <Map<String, dynamic>>[];
+          // Filter 2: signature check - xây dựng signature flow theo thứ tự đúng
+          // Thứ tự: Đại diện đơn vị giao -> Đại diện đơn vị nhận -> listSignatory (giữ nguyên thứ tự) -> Giám đốc
+          final signatureFlow = <Map<String, dynamic>>[];
 
-          idSignatureGroup.add({
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-          });
+          // 1. Đại diện đơn vị giao
+          if (item.idDaiDienBenGiao != null && item.idDaiDienBenGiao!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idDaiDienBenGiao,
+              "signed": item.daiDienBenGiaoXacNhan == true,
+            });
+          }
 
-          idSignatureGroup.add({
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-          });
+          // 2. Đại diện đơn vị nhận
+          if (item.idDaiDienBenNhan != null && item.idDaiDienBenNhan!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idDaiDienBenNhan,
+              "signed": item.daiDienBenNhanXacNhan == true,
+            });
+          }
 
-          // Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
+          // 3. Danh sách người ký (GIỮ NGUYÊN THỨ TỰ, không sort)
           if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
-            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
-              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
-            for (var signatory in sortedSignatories) {
-              idSignatureGroup.add({
-                "id": signatory.idNguoiKy,
-                "signed": signatory.trangThai == 1,
-              });
+            for (var signatory in item.listSignatory!) {
+              if (signatory.idNguoiKy != null && signatory.idNguoiKy!.isNotEmpty) {
+                signatureFlow.add({
+                  "id": signatory.idNguoiKy,
+                  "signed": signatory.trangThai == 1,
+                });
+              }
             }
           }
 
-          idSignatureGroup.add({
-            "id": item.idGiamDoc,
-            "signed": item.giamDocKy == true,
-          });
+          // 4. Giám đốc ký duyệt
+          if (item.idGiamDoc != null && item.idGiamDoc!.isNotEmpty) {
+            signatureFlow.add({
+              "id": item.idGiamDoc,
+              "signed": item.giamDocKy == true,
+            });
+          }
 
           // Tìm vị trí của user trong danh sách người ký
-          final userIndex = idSignatureGroup.indexWhere(
+          final userIndex = signatureFlow.indexWhere(
             (e) => e["id"] == userTenDangNhapCached,
           );
 
@@ -879,7 +891,7 @@ class AccountHelper {
           }
 
           // Kiểm tra user chưa ký
-          final userSignature = idSignatureGroup[userIndex];
+          final userSignature = signatureFlow[userIndex];
           if (userSignature["signed"] == true) {
             return false; // User đã ký rồi
           }
@@ -887,7 +899,7 @@ class AccountHelper {
           // Kiểm tra TẤT CẢ người ký trước user đã ký chưa
           // Chỉ tính nếu tất cả người ký trước (từ index 0 đến userIndex - 1) đã ký
           for (int i = 0; i < userIndex; i++) {
-            final previousSigner = idSignatureGroup[i];
+            final previousSigner = signatureFlow[i];
             if (previousSigner["signed"] != true) {
               return false; // Có người ký trước chưa ký
             }
@@ -980,8 +992,9 @@ class AccountHelper {
 
           // Danh sách người ký (sort theo id để đảm bảo thứ tự đúng)
           if (item.listSignatory != null && item.listSignatory!.isNotEmpty) {
-            final sortedSignatories = List<SignatoryDto>.from(item.listSignatory!)
-              ..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
+            final sortedSignatories = List<SignatoryDto>.from(
+              item.listSignatory!,
+            )..sort((a, b) => (a.id ?? '').compareTo(b.id ?? ''));
             for (var signatory in sortedSignatories) {
               idSignatureGroup.add({
                 "id": signatory.idNguoiKy,

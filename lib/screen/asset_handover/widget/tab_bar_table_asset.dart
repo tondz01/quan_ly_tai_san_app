@@ -41,8 +41,7 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
 
   Future<void> _loadCount() async {
     // Đảm bảo userInfoDTO đã được khởi tạo
-    userInfoDTO ??=
-        widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
+    userInfoDTO = AccountHelper.instance.getUserInfo();
 
     // Lấy idDonViGiao từ NhanVien (phòng ban của user)
     NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(

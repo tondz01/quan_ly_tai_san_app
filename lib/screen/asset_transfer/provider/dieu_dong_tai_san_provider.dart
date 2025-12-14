@@ -48,7 +48,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isShowCollapse => _isShowCollapse;
   bool get isLoading => _isLoading;
   get userInfo => _userInfo;
-  List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
   get itemPreview => _itemPreview;
   get data => _data;
@@ -142,7 +141,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
   List<NhanVien>? _dataNhanVien;
-  List<DieuDongTaiSanDto>? _dataPage;
   List<DieuDongTaiSanDto> _filteredData = [];
   DieuDongTaiSanDto? _item;
   DieuDongTaiSanDto? _itemPreview;
@@ -178,11 +176,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   set loadingMessage(String value) {
     if (_loadingMessage == value) return;
     _loadingMessage = value;
-    if (!_isBatching) notifyListeners();
-  }
-
-  set dataPage(List<DieuDongTaiSanDto>? value) {
-    _dataPage = value;
     if (!_isBatching) notifyListeners();
   }
 
@@ -408,7 +401,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
-      _dataPage = [];
     } else {
       _filteredData.clear();
       _data?.clear();
@@ -738,7 +730,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     typeDieuDongTaiSan = type;
     _batchUpdate(() {
       _data = null;
-      _dataPage = null;
       _item = null;
       _dataAsset = null;
       _dataPhongBan = null;

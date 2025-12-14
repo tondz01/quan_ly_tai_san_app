@@ -87,7 +87,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   /// - Khi EDIT: Merge cả assetByDepartment (để chọn thêm) + asset từ chiTietDieuDongTaiSans (để hiển thị đã chọn)
   List<AssetManagementDto> _getCombinedAssets() {
     final Map<String, AssetManagementDto> combinedMap = {};
-    
+
     // Bước 1: Ưu tiên lấy asset từ chiTietDieuDongTaiSans (chi tiết đã chọn)
     // Điều này đảm bảo luôn hiển thị được chi tiết ngay cả khi asset đã được bàn giao
     final chiTietList = state.item?.chiTietDieuDongTaiSans;
@@ -95,7 +95,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       for (final chiTiet in chiTietList) {
         final idTaiSanRaw = chiTiet.idTaiSan;
         if (idTaiSanRaw.isEmpty) continue;
-        
+
         final idTaiSan = idTaiSanRaw.replaceAll(RegExp(r"\s+"), "");
         if (idTaiSan.isNotEmpty) {
           // Tạo AssetManagementDto từ ChiTietDieuDongTaiSan
@@ -517,14 +517,23 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) async {
                             setState(() {
                               state.donViGiao = value;
-                              state.listStaffByDepartment = widget.provider.dataNhanVien
-                                .where((element) => element.phongBanId == state.donViGiao!.id)
-                                .toList();
+                              state.listStaffByDepartment =
+                                  widget.provider.dataNhanVien
+                                      .where(
+                                        (element) =>
+                                            element.phongBanId ==
+                                            state.donViGiao!.id,
+                                      )
+                                      .toList();
                             });
 
-                            await widget.provider.onReloadDataAssetByCurrentUnit(state.donViGiao!.id ?? '');
+                            await widget.provider
+                                .onReloadDataAssetByCurrentUnit(
+                                  state.donViGiao!.id ?? '',
+                                );
                             setState(() {
-                              assetByDepartment = widget.provider.dataAsset ?? [];
+                              assetByDepartment =
+                                  widget.provider.dataAsset ?? [];
                             });
                           },
                         ),
@@ -1100,21 +1109,21 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           UpdateDieuDongEvent(context, newRequest, state.item!.id!),
         );
       }
-    }
-    String newSignatory = state.additionalSignersDetailed
-        .map((e) => e.employee?.id ?? '')
-        .join(',');
-    //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
-    String idNeedToDo =
-        "${state.item?.idDonViGiao},${state.item?.idDonViNhan},${state.item?.idNguoiKyNhay},${state.item?.idTrinhDuyetGiamDoc},$newSignatory, admin,${state.item?.nguoiTao}";
+      String newSignatory = state.additionalSignersDetailed
+          .map((e) => e.employee?.id ?? '')
+          .join(',');
+      //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+      String idNeedToDo =
+          "${state.item?.idNguoiKyNhay},${state.item?.idTrinhDuyetCapPhong},${state.item?.idTrinhDuyetGiamDoc},$newSignatory, admin,${state.item?.nguoiTao}";
 
-    Future.delayed(const Duration(milliseconds: 200)).then((_) {
-      MessageServiceRealtime().pushJsonMessage(
-        typeFunc: FunctionType.ASSET_TRANSFER,
-        typeAction: ActionType.UPDATE,
-        idNeedToDo: idNeedToDo,
-      );
-    });
+      Future.delayed(const Duration(milliseconds: 200)).then((_) {
+        MessageServiceRealtime().pushJsonMessage(
+          typeFunc: FunctionType.ASSET_TRANSFER,
+          typeAction: ActionType.UPDATE,
+          idNeedToDo: idNeedToDo,
+        );
+      });
+    }
   }
 
   bool editable() {
@@ -1150,7 +1159,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         controllers.controllerDocumentName.text = state.item?.tenPhieu ?? '';
         controllers.controllerDeliveringUnit.text =
             state.item?.tenDonViGiao ?? '';
-        
+
         controllers.controllerReceivingUnit.text =
             state.item?.tenDonViNhan ?? '';
         controllers.controllerRequester.text = state.item?.tenNguoiDeNghi ?? '';
@@ -1179,7 +1188,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         assetByDepartment = widget.provider.dataAsset ?? [];
         print('Asset by department: ${assetByDepartment.length}');
         print(
-            'Don vi giao ID: ${state.donViGiao != null ? state.donViGiao!.id : 'null'}');
+          'Don vi giao ID: ${state.donViGiao != null ? state.donViGiao!.id : 'null'}',
+        );
 
         print('detail item: ${state.item?.chiTietDieuDongTaiSans?.length}');
         //load list staff by department

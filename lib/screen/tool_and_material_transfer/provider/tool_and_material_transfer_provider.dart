@@ -335,7 +335,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         final details = await getListDetailTransferCCDC(item.id!);
         if (currentRequestId != _detailRequestId) return;
         _listDetailTransferCCDC = details;
-        buildThreadNodes(item);
         notifyListeners();
       }
     } catch (e) {

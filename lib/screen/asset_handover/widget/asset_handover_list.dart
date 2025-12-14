@@ -154,17 +154,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
       _onFilteredDataChanged(oldData, newData);
     }
-    setState(() {
-      if (selected != null && widget.provider.dataPage != null) {
-        selected = widget.provider.dataPage?.firstWhere(
-          (element) => element.id == selected?.id,
-          orElse: () => AssetHandoverDto(),
-        );
-        if (selected!.id != null) {
-          _buildDetailDepartmentTree(selected!);
-        }
-      }
-    });
   }
 
   bool _areListsEqual(
@@ -565,16 +554,32 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         ),
                         child: riverpod.Consumer(
                           builder: (context, ref, child) {
-                            // final data = widget.provider.filteredData ?? [];
-                            // Defer provider mutation until after the current frame
-                            // if (!_areListsEqual(_previousFilteredData, data)) {
-                            //   _previousFilteredData = List.from(data);
-                            //   WidgetsBinding.instance.addPostFrameCallback((_) {
-                            //     ref
-                            //         .read(tableAssetHandoverProvider.notifier)
-                            //         .setData(data);
-                            //   });
-                            // }
+                            // Watch currentPageData để reload detail department tree khi data thay đổi
+                            final currentPageData = ref.watch(
+                              tableAssetHandoverProvider.select(
+                                (s) => s.currentPageData,
+                              ),
+                            );
+
+                            // Reload detail department tree khi data thay đổi và có selected item
+                            if (selected != null && currentPageData.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                
+                                final updatedItem = currentPageData.firstWhere(
+                                  (element) => element.id == selected?.id,
+                                  orElse: () => AssetHandoverDto(),
+                                );
+                                
+                                if (updatedItem.id != null) {
+                                  setState(() {
+                                    selected = updatedItem;
+                                    _buildDetailDepartmentTree(updatedItem);
+                                  });
+                                }
+                              });
+                            }
+                            
                             return RiverpodTable<AssetHandoverDto>(
                               tableProvider: tableAssetHandoverProvider,
                               columns: _columns,

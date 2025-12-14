@@ -185,18 +185,6 @@ class _ToolAndSuppliesHandoverListState
     if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
       _onFilteredDataChanged(oldData, newData);
     }
-
-    setState(() {
-      if (selected != null && widget.provider.dataPage != null) {
-        selected = widget.provider.dataPage?.firstWhere(
-          (element) => element.id == selected?.id,
-          orElse: () => ToolAndSuppliesHandoverDto(),
-        );
-        if (selected!.id != null) {
-          _buildDetailDepartmentTree(selected!);
-        }
-      }
-    });
   }
 
   // Helper method để so sánh 2 list
@@ -452,23 +440,37 @@ class _ToolAndSuppliesHandoverListState
                         ),
                         child: riverpod.Consumer(
                           builder: (context, ref, child) {
-                            // final data = widget.provider.filteredData ?? [];
+                            // Watch currentPageData để reload detail department tree khi data thay đổi
+                            final currentPageData = ref.watch(
+                              tableToolAndSuppliesHandoverProvider.select(
+                                (s) => s.currentPageData,
+                              ),
+                            );
 
-                            // // Check if data changed since last build
-                            // if (!_areListsEqual(_previousFilteredData, data)) {
-                            //   log(
-                            //     'Filtered data changed in build: ${_previousFilteredData.length} -> ${data.length}',
-                            //   );
-                            //   _previousFilteredData = List.from(data);
-                            //   WidgetsBinding.instance.addPostFrameCallback((_) {
-                            //     ref
-                            //         .read(
-                            //           tableToolAndSuppliesHandoverProvider
-                            //               .notifier,
-                            //         )
-                            //         .setData(data);
-                            //   });
-                            // }
+                            // Reload detail department tree khi data thay đổi và có selected item
+                            if (selected != null && currentPageData.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                
+                                final updatedItem = currentPageData.firstWhere(
+                                  (element) => element.id == selected?.id,
+                                  orElse: () => ToolAndSuppliesHandoverDto(),
+                                );
+                                
+                                if (updatedItem.id != null) {
+                                  setState(() {
+                                    selected = updatedItem;
+                                  });
+                                  final nodes = _buildDetailDepartmentTree(updatedItem);
+                                  widget.provider.updateDetailDiagram(
+                                    item: updatedItem,
+                                    nodes: nodes,
+                                    title:
+                                        'trạng thái ký " Biên bản bàn giao ${updatedItem.id} "',
+                                  );
+                                }
+                              });
+                            }
 
                             return RiverpodTable<ToolAndSuppliesHandoverDto>(
                               tableProvider:
