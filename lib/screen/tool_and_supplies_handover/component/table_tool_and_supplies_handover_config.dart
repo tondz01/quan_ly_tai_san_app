@@ -331,9 +331,6 @@ class TableToolAndSuppliesHandoverConfig {
 
     // Lấy trạng thái ký của user hiện tại (đảm bảo type safety)
     final currentSigned = signatureFlow[currentIndex]["signed"] as bool;
-    print(
-      'getPermissionSigning currentSigned: $currentSigned for user ${userInfo?.tenDangNhap}',
-    );
 
     // Nếu user là người tạo và có trong signatureFlow
     if (item.nguoiTao == userInfo?.tenDangNhap) {

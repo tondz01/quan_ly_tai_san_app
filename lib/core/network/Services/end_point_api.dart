@@ -55,6 +55,7 @@ class EndPointAPI {
   static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
   static String DETAIL_SUPPLIES_TRANSFER = "/api/chitietdieudongccdcvattu";
   static String TYPE_ASSET = "/api/loaitaisancon";
+  static String CURRENT_STATUS = "/api/hientrangkythuat";
   static String TYPE_CCDC = "/api/loaiccdccon";
   static String UNIT = "/api/donvitinh";
   static String REASON_INCREASE = "/api/lydotang";

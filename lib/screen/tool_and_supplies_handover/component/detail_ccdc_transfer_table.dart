@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
@@ -12,7 +14,7 @@ import 'package:se_gay_components/common/sg_text.dart';
 
 class DetailCcdcTransferTable extends StatefulWidget {
   final bool isEditing;
-  final List<DetailToolAndMaterialTransferDto> initialDetails;
+  final List<DetailToolAndMaterialTransferDto> movementDetails;
   final List<DetailSubppliesHandoverDto> initialDetailsSuppliesHandover;
   final List<OwnershipUnitDetailDto> listOwnershipUnit;
   final List<ToolsAndSuppliesDto> allAssets;
@@ -23,7 +25,7 @@ class DetailCcdcTransferTable extends StatefulWidget {
     BuildContext context, {
     super.key,
     required this.isEditing,
-    required this.initialDetails,
+    required this.movementDetails,
     required this.allAssets,
     required this.onDataChanged,
     required this.listOwnershipUnit,
@@ -41,8 +43,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<DetailAssetDto> listDetailAsset;
   late List<OwnershipUnitDetailDto> listDetailOwnershipUnit;
   late List<ItemDropdownDetailCcdc> listItemDropdownDetailAsset;
-  final GlobalKey<DetailEditableTableState<ItemDropdownDetailCcdc>> _tableKey =
-      GlobalKey(); // Thay đổi generic type
+  int _tableKeyValue = 0; // Key để force rebuild table khi movementDetails thay đổi
 
   bool _isInitialized = false;
 
@@ -86,7 +87,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
         widget.initialDetailsSuppliesHandover,
         movementDetails,
       );
-    } else if (widget.initialDetails.isNotEmpty) {
+    } else if (widget.movementDetails.isNotEmpty) {
       // Ngược lại dùng toàn bộ danh sách chi tiết điều động làm source
       listAsset = List.from(listItemDropdownDetailAsset);
     } else {
@@ -103,7 +104,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     listAsset = [];
     listDetailOwnershipUnit = [];
     listItemDropdownDetailAsset = [];
-    movementDetails = List.from(widget.initialDetails);
+    movementDetails = List.from(widget.movementDetails);
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
 
@@ -149,22 +150,17 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       }
     }
 
-    if (oldWidget.initialDetails != widget.initialDetails &&
-        widget.initialDetails.isNotEmpty) {
-      movementDetails = List.from(widget.initialDetails);
+    // Xử lý khi movementDetails thay đổi
+    if (oldWidget.movementDetails != widget.movementDetails) {
+      movementDetails = List.from(widget.movementDetails);
       _syncDetailAssets();
-      listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
-      setState(() {});
-      if (_isInitialized) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _forceNotifyDataChanged();
-        });
+      if (widget.movementDetails.isEmpty) {
+        listAsset = [];
+      } else {
+        listAsset = List.from(getAssetsByChildAssets(widget.allAssets, movementDetails));
       }
-      return;
-    }
-    if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
-      _syncDetailAssets();
-      listAsset = [];
+      // Tăng key value để force rebuild table
+      _tableKeyValue++;
       setState(() {});
       if (_isInitialized) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -179,6 +175,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<ToolsAndSuppliesDto> allAssets,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
+    print('chiTietDieuDong: ${jsonEncode(chiTietDieuDong)}');
     // Map nhanh asset theo id để lấy thêm thông tin (đơn vị tính, ghi chú...)
     final Map<String, ToolsAndSuppliesDto> idToAsset = {
       for (final a in allAssets) a.id: a,
@@ -208,8 +205,10 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           namSanXuat: namSX,
           soKyHieu: asset.soKyHieu,
           kyHieu: asset.kyHieu,
-          soLuong: c.soLuongXuat < 0 ? c.soLuongXuat : c.soLuongXuat - c.soLuongDaBanGiao,
+          // soLuong: c.soLuongXuat < 0 ? c.soLuongXuat : c.soLuongXuat - c.soLuongDaBanGiao,
+          soLuong: widget.isEditing ? c.soLuongConLai ?? 0: c.soLuongXuat,
           soLuongDaBanGiao: c.soLuongDaBanGiao,
+          soLuongConLai: c.soLuongConLai ?? 0,
           soLuongXuat: 0,
           ghiChu: c.ghiChu.isNotEmpty ? c.ghiChu : asset.ghiChu,
           asset: asset,
@@ -250,6 +249,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             donViTinh: asset.donViTinh,
             namSanXuat: detail.namSanXuat ?? 2010,
             soLuong: soLuong,
+            soLuongConLai: detail.soLuongConLai ?? 0,
             ghiChu: asset.ghiChu,
             soKyHieu: asset.soKyHieu,
             kyHieu: asset.kyHieu,
@@ -286,7 +286,8 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: DetailEditableTable<ItemDropdownDetailCcdc>(
             // Thay đổi generic type
-            key: _tableKey,
+            // Sử dụng ValueKey với _tableKeyValue để force rebuild khi movementDetails thay đổi
+            key: ValueKey<int>(_tableKeyValue),
             initialData: listAsset,
             createEmptyItem: () => ItemDropdownDetailCcdc.empty(),
             rowHeight: 40.0,

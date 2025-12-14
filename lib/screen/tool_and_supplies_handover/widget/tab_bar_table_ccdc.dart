@@ -48,7 +48,7 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
     _isLoadingCount = true;
     try {
       // Gọi API getCountByDvGiao để lấy count
-      final newCount = await _repository.getDataPageByBanGiao(0, 20, -1, '', idDonViGiao);
+      final newCount = await _repository.getDataPageByBanGiao(0, 999999, -1, '', idDonViGiao);
       if (!mounted) return;
       setState(() {
         quyetDinhCount = newCount['totalItems'] ?? 0;

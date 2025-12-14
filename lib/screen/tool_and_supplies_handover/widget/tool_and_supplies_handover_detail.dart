@@ -957,7 +957,7 @@ class _ToolAndSuppliesHandoverDetailState
                   child: DetailCcdcTransferTable(
                     context,
                     isEditing: isEditing,
-                    initialDetails:
+                    movementDetails:
                         dieuDongCcdc?.detailToolAndMaterialTransfers ?? [],
                     initialDetailsSuppliesHandover:
                         item?.listDetailSubppliesHandover ?? [],

@@ -136,7 +136,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isLoadingAsset = false; // Flag chống gọi onGetDataAsset nhiều lần
   bool _isLoadingAssetByUnit = false; // Flag chống gọi onReloadDataAssetByCurrentUnit nhiều lần
-  String? _lastLoadedUnitId; // Cache id đơn vị đã load để tránh load lại
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
@@ -743,21 +742,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
+    print('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
     // Bỏ qua nếu id rỗng
     if (idDonViHienthoi.isEmpty) {
-      log('onReloadDataAssetByCurrentUnit: SKIPPED - id rỗng');
+      print('onReloadDataAssetByCurrentUnit: SKIPPED - id rỗng');
       return;
     }
     
     // Chống gọi nhiều lần liên tiếp
     if (_isLoadingAssetByUnit) {
-      log('onReloadDataAssetByCurrentUnit: SKIPPED - đang loading');
-      return;
-    }
-    
-    // Kiểm tra cache: nếu đã load đơn vị này rồi và có dữ liệu thì không load lại
-    if (_lastLoadedUnitId == idDonViHienthoi && _dataAsset != null && _dataAsset!.isNotEmpty) {
-      log('onReloadDataAssetByCurrentUnit: SKIPPED - đã có cache cho $idDonViHienthoi');
+      print('onReloadDataAssetByCurrentUnit: SKIPPED - đang loading');
       return;
     }
     
@@ -767,7 +761,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _loadingMessage = 'Đang tải dữ liệu tài sản...';
     });
 
-    log('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
+    print('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
     
     try {
       Map<String, dynamic> result;
@@ -781,13 +775,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _dataAsset = result['data'];
-        _lastLoadedUnitId = idDonViHienthoi; // Cache lại id đã load
         // if (typeDieuDongTaiSan == 1) {
         //   _dataAsset =
         //       _dataAsset
         //           ?.where((element) => element.idDonViHienThoi == '')
         //           .toList();
         // }
+        print('result: ${result['data']}');
       } else {
         SGLog.debug(
           "AssetTransferProvider",
@@ -795,7 +789,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         );
       }
     } catch (e) {
-      log('onReloadDataAssetByCurrentUnit error: $e');
+      print('onReloadDataAssetByCurrentUnit error: $e');
     } finally {
       _isLoadingAssetByUnit = false;
       _isLoading = false;

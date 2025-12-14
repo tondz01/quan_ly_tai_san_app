@@ -179,7 +179,7 @@ class TableAssetManagementConfig {
           isFixed: false,
         ),
         builder: (item) {
-          String hienTrang = provider.getHienTrang(item.hienTrang ?? 0).name;
+          String hienTrang = provider.getHienTrang(item.hienTrang ?? 0).tenHTKT ?? '';
           return TableCellData(widget: Text(hienTrang));
         },
       ),
