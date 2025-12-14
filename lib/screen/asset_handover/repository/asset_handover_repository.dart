@@ -164,9 +164,10 @@ class AssetHandoverRepository extends ApiBase {
         return result;
       }
       final dynamic respData = response.data;
-      final String idBGTS = (respData is Map<String, dynamic> && respData.containsKey('data'))
-          ? (respData['data']['id']?.toString() ?? '')
-          : (respData['id']?.toString() ?? '');
+      final String idBGTS =
+          (respData is Map<String, dynamic> && respData.containsKey('data'))
+              ? (respData['data']['id']?.toString() ?? '')
+              : (respData['id']?.toString() ?? '');
       if (idBGTS.isEmpty) {
         result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
         result['message'] = 'Không nhận được ID từ response';
@@ -184,10 +185,13 @@ class AssetHandoverRepository extends ApiBase {
           idNeedToDo: idNeedToDo,
         );
       });
-     
+
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
-        data: listDetailAssetHandover.map((e) => e.copyWith(idBanGiaoTaiSan: idBGTS).toJson()).toList(),
+        data:
+            listDetailAssetHandover
+                .map((e) => e.copyWith(idBanGiaoTaiSan: idBGTS).toJson())
+                .toList(),
       );
       final int? statusDetail = responseDetail.statusCode;
       final bool isOkDetail =
@@ -648,9 +652,9 @@ class AssetHandoverRepository extends ApiBase {
     int page,
     int size,
     String search,
-    int trangThai,
-    [bool isSearchUser = true]
-  ) async {
+    int trangThai, [
+    bool isSearchUser = true,
+  ]) async {
     Map<String, dynamic> result = {
       'data': <AssetHandoverDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -735,5 +739,38 @@ class AssetHandoverRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<Map<String, dynamic>> getCountUseSign() async {
+    int count = 0;
+    try {
+      final userInfo = AccountHelper.instance.getUserInfo();
+      String userid = userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final url =
+          '${EndPointAPI.ASSET_HANDOVER}/paged?idcongty=ct001&page=0&size=999999&userid=$userid';
+
+      final response = await get(url);
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        count = response.data['totalItems'] ?? 0;
+      }
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      List<AssetHandoverDto> assetHandover = [];
+      if (itemsData is List) {
+        assetHandover = ResponseParser.parseToList<AssetHandoverDto>(
+          itemsData,
+          AssetHandoverDto.fromJson,
+        );
+      } else {
+        assetHandover = [];
+      }
+
+      AccountHelper.instance.clearAssetHandover();
+      AccountHelper.instance.setAssetHandover(assetHandover);
+      AccountHelper.refreshAllCounts();
+    } catch (e) {
+      log("Error at getCountUseSign - AssetHandoverRepository: $e");
+    }
+    return {'data': count, 'status_code': Numeral.STATUS_CODE_SUCCESS};
   }
 }

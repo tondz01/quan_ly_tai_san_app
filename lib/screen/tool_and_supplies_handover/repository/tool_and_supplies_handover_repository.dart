@@ -845,4 +845,37 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     return result;
   }
+
+    Future<Map<String, dynamic>> getCountUseSign() async {
+    int count = 0;
+    try {
+      final userInfo = AccountHelper.instance.getUserInfo();
+      String userid = userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final url =
+          '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/paged?idcongty=ct001&page=0&size=999999&userid=$userid';
+
+      final response = await get(url);
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        count = response.data['totalItems'] ?? 0;
+      }
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      List<ToolAndSuppliesHandoverDto> toolAndMaterialHandover = [];
+      if (itemsData is List) {
+        toolAndMaterialHandover = ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
+          itemsData,
+          ToolAndSuppliesHandoverDto.fromJson,
+        );
+      } else {
+        toolAndMaterialHandover = [];
+      }
+      AccountHelper.instance.clearToolAndSuppliesHandover();
+      AccountHelper.instance.setToolAndMaterialHandover(toolAndMaterialHandover);
+      AccountHelper.refreshAllCounts();
+    } catch (e) {
+      log("Error at getCountUseSign - ToolAndSuppliesHandoverRepository: $e");
+    }
+    return {'data': count, 'status_code': Numeral.STATUS_CODE_SUCCESS};
+  }
+
 }

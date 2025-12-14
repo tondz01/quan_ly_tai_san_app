@@ -177,8 +177,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   void didUpdateWidget(AssetHandoverDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Kiểm tra nếu có thay đổi trong item hoặc isEditing
-    if (oldWidget.provider.item != item ||
-        oldWidget.isEditing != widget.isEditing) {
+    final itemChanged = oldWidget.provider.item != item;
+    final isEditingChanged = oldWidget.isEditing != widget.isEditing;
+    final dataDetailAssetMobilizationChanged = 
+        oldWidget.provider.dataDetailAssetMobilization != 
+        widget.provider.dataDetailAssetMobilization;
+    final chiTietBanGiaoTaiSanChanged = 
+        (oldWidget.provider.item?.chiTietBanGiaoTaiSan?.length ?? 0) != 
+        (widget.provider.item?.chiTietBanGiaoTaiSan?.length ?? 0);
+    
+    if (itemChanged || isEditingChanged || dataDetailAssetMobilizationChanged || chiTietBanGiaoTaiSanChanged) {
       // Cập nhật lại dữ liệu khi provider/item thay đổi
       if (mounted) {
         _initData();

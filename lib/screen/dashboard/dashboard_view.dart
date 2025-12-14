@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:graphic/graphic.dart' as graphic;
 import 'package:intl/intl.dart';
@@ -321,14 +319,11 @@ class _DashboardViewState extends State<DashboardView> {
 
     try {
       final result = await _dashboardRepository.getDashboardData();
-      log("Statistics API Result: $result");
 
       if (result['status_code'] == 200) {
         setState(() {
           // The API returns data directly in the 'data' field
-          log("Statistics API Success - result['data']: ${result['data']}");
           _statisticsData = result['data'] as Map<String, dynamic>? ?? {};
-          log("Statistics Data Set - _statisticsData: $_statisticsData");
           _isLoadingStatistics = false;
           // Reset selected year when new data is loaded
           _selectedYearForMonthChart = null;
@@ -353,8 +348,6 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final data = _statisticsData as Map<String, dynamic>? ?? {};
-    log("Build - Statistics Data: $data");
-    log("Build - Top Assets: ${data['top5TaiSanGiaTriCao']}");
 
     return Container(
       decoration: BoxDecoration(color: Colors.white),
@@ -1370,8 +1363,6 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildTopAssetsSection(Map<String, dynamic> data) {
     final topAssets = (data['top5TaiSanGiaTriCao'] as List<dynamic>?) ?? [];
-    log("Top Assets Data: $topAssets");
-    log("Top Assets Count: ${topAssets.length}");
 
     return Container(
       height: 500,
