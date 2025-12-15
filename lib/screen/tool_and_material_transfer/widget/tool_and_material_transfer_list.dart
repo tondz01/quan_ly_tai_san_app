@@ -422,8 +422,8 @@ class _ToolAndMaterialTransferListState
                               ),
                               rowDividerThickness: 1,
                               valueGetter: getValueForColumn,
-                              rowColorBuilder:
-                                  (item) => widget.provider.getRowTableColor(item),
+                              // rowColorBuilder:
+                              //     (item) => widget.provider.getRowTableColor(item),
                               cellsBuilder: (_) => [],
                               cellBuilderByKey: (item, key) {
                                 final builder = _buildersByKey[key];
