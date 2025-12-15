@@ -287,7 +287,15 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   Future<void> onLoadDataAssetTransfer() async {
-    final result = await AssetTransferRepository().getDataWithPagination(0, 999999, -1, '', 3, '', false);
+    final result = await AssetTransferRepository().getDataWithPagination(
+      0,
+      999999,
+      -1,
+      '',
+      3,
+      '',
+      false,
+    );
     final data = (result['data'] as List<dynamic>).cast<DieuDongTaiSanDto>();
     _dataAssetTransfer = List<DieuDongTaiSanDto>.from(data);
     notifyListeners();
@@ -463,17 +471,18 @@ class AssetHandoverProvider with ChangeNotifier {
     AssetHandoverDto? item, {
     bool isFindNew = false,
   }) async {
+    // Tải dữ liệu chi tiết bất đồng bộ (không bật global loading overlay)
+    if (item != null) {
+      unawaited(
+        getListDetailAssetMobilization(item.lenhDieuDong ?? '', isFindNew),
+      );
+    }
     // Ưu tiên hiển thị nhanh giao diện chi tiết, không khóa màn bằng overlay
     _item = item;
     _isFindNew = isFindNew;
     isShowInput = true;
     isShowCollapse = true;
     notifyListeners();
-
-    // Tải dữ liệu chi tiết bất đồng bộ (không bật global loading overlay)
-    if (item != null) {
-      unawaited(getListDetailAssetMobilization(item.lenhDieuDong ?? '', isFindNew));
-    }
 
     if (kDebugMode) {
       log('message [AssetHandoverProvider] onChangeDetail: $item');
@@ -530,21 +539,36 @@ class AssetHandoverProvider with ChangeNotifier {
   // Hàm cảnh báo thay đổi chưa lưu trước khi rời trang đã bị loại bỏ để đơn giản hóa luồng,
   // nếu sau này cần có thể khôi phục lại từ lịch sử git.
 
-  Future<void> getListDetailAssetMobilization(String id, [bool isFindNewDetail = false]) async {
+  Future<void> getListDetailAssetMobilization(
+    String id, [
+    bool isFindNewDetail = false,
+  ]) async {
     if (id.isEmpty) return;
     Map<String, dynamic> result;
-    if(isFindNewDetail) {
-      result = await AssetTransferRepository().getDataPageByBanGiao(0, 999999, -1, '', '');
+    _isLoading = true;
+    _loadingMessage = 'Đang tải dữ liệu chi tiết...';
+    notifyListeners();
+    if (isFindNewDetail) {
+      result = await AssetTransferRepository().getDataPageByBanGiao(
+        0,
+        999999,
+        -1,
+        '',
+        '',
+      );
       final data = (result['data'] as List<dynamic>).cast<DieuDongTaiSanDto>();
-      List<DieuDongTaiSanDto> listDieuDongTaiSan = List<DieuDongTaiSanDto>.from(data);
-      _dataDetailAssetMobilization = listDieuDongTaiSan
-        .firstWhere((element) => element.id == id)
-        .chiTietDieuDongTaiSans;
+      List<DieuDongTaiSanDto> listDieuDongTaiSan = List<DieuDongTaiSanDto>.from(
+        data,
+      );
+      _dataDetailAssetMobilization =
+          listDieuDongTaiSan
+              .firstWhere((element) => element.id == id)
+              .chiTietDieuDongTaiSans;
     } else {
-      result = await AssetHandoverRepository()
-        .getListDetailAssetMobilization(id);
-    _dataDetailAssetMobilization = result['data'];
-
+      result = await AssetHandoverRepository().getListDetailAssetMobilization(
+        id,
+      );
+      _dataDetailAssetMobilization = result['data'];
     }
     _dataDetailAssetHandover =
         _dataDetailAssetMobilization
@@ -567,6 +591,8 @@ class AssetHandoverProvider with ChangeNotifier {
         'message [AssetHandoverProvider] dataDetailAssetHandover: ${jsonEncode(_dataDetailAssetHandover)}',
       );
     }
+    _isLoading = false;
+    _loadingMessage = null;
     notifyListeners();
   }
 
