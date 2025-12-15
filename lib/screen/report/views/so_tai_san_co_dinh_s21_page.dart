@@ -178,41 +178,50 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
       color: Colors.white,
       padding: const EdgeInsets.all(16),
       child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildTitle(),
-            const SizedBox(height: 24),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child:Center(
-                child: _buildTable(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildFooter(),
-            const SizedBox(height: 16),
-            _buildSignatures(),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _addRow,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Thêm dòng'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 24),
+          _buildTitle(),
+          const SizedBox(height: 24),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const double minTableWidth = 1230;
+              final double viewportWidth = constraints.maxWidth;
+              final double tableWidth =
+                  viewportWidth > minTableWidth ? viewportWidth : minTableWidth;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: tableWidth,
+                  child: _buildTable(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildFooter(),
+          const SizedBox(height: 16),
+          _buildSignatures(),
+          const SizedBox(height: 16),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: _addRow,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Thêm dòng'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 
@@ -358,25 +367,21 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
 
   Widget _buildTable() {
     const textStyle = TextStyle(fontSize: 10, fontWeight: FontWeight.bold);
-    // Tổng width: 50 + 620 + 300 + 250 = 1220
-    const double tableWidth = 1230;
-
-    return Center(
-      child: Container(
-        width: tableWidth,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black, width: 0.5),
-        ),
-        child: Column(
-          children: [
-            // Header Rows 1-3 với STT merge
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Cột STT merge 3 hàng
-                  Container(
-                    width: 50,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          // Header Rows 1-3 với STT merge
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Cột STT merge 3 hàng
+                Expanded(
+                  flex: 50,
+                  child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border(
@@ -399,71 +404,83 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                       ),
                     ),
                   ),
-                  // Phần còn lại của header
-                  Expanded(
-                    child: Column(
-                      children: [
-                        // Header Row 1
-                        IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildHeaderCell(
+                ),
+                // Phần còn lại của header
+                Expanded(
+                  flex: 1180, // tổng còn lại 1230 - 50
+                  child: Column(
+                    children: [
+                      // Header Row 1
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              flex: 620,
+                              child: _buildHeaderCell(
                                 'Ghi tăng TSCD',
-                                620,
                                 textStyle: textStyle,
                               ),
-                              _buildHeaderCell(
+                            ),
+                            Expanded(
+                              flex: 300,
+                              child: _buildHeaderCell(
                                 'Khấu hao TSCD',
-                                300,
                                 textStyle: textStyle,
                               ),
-                              _buildHeaderCell(
+                            ),
+                            Expanded(
+                              flex: 250,
+                              child: _buildHeaderCell(
                                 'Ghi giảm TSCD',
-                                250,
                                 textStyle: textStyle,
                                 isLast: true,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        // Header Row 2-3 với các cột merge
-                        IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Chứng từ - chia thành 2 hàng
-                              SizedBox(
-                                width: 120,
-                                child: Column(
-                                  children: [
-                                    _buildHeaderCell(
-                                      'Chứng từ',
-                                      120,
-                                      textStyle: textStyle,
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          _buildHeaderCell(
+                      ),
+                      // Header Row 2-3 với các cột merge
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Chứng từ - chia thành 2 hàng
+                            Expanded(
+                              flex: 120,
+                              child: Column(
+                                children: [
+                                  _buildHeaderCell(
+                                    'Chứng từ',
+                                    textStyle: textStyle,
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 60,
+                                          child: _buildHeaderCell(
                                             'Số hiệu',
-                                            60,
                                             textStyle: textStyle,
                                           ),
-                                          _buildHeaderCell(
+                                        ),
+                                        Expanded(
+                                          flex: 60,
+                                          child: _buildHeaderCell(
                                             'Ngày tháng',
-                                            60,
                                             textStyle: textStyle,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              // Tên, đặc điểm - merge 2 hàng
-                              Container(
-                                width: 140,
+                            ),
+                            // Tên, đặc điểm - merge 2 hàng
+                            Expanded(
+                              flex: 140,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -485,9 +502,11 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Nước sản xuất - merge 2 hàng
-                              Container(
-                                width: 80,
+                            ),
+                            // Nước sản xuất - merge 2 hàng
+                            Expanded(
+                              flex: 80,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -509,9 +528,11 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Tháng năm đưa vào sử dụng - merge 2 hàng
-                              Container(
-                                width: 90,
+                            ),
+                            // Tháng năm đưa vào sử dụng - merge 2 hàng
+                            Expanded(
+                              flex: 90,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -533,9 +554,11 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Số hiệu TSCD - merge 2 hàng
-                              Container(
-                                width: 90,
+                            ),
+                            // Số hiệu TSCD - merge 2 hàng
+                            Expanded(
+                              flex: 90,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -557,9 +580,11 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Nguyên giá TSCD - merge 2 hàng
-                              Container(
-                                width: 100,
+                            ),
+                            // Nguyên giá TSCD - merge 2 hàng
+                            Expanded(
+                              flex: 100,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -581,38 +606,43 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Khấu hao - chia thành 2 hàng
-                              SizedBox(
-                                width: 180,
-                                child: Column(
-                                  children: [
-                                    _buildHeaderCell(
-                                      'Khấu hao',
-                                      180,
-                                      textStyle: textStyle,
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          _buildHeaderCell(
+                            ),
+                            // Khấu hao - chia thành 2 hàng
+                            Expanded(
+                              flex: 180,
+                              child: Column(
+                                children: [
+                                  _buildHeaderCell(
+                                    'Khấu hao',
+                                    textStyle: textStyle,
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 90,
+                                          child: _buildHeaderCell(
                                             'Tỷ lệ (%)\nkhấu hao',
-                                            90,
                                             textStyle: textStyle,
                                           ),
-                                          _buildHeaderCell(
+                                        ),
+                                        Expanded(
+                                          flex: 90,
+                                          child: _buildHeaderCell(
                                             'Mức khấu\nhao',
-                                            90,
                                             textStyle: textStyle,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              // Khấu hao đã tính - merge 2 hàng
-                              Container(
-                                width: 120,
+                            ),
+                            // Khấu hao đã tính - merge 2 hàng
+                            Expanded(
+                              flex: 120,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -635,38 +665,43 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                              // Chứng từ (Ghi giảm) - chia thành 2 hàng
-                              SizedBox(
-                                width: 120,
-                                child: Column(
-                                  children: [
-                                    _buildHeaderCell(
-                                      'Chứng từ',
-                                      120,
-                                      textStyle: textStyle,
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          _buildHeaderCell(
+                            ),
+                            // Chứng từ (Ghi giảm) - chia thành 2 hàng
+                            Expanded(
+                              flex: 120,
+                              child: Column(
+                                children: [
+                                  _buildHeaderCell(
+                                    'Chứng từ',
+                                    textStyle: textStyle,
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 60,
+                                          child: _buildHeaderCell(
                                             'Số hiệu',
-                                            60,
                                             textStyle: textStyle,
                                           ),
-                                          _buildHeaderCell(
+                                        ),
+                                        Expanded(
+                                          flex: 60,
+                                          child: _buildHeaderCell(
                                             'Ngày, tháng,\nnăm',
-                                            60,
                                             textStyle: textStyle,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              // Lý do giảm TSCD - merge 2 hàng
-                              Container(
-                                width: 130,
+                            ),
+                            // Lý do giảm TSCD - merge 2 hàng
+                            Expanded(
+                              flex: 130,
+                              child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   border: Border(
@@ -684,135 +719,245 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
-            // Header Row 4 - Column labels
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHeaderCell(
+          // Header Row 4 - Column labels
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 50,
+                  child: _buildHeaderCell(
                     'A',
-                    50,
                     isFirst: true,
                     textStyle: textStyle,
                   ),
-                  _buildHeaderCell('B', 60, textStyle: textStyle),
-                  _buildHeaderCell('C', 60, textStyle: textStyle),
-                  _buildHeaderCell('D', 140, textStyle: textStyle),
-                  _buildHeaderCell('E', 80, textStyle: textStyle),
-                  _buildHeaderCell('G', 90, textStyle: textStyle),
-                  _buildHeaderCell('H', 90, textStyle: textStyle),
-                  _buildHeaderCell('I', 100, textStyle: textStyle),
-                  _buildHeaderCell('2', 90, textStyle: textStyle),
-                  _buildHeaderCell('3', 90, textStyle: textStyle),
-                  _buildHeaderCell('4', 120, textStyle: textStyle),
-                  _buildHeaderCell('I', 60, textStyle: textStyle),
-                  _buildHeaderCell('K', 60, textStyle: textStyle),
-                  _buildHeaderCell(
+                ),
+                Expanded(
+                  flex: 60,
+                  child: _buildHeaderCell('B', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 60,
+                  child: _buildHeaderCell('C', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 140,
+                  child: _buildHeaderCell('D', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 80,
+                  child: _buildHeaderCell('E', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 90,
+                  child: _buildHeaderCell('G', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 90,
+                  child: _buildHeaderCell('H', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 100,
+                  child: _buildHeaderCell('I', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 90,
+                  child: _buildHeaderCell('2', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 90,
+                  child: _buildHeaderCell('3', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 120,
+                  child: _buildHeaderCell('4', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 60,
+                  child: _buildHeaderCell('I', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 60,
+                  child: _buildHeaderCell('K', textStyle: textStyle),
+                ),
+                Expanded(
+                  flex: 130,
+                  child: _buildHeaderCell(
                     'L',
-                    130,
                     textStyle: textStyle,
                     isLast: true,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
-            // Data rows
-            ..._rows.map((row) => _buildDataRow(row)),
+          // Data rows
+          for (final row in _rows) _buildDataRow(row),
 
-            // Summary row
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildStaticCell('', 50, isFirst: true),
-                  _buildStaticCell('Cộng', 60),
-                  _buildStaticCell('x', 60),
-                  _buildStaticCell('x', 140),
-                  _buildStaticCell('x', 80),
-                  _buildStaticCell('', 90),
-                  _buildStaticCell('', 90),
-                  _buildDataCell(
-                    '',
-                    100,
-                    summaryNguyenGiaController,
-                    keyboardType: TextInputType.number,
-                  ),
-                  _buildStaticCell('', 90),
-                  _buildStaticCell('', 90),
-                  _buildDataCell(
-                    '',
-                    120,
-                    summaryKhauHaoDaTinhController,
-                    keyboardType: TextInputType.number,
-                  ),
-                  _buildStaticCell('x', 60),
-                  _buildStaticCell('x', 60),
-                  _buildStaticCell('x', 130, isLast: true),
-                ],
-              ),
-            ),
-          ],
-        ),
+          // Summary row
+          _buildSummaryRow(),
+        ],
       ),
     );
   }
 
   Widget _buildDataRow(S21RowData row) {
-    return IntrinsicHeight(
+    // Dùng height cố định để tránh IntrinsicHeight cho mỗi row (tối ưu layout)
+    return SizedBox(
+      height: 32,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildDataCell(
-            row.stt.text,
-            50,
-            row.stt,
-            align: TextAlign.center,
-            isFirst: true,
+          Expanded(
+            flex: 50,
+            child: _buildDataCell(
+              row.stt.text,
+              row.stt,
+              align: TextAlign.center,
+              isFirst: true,
+            ),
           ),
-          _buildDataCell('', 60, row.chungTuSoHieu),
-          _buildDataCell('', 60, row.chungTuNgayThang),
-          _buildDataCell('', 140, row.tenDacDiem),
-          _buildDataCell('', 80, row.nuocSanXuat),
-          _buildDataCell('', 90, row.thangNamDuaVaoSuDung),
-          _buildDataCell('', 90, row.soHieuTSCD),
-          _buildDataCell(
-            '',
-            100,
-            row.nguyenGia,
-            keyboardType: TextInputType.number,
+          Expanded(flex: 60, child: _buildDataCell('', row.chungTuSoHieu)),
+          Expanded(flex: 60, child: _buildDataCell('', row.chungTuNgayThang)),
+          Expanded(flex: 140, child: _buildDataCell('', row.tenDacDiem)),
+          Expanded(flex: 80, child: _buildDataCell('', row.nuocSanXuat)),
+          Expanded(
+            flex: 90,
+            child: _buildDataCell('', row.thangNamDuaVaoSuDung),
           ),
-          _buildDataCell(
-            '',
-            90,
-            row.tyLeKhauHao,
-            keyboardType: TextInputType.number,
+          Expanded(flex: 90, child: _buildDataCell('', row.soHieuTSCD)),
+          Expanded(
+            flex: 100,
+            child: _buildDataCell(
+              '',
+              row.nguyenGia,
+              keyboardType: TextInputType.number,
+            ),
           ),
-          _buildDataCell(
-            '',
-            90,
-            row.mucKhauHao,
-            keyboardType: TextInputType.number,
+          Expanded(
+            flex: 90,
+            child: _buildDataCell(
+              '',
+              row.tyLeKhauHao,
+              keyboardType: TextInputType.number,
+            ),
           ),
-          _buildDataCell(
-            '',
-            120,
-            row.khauHaoDaTinh,
-            keyboardType: TextInputType.number,
+          Expanded(
+            flex: 90,
+            child: _buildDataCell(
+              '',
+              row.mucKhauHao,
+              keyboardType: TextInputType.number,
+            ),
           ),
-          _buildDataCell('', 60, row.giamChungTuSoHieu),
-          _buildDataCell('', 60, row.giamNgayThangNam),
-          _buildDataCell('', 130, row.lyDoGiam, isLast: true),
+          Expanded(
+            flex: 120,
+            child: _buildDataCell(
+              '',
+              row.khauHaoDaTinh,
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildDataCell('', row.giamChungTuSoHieu),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildDataCell('', row.giamNgayThangNam),
+          ),
+          Expanded(
+            flex: 130,
+            child: _buildDataCell('', row.lyDoGiam, isLast: true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Tách summary row riêng để dễ tối ưu và tái sử dụng
+  Widget _buildSummaryRow() {
+    return SizedBox(
+      height: 32,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            flex: 50,
+            child: _buildStaticCell('', isFirst: true),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildStaticCell('Cộng'),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildStaticCell('x'),
+          ),
+          Expanded(
+            flex: 140,
+            child: _buildStaticCell('x'),
+          ),
+          Expanded(
+            flex: 80,
+            child: _buildStaticCell('x'),
+          ),
+          Expanded(
+            flex: 90,
+            child: _buildStaticCell(''),
+          ),
+          Expanded(
+            flex: 90,
+            child: _buildStaticCell(''),
+          ),
+          Expanded(
+            flex: 100,
+            child: _buildDataCell(
+              '',
+              summaryNguyenGiaController,
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Expanded(
+            flex: 90,
+            child: _buildStaticCell(''),
+          ),
+          Expanded(
+            flex: 90,
+            child: _buildStaticCell(''),
+          ),
+          Expanded(
+            flex: 120,
+            child: _buildDataCell(
+              '',
+              summaryKhauHaoDaTinhController,
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildStaticCell('x'),
+          ),
+          Expanded(
+            flex: 60,
+            child: _buildStaticCell('x'),
+          ),
+          Expanded(
+            flex: 130,
+            child: _buildStaticCell('x', isLast: true),
+          ),
         ],
       ),
     );
@@ -1017,14 +1162,12 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
   }
 
   Widget _buildHeaderCell(
-    String text,
-    double width, {
+    String text, {
     bool isFirst = false,
     bool isLast = false,
     required TextStyle textStyle,
   }) {
     return Container(
-      width: width,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1052,7 +1195,6 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
 
   Widget _buildDataCell(
     String initialValue,
-    double width,
     TextEditingController controller, {
     TextAlign align = TextAlign.left,
     TextInputType keyboardType = TextInputType.text,
@@ -1060,7 +1202,6 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
     bool isLast = false,
   }) {
     return Container(
-      width: width,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -1090,13 +1231,11 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
   }
 
   Widget _buildStaticCell(
-    String text,
-    double width, {
+    String text, {
     bool isFirst = false,
     bool isLast = false,
   }) {
     return Container(
-      width: width,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,

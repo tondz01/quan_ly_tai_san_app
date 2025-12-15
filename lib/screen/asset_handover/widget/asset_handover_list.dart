@@ -130,7 +130,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 ?.hoTen ??
             '';
       case 'trang_thai_ky':
-        return 'Trạng thái ký'; // Sẽ được xử lý bởi cellBuilder
+        return TableAssetHandoverConfig.getPermissionSigningText(
+          TableAssetHandoverConfig.getPermissionSigning(item, userInfo!),
+        ); // Sẽ được xử lý bởi cellBuilder
       case 'trang_thai_phieu':
         return TableAssetHandoverConfig.getStatusHandoverText(
           item.trangThaiPhieu ?? 0,

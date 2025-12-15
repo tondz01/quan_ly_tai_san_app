@@ -85,6 +85,7 @@ class DieuDongTaiSanDto {
   bool? byStep;
   int? trangThaiPhieu;
   bool? coPhieuBanGiao;
+  int? trangThaiPhieuDieuDong;
   // 🔥 Logic: add field
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
@@ -147,6 +148,7 @@ class DieuDongTaiSanDto {
     this.byStep,
     this.trangThaiPhieu,
     this.coPhieuBanGiao,
+    this.trangThaiPhieuDieuDong,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -218,6 +220,7 @@ class DieuDongTaiSanDto {
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
       coPhieuBanGiao: json['coPhieuBanGiao'] ?? false,
+      trangThaiPhieuDieuDong: json['trangThaiPhieuDieuDong'],
     );
   }
 
@@ -282,6 +285,7 @@ class DieuDongTaiSanDto {
       "byStep": byStep,
       "trangThaiPhieu": trangThaiPhieu,
       "coPhieuBanGiao": coPhieuBanGiao,
+      "trangThaiPhieuDieuDong": trangThaiPhieuDieuDong,
     };
   }
 
@@ -343,6 +347,7 @@ class DieuDongTaiSanDto {
     bool? byStep,
     int? trangThaiPhieu,
     bool? coPhieuBanGiao,
+    int? trangThaiPhieuDieuDong,
   }) {
     return DieuDongTaiSanDto(
       id: id ?? this.id,
@@ -410,6 +415,7 @@ class DieuDongTaiSanDto {
       byStep: byStep ?? this.byStep,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
       coPhieuBanGiao: coPhieuBanGiao ?? this.coPhieuBanGiao,
+      trangThaiPhieuDieuDong: trangThaiPhieuDieuDong ?? this.trangThaiPhieuDieuDong,
     );
   }
 }

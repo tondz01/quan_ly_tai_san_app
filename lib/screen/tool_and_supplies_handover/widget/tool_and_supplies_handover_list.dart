@@ -905,8 +905,6 @@ class _ToolAndSuppliesHandoverListState
             )
             .toList();
     final current = flow.indexWhere((s) => s["id"] == userInfo?.tenDangNhap);
-    print('getPermissionSigning current: $current');
-    print('getPermissionSigning flow: $flow');
     if (current == -1) return 2;
     // Nếu user là người đại diện đơn vị ban hành quyết định và có trong signatureFlow
     if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap) {

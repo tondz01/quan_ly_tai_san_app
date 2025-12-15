@@ -103,6 +103,9 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
     int trangThai, [
     bool isRefresh = true,
   ]) async {
+    // Nếu notifier đã dispose thì không làm gì nữa
+    if (!mounted) return;
+
     // === CHỐNG GỌI API LIÊN TỤC ===
     // Nếu đang gọi API thì bỏ qua
     if (_isApiLoading) {
@@ -141,11 +144,17 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
         _currentTrangThai,
       );
 
+      // Có thể notifier đã bị dispose trong lúc chờ API
+      if (!mounted) return;
+
       final data =
           (response['data'] as List<dynamic>).cast<AssetHandoverDto>();
 
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<AssetHandoverDto>.from(data);
+
+      // Có thể notifier đã bị dispose trong lúc chờ API
+      if (!mounted) return;
 
       setApiData(
         data,
@@ -164,12 +173,16 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       totalComplete = response['totalComplete'] as int? ?? 0;
 
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
+      if (!mounted) return;
+
       if (state.filterState.hasActiveFilters) {
         _reapplyOfflineFilters();
       } else {
         state = state.copyWith(isLoading: false);
       }
     } catch (error) {
+      if (!mounted) return;
+
       log('Error loading AssetHandover data: $error');
       state = state.copyWith(
         isLoading: false,
@@ -177,6 +190,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
         currentPageData: [],
       );
     } finally {
+      if (!mounted) return;
       _isApiLoading = false; // Reset flag sau khi hoàn thành
     }
   }
