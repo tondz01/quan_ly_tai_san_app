@@ -38,6 +38,12 @@ class _MauSo01PageState extends State<MauSo01Page> {
     }
   }
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
+  }
+
   /// Parse InventoryMinutes và CCDCInventoryReport sang AssetRowData
   void _parseDataToAssetRows() {
     final List<AssetRowData> result = [];
@@ -60,7 +66,7 @@ class _MauSo01PageState extends State<MauSo01Page> {
         tenNhanHieu: asset.tenTaiSan ?? '',
         dvt: asset.donViTinh ?? '',
         nuocSx: '',
-        soDuDauKy: asset.soLuong?.toString() ?? '',
+        soDuDauKy: _formatNumber(asset.soLuong),
         tangSoLuong: '',
         tangLyDo: asset.lyDo ?? '',
         giamSoLuong: '',
@@ -90,7 +96,7 @@ class _MauSo01PageState extends State<MauSo01Page> {
         tenNhanHieu: ccdc.tenTaiSan ?? '',
         dvt: ccdc.donViTinh ?? '',
         nuocSx: '',
-        soDuDauKy: ccdc.soLuong?.toString() ?? '',
+        soDuDauKy: _formatNumber(ccdc.soLuong),
         tangSoLuong: '',
         tangLyDo: ccdc.lyDo ?? '',
         giamSoLuong: '',

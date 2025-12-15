@@ -242,7 +242,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         'soLuongKeToan': _getValue(
           i,
           'soLuongKeToan',
-          widget.taiSanCoDinhList[i].soLuongSoSach.toString(),
+          _formatNumber(widget.taiSanCoDinhList[i].soLuongSoSach),
         ),
         'nguyenGiaKeToan': _getValue(
           i,
@@ -257,7 +257,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         'soLuongKiemKe': _getValue(
           i,
           'soLuongKiemKe',
-          widget.taiSanCoDinhList[i].soLuongKiemKe.toString(),
+          _formatNumber(widget.taiSanCoDinhList[i].soLuongKiemKe),
         ),
         'nguyenGiaKiemKe': _getValue(
           i,
@@ -272,7 +272,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         'soLuongChenhLech': _getValue(
           i,
           'soLuongChenhLech',
-          widget.taiSanCoDinhList[i].chenhLechSoLuong.toString(),
+          _formatNumber(widget.taiSanCoDinhList[i].chenhLechSoLuong),
         ),
         'nguyenGiaChenhLech': _getValue(
           i,
@@ -291,10 +291,16 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
     return finalData;
   }
 
-  // Method để format số tiền
+  // Method để format số tiền, nếu = 0 thì trả về ''
   String _formatCurrency(double value) {
-    if (value == 0) return '0';
+    if (value == 0) return '';
     return value.toStringAsFixed(0);
+  }
+
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
   }
 
   // Method để khởi tạo dữ liệu ban đầu (sử dụng dữ liệu từ API)
@@ -304,7 +310,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         _editedData[i] = {};
         // Dữ liệu kiểm kê từ API
         _editedData[i]!['soLuongKiemKe'] =
-            widget.taiSanCoDinhList[i].soLuongKiemKe.toString();
+            _formatNumber(widget.taiSanCoDinhList[i].soLuongKiemKe);
         _editedData[i]!['nguyenGiaKiemKe'] = _formatCurrency(
           widget.taiSanCoDinhList[i].nguyenGiaKiemKe,
         );
@@ -313,7 +319,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         );
         // Dữ liệu chênh lệch từ API
         _editedData[i]!['soLuongChenhLech'] =
-            widget.taiSanCoDinhList[i].chenhLechSoLuong.toString();
+            _formatNumber(widget.taiSanCoDinhList[i].chenhLechSoLuong);
         _editedData[i]!['nguyenGiaChenhLech'] = _formatCurrency(
           widget.taiSanCoDinhList[i].chenhLechNguyenGia,
         );
@@ -409,7 +415,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
               _buildEditableCell(
                 i,
                 'soLuongKeToan',
-                widget.taiSanCoDinhList[i].soLuongSoSach.toString(),
+                _formatNumber(widget.taiSanCoDinhList[i].soLuongSoSach),
                 100,
               ),
               // Nguyên giá (Kế toán) - có thể chỉnh sửa
@@ -430,7 +436,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
               _buildEditableCell(
                 i,
                 'soLuongKiemKe',
-                widget.taiSanCoDinhList[i].soLuongKiemKe.toString(),
+                _formatNumber(widget.taiSanCoDinhList[i].soLuongKiemKe),
                 100,
               ),
               // Nguyên giá (Kiểm kê) - có thể chỉnh sửa
@@ -451,7 +457,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
               _buildEditableCell(
                 i,
                 'soLuongChenhLech',
-                widget.taiSanCoDinhList[i].chenhLechSoLuong.toString(),
+                _formatNumber(widget.taiSanCoDinhList[i].chenhLechSoLuong),
                 100,
               ),
               _buildEditableCell(

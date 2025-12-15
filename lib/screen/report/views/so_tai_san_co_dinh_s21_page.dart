@@ -78,6 +78,12 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
     }
   }
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toStringAsFixed(0);
+  }
+
   void _loadDataFromApi() {
     setState(() {
       _rows.clear();
@@ -110,13 +116,13 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
               // Số hiệu TSCD
               soHieuTSCD: khauHao.soThe ?? '',
               // Nguyên giá
-              nguyenGia: khauHao.nguyenGia?.toStringAsFixed(0) ?? '',
+              nguyenGia: _formatNumber(khauHao.nguyenGia),
               // Tỷ lệ khấu hao (không có trong API, tính từ data nếu có)
               tyLeKhauHao: '',
               // Mức khấu hao
-              mucKhauHao: khauHao.khauHaoBinhQuan?.toStringAsFixed(0) ?? '',
+              mucKhauHao: _formatNumber(khauHao.khauHaoBinhQuan),
               // Khấu hao đã tính
-              khauHaoDaTinh: khauHao.khauHaoPsck?.toStringAsFixed(0) ?? '',
+              khauHaoDaTinh: _formatNumber(khauHao.khauHaoPsck),
               // Ghi giảm - Chứng từ
               giamChungTuSoHieu: '',
               giamNgayThangNam: '',
@@ -130,10 +136,9 @@ class _SoTaiSanCoDinhS21PageState extends State<SoTaiSanCoDinhS21Page> {
           totalKhauHaoDaTinh += khauHao.khauHaoPsck ?? 0;
         }
 
-        // Cập nhật tổng cộng
-        summaryNguyenGiaController.text = totalNguyenGia.toStringAsFixed(0);
-        summaryKhauHaoDaTinhController.text = totalKhauHaoDaTinh
-            .toStringAsFixed(0);
+        // Cập nhật tổng cộng (chỉ hiện nếu > 0)
+        summaryNguyenGiaController.text = _formatNumber(totalNguyenGia);
+        summaryKhauHaoDaTinhController.text = _formatNumber(totalKhauHaoDaTinh);
       } else {
         // Nếu không có data từ API, thêm 5 rows trống
         for (int i = 0; i < 5; i++) {

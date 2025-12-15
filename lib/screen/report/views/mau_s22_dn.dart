@@ -667,6 +667,12 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
     }
   }
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
+  }
+
   void _rebuildRowsFromData(List<DataMap> data) {
     // Dọn các controller cũ
     for (var row in _dataRows) {
@@ -691,14 +697,14 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           ctTangNgayThang: isIncrease ? (item.ngayThang ?? '') : '',
           tenTs: item.tenTaiSan ?? '',
           dvt: item.donViTinh ?? '',
-          tangSl: isIncrease ? (item.soLuong?.toString() ?? '') : '',
-          tangDonGia: isIncrease ? (item.donGia?.toString() ?? '') : '',
-          tangSoTien: isIncrease ? (item.soTien?.toString() ?? '') : '',
+          tangSl: isIncrease ? _formatNumber(item.soLuong) : '',
+          tangDonGia: isIncrease ? _formatNumber(item.donGia) : '',
+          tangSoTien: isIncrease ? _formatNumber(item.soTien) : '',
           ctGiamSoHieu: isReduce ? (item.soHieu ?? '') : '',
           ctGiamNgayThang: isReduce ? (item.ngayThang ?? '') : '',
           giamLyDo: isReduce ? (item.lyDo ?? '') : '',
-          giamSl: isReduce ? (item.soLuong?.toString() ?? '') : '',
-          giamSoTien: isReduce ? (item.soTien?.toString() ?? '') : '',
+          giamSl: isReduce ? _formatNumber(item.soLuong) : '',
+          giamSoTien: isReduce ? _formatNumber(item.soTien) : '',
           ghiChu: item.ghiChu ?? '',
         ),
       );

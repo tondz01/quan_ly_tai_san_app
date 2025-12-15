@@ -46,6 +46,12 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
   // Map để lưu trữ dữ liệu đã chỉnh sửa cho từng item
   Map<int, Map<String, String>> _editedData = {};
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
+  }
+
   // Method để lấy giá trị đã chỉnh sửa hoặc giá trị gốc
   String _getValue(int index, String field, String originalValue) {
     return _editedData[index]?[field] ?? originalValue;
@@ -124,7 +130,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         'soLuongKiemKe': _getValue(
           i,
           'soLuongKiemKe',
-          widget.inventoryMinutes[i].soLuongKiemKeThucTe?.toString() ?? '',
+          _formatNumber(widget.inventoryMinutes[i].soLuongKiemKeThucTe),
         ),
         'hienTrang': _getValue(
           i,
@@ -354,7 +360,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
               _buildEditableCell(
                 i,
                 'soLuongKiemKe',
-                widget.inventoryMinutes[i].soLuongKiemKeThucTe?.toString() ?? '',
+                _formatNumber(widget.inventoryMinutes[i].soLuongKiemKeThucTe),
                 100,
               ),
               // Hiện trạng - có thể chỉnh sửa
