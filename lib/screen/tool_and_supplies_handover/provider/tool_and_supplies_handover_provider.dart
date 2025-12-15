@@ -520,7 +520,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   /// Helper: Đảm bảo dữ liệu AssetTransfer đã được load
   Future<void> _ensureAssetTransferLoaded([bool isFindNew = false]) async {
-     Map<String, dynamic> result;
+    Map<String, dynamic> result;
     if(isFindNew) {
       result = await ToolAndMaterialTransferRepository().getDataPageByBanGiao(0, 999999, -1, '', '');
     } else {

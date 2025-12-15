@@ -681,6 +681,8 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           defaultValue: currentValue,
           items: column.dropdownItems ?? [],
           // showUnderlineBorderOnly: true,
+          // enableSearch: false,
+          // isClearController: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,

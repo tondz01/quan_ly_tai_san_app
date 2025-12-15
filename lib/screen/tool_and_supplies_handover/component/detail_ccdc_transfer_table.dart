@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
@@ -175,7 +173,6 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<ToolsAndSuppliesDto> allAssets,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
-    print('chiTietDieuDong: ${jsonEncode(chiTietDieuDong)}');
     // Map nhanh asset theo id để lấy thêm thông tin (đơn vị tính, ghi chú...)
     final Map<String, ToolsAndSuppliesDto> idToAsset = {
       for (final a in allAssets) a.id: a,

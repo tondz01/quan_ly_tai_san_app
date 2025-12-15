@@ -472,7 +472,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
     // Tải dữ liệu chi tiết bất đồng bộ (không bật global loading overlay)
     if (item != null) {
-      unawaited(getListDetailAssetMobilization(item.lenhDieuDong ?? ''));
+      unawaited(getListDetailAssetMobilization(item.lenhDieuDong ?? '', isFindNew));
     }
 
     if (kDebugMode) {
@@ -530,11 +530,22 @@ class AssetHandoverProvider with ChangeNotifier {
   // Hàm cảnh báo thay đổi chưa lưu trước khi rời trang đã bị loại bỏ để đơn giản hóa luồng,
   // nếu sau này cần có thể khôi phục lại từ lịch sử git.
 
-  Future<void> getListDetailAssetMobilization(String id) async {
+  Future<void> getListDetailAssetMobilization(String id, [bool isFindNewDetail = false]) async {
     if (id.isEmpty) return;
-    final Map<String, dynamic> result = await AssetHandoverRepository()
+    Map<String, dynamic> result;
+    if(isFindNewDetail) {
+      result = await AssetTransferRepository().getDataPageByBanGiao(0, 999999, -1, '', '');
+      final data = (result['data'] as List<dynamic>).cast<DieuDongTaiSanDto>();
+      List<DieuDongTaiSanDto> listDieuDongTaiSan = List<DieuDongTaiSanDto>.from(data);
+      _dataDetailAssetMobilization = listDieuDongTaiSan
+        .firstWhere((element) => element.id == id)
+        .chiTietDieuDongTaiSans;
+    } else {
+      result = await AssetHandoverRepository()
         .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
+
+    }
     _dataDetailAssetHandover =
         _dataDetailAssetMobilization
             ?.map(

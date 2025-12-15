@@ -746,7 +746,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       } else {
         result['data'] = <ToolsAndSuppliesDto>[];
       }
-      log("message result: ${result['data']}");
     } catch (e) {
       log("Error at getCcdcByUnit - ToolAndMaterialTransferRepository: $e");
     }
@@ -783,7 +782,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       } else {
         result['data'] = <ToolsAndSuppliesDto>[];
       }
-      log("message result: ${result['data']}");
     } catch (e) {
       log(
         "Error at getCcdcNotYetHandover - ToolAndMaterialTransferRepository: $e",
