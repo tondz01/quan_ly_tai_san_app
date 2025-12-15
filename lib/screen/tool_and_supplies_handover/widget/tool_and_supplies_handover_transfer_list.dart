@@ -373,66 +373,81 @@ class _ToolAndSuppliesHandoverTransferListState
                 bottomLeft: Radius.circular(8.0),
                 bottomRight: Radius.circular(8.0),
               ),
-              child: riverpod.Consumer(
-                builder: (context, ref, child) {
-                  return RiverpodTable<ToolAndMaterialTransferDto>(
-                    tableProvider: tableToolAndSuppliesHandoverTransferProvider,
-                    columns: _columns,
-                    valueGetter: getValueForColumn,
-                    cellsBuilder: (_) => [],
-                    cellBuilderByKey: (item, key) {
-                      final builder = _buildersByKey[key];
-                      if (builder != null) return builder(item);
-                      return null;
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
+                  final tableMaxHeight = (constraints.maxHeight - 65)
+                      .clamp(0.0, constraints.maxHeight)
+                      .toDouble();
+
+                  return riverpod.Consumer(
+                    builder: (context, ref, child) {
+                      return RiverpodTable<ToolAndMaterialTransferDto>(
+                        tableProvider: tableToolAndSuppliesHandoverTransferProvider,
+                        columns: _columns,
+                        valueGetter: getValueForColumn,
+                        cellsBuilder: (_) => [],
+                        cellBuilderByKey: (item, key) {
+                          final builder = _buildersByKey[key];
+                          if (builder != null) return builder(item);
+                          return null;
+                        },
+                        rowDividerColor: Colors.white.withAlpha(
+                          (0.7 * 255).toInt(),
+                        ),
+                        rowDividerThickness: 1,
+                        showCheckboxColumn: _showCheckboxColumn,
+                        showActionsColumn: _showActionsColumn,
+                        actionsColumnWidth: 120,
+                        rowColorBuilder:
+                            (item) => item.coPhieuBanGiao == true ? ColorValue.error.withAlpha((0.6 * 255).toInt()) : null,
+                        customActions: [
+                          CustomAction(
+                            tooltip: 'Xem',
+                            iconPath: AppIconSvgPath.iconEye,
+                            color: Colors.green,
+                            onPressed: (item) {
+                              onViewDocument(item);
+                            },
+                          ),
+                          CustomAction(
+                            tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
+                            iconPath: AppIconSvgPath.iconNextDocument,
+                            color: ColorValue.mediumGreen,
+                            onPressed: (item) {
+                              DateTime now = DateTime.now();
+                              widget.provider.onChangeDetail(
+                                context,
+                                ToolAndSuppliesHandoverDto(
+                                  banGiaoCCDCVatTu:
+                                      'Phiếu bàn giao ccdc-vật tư ngày ${DateFormat('dd/MM/yyyy').format(now)}',
+                                  quyetDinhDieuDongSo: '',
+                                  lenhDieuDong: item.id,
+                                  idDonViGiao: item.idDonViGiao,
+                                  tenDonViGiao: item.tenDonViGiao,
+                                  idDonViNhan: item.idDonViNhan,
+                                  tenDonViNhan: item.tenDonViNhan,
+                                  ngayBanGiao: '',
+                                  idLanhDao: '',
+                                  tenLanhDao: '',
+                                  tenDaiDienBanHanhQD: '',
+                                  tenDaiDienBenGiao: '',
+                                  tenDaiDienBenNhan: '',
+                                  daXacNhan: false,
+                                  daiDienBenGiaoXacNhan: false,
+                                  daiDienBenNhanXacNhan: false,
+                                  tenFile: "",
+                                  duongDanFile: "",
+                                ),
+                                isFindNew: true,
+                                isFindNewItem: true,
+                              );
+                            },
+                          ),
+                        ],
+                        maxHeight: tableMaxHeight,
+                      );
                     },
-                    showCheckboxColumn: _showCheckboxColumn,
-                    showActionsColumn: _showActionsColumn,
-                    actionsColumnWidth: 120,
-                    customActions: [
-                      CustomAction(
-                        tooltip: 'Xem',
-                        iconPath: AppIconSvgPath.iconEye,
-                        color: Colors.green,
-                        onPressed: (item) {
-                          onViewDocument(item);
-                        },
-                      ),
-                      CustomAction(
-                        tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
-                        iconPath: AppIconSvgPath.iconNextDocument,
-                        color: ColorValue.mediumGreen,
-                        onPressed: (item) {
-                          DateTime now = DateTime.now();
-                          widget.provider.onChangeDetail(
-                            context,
-                            ToolAndSuppliesHandoverDto(
-                              banGiaoCCDCVatTu:
-                                  'Phiếu bàn giao ccdc-vật tư ngày ${DateFormat('dd/MM/yyyy').format(now)}',
-                              quyetDinhDieuDongSo: '',
-                              lenhDieuDong: item.id,
-                              idDonViGiao: item.idDonViGiao,
-                              tenDonViGiao: item.tenDonViGiao,
-                              idDonViNhan: item.idDonViNhan,
-                              tenDonViNhan: item.tenDonViNhan,
-                              ngayBanGiao: '',
-                              idLanhDao: '',
-                              tenLanhDao: '',
-                              tenDaiDienBanHanhQD: '',
-                              tenDaiDienBenGiao: '',
-                              tenDaiDienBenNhan: '',
-                              daXacNhan: false,
-                              daiDienBenGiaoXacNhan: false,
-                              daiDienBenNhanXacNhan: false,
-                              tenFile: "",
-                              duongDanFile: "",
-                            ),
-                            isFindNew: true,
-                            isFindNewItem: true,
-                          );
-                        },
-                      ),
-                    ],
-                    maxHeight: MediaQuery.of(context).size.height * 0.8,
                   );
                 },
               ),

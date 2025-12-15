@@ -438,91 +438,103 @@ class _ToolAndSuppliesHandoverListState
                           bottomLeft: Radius.circular(8.0),
                           bottomRight: Radius.circular(8.0),
                         ),
-                        child: riverpod.Consumer(
-                          builder: (context, ref, child) {
-                            // Watch currentPageData để reload detail department tree khi data thay đổi
-                            final currentPageData = ref.watch(
-                              tableToolAndSuppliesHandoverProvider.select(
-                                (s) => s.currentPageData,
-                              ),
-                            );
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
+                            final tableMaxHeight = (constraints.maxHeight - 65)
+                                .clamp(0.0, constraints.maxHeight)
+                                .toDouble();
 
-                            // Reload detail department tree khi data thay đổi và có selected item
-                            if (selected != null && currentPageData.isNotEmpty) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (!mounted) return;
-                                
-                                final updatedItem = currentPageData.firstWhere(
-                                  (element) => element.id == selected?.id,
-                                  orElse: () => ToolAndSuppliesHandoverDto(),
+                            return riverpod.Consumer(
+                              builder: (context, ref, child) {
+                                // Watch currentPageData để reload detail department tree khi data thay đổi
+                                final currentPageData = ref.watch(
+                                  tableToolAndSuppliesHandoverProvider.select(
+                                    (s) => s.currentPageData,
+                                  ),
                                 );
-                                
-                                if (updatedItem.id != null) {
-                                  setState(() {
-                                    selected = updatedItem;
+
+                                // Reload detail department tree khi data thay đổi và có selected item
+                                if (selected != null && currentPageData.isNotEmpty) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (!mounted) return;
+                                    
+                                    final updatedItem = currentPageData.firstWhere(
+                                      (element) => element.id == selected?.id,
+                                      orElse: () => ToolAndSuppliesHandoverDto(),
+                                    );
+                                    
+                                    if (updatedItem.id != null) {
+                                      setState(() {
+                                        selected = updatedItem;
+                                      });
+                                      final nodes = _buildDetailDepartmentTree(updatedItem);
+                                      widget.provider.updateDetailDiagram(
+                                        item: updatedItem,
+                                        nodes: nodes,
+                                        title:
+                                            'trạng thái ký " Biên bản bàn giao ${updatedItem.id} "',
+                                      );
+                                    }
                                   });
-                                  final nodes = _buildDetailDepartmentTree(updatedItem);
-                                  widget.provider.updateDetailDiagram(
-                                    item: updatedItem,
-                                    nodes: nodes,
-                                    title:
-                                        'trạng thái ký " Biên bản bàn giao ${updatedItem.id} "',
-                                  );
                                 }
-                              });
-                            }
 
-                            return RiverpodTable<ToolAndSuppliesHandoverDto>(
-                              tableProvider:
-                                  tableToolAndSuppliesHandoverProvider,
-                              columns: _columns,
-                              showCheckboxColumn: _showCheckboxColumn,
-                              enableRowSelection: true,
-                              enableRowHover: true,
-                              showAlternatingRowColors: true,
-                              valueGetter: getValueForColumn,
-                              rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
-                              cellsBuilder: (_) => [],
-                              cellBuilderByKey: (item, key) {
-                                final builder = _buildersByKey[key];
-                                if (builder != null) return builder(item);
-                                return null;
-                              },
-                              onRowTap: (item) async {
-                                isShowPreview = true;
-                                widget.provider.onChangeDetail(
-                                  context,
-                                  item,
-                                  isFindNewItem: false,
-                                );
-                                final nodes = _buildDetailDepartmentTree(item);
-                                widget.provider.updateDetailDiagram(
-                                  item: item,
-                                  nodes: nodes,
-                                  title:
-                                      'trạng thái ký " Biên bản bàn giao ${item.id} "',
-                                );
-                              },
-                              showActionsColumn: _showActionsColumn,
-                              onDelete: onDelete,
-                              blockDelete:
-                                  (item) =>
-                                      !TableToolAndSuppliesHandoverConfig.isCheckShowDelete(
-                                        item,
-                                      ),
-                              customActions: [
-                                CustomAction(
-                                  tooltip: 'Xem',
-                                  iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.green,
-                                  onPressed: (item) async {
-                                    onViewDocument(item);
+                                return RiverpodTable<ToolAndSuppliesHandoverDto>(
+                                  tableProvider:
+                                      tableToolAndSuppliesHandoverProvider,
+                                  columns: _columns,
+                                  showCheckboxColumn: _showCheckboxColumn,
+                                  enableRowSelection: true,
+                                  enableRowHover: true,
+                                  showAlternatingRowColors: true,
+                                  valueGetter: getValueForColumn,
+                                  rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
+                                  cellsBuilder: (_) => [],
+                                  cellBuilderByKey: (item, key) {
+                                    final builder = _buildersByKey[key];
+                                    if (builder != null) return builder(item);
+                                    return null;
                                   },
-                                ),
-                              ],
-                              actionsColumnWidth: 120,
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * 0.63,
+                                  rowDividerColor: Colors.white.withAlpha(
+                                    (0.7 * 255).toInt(),
+                                  ),
+                                  rowDividerThickness: 1,
+                                  onRowTap: (item) async {
+                                    isShowPreview = true;
+                                    widget.provider.onChangeDetail(
+                                      context,
+                                      item,
+                                      isFindNewItem: false,
+                                    );
+                                    final nodes = _buildDetailDepartmentTree(item);
+                                    widget.provider.updateDetailDiagram(
+                                      item: item,
+                                      nodes: nodes,
+                                      title:
+                                          'trạng thái ký " Biên bản bàn giao ${item.id} "',
+                                    );
+                                  },
+                                  showActionsColumn: _showActionsColumn,
+                                  onDelete: onDelete,
+                                  blockDelete:
+                                      (item) =>
+                                          !TableToolAndSuppliesHandoverConfig.isCheckShowDelete(
+                                            item,
+                                          ),
+                                  customActions: [
+                                    CustomAction(
+                                      tooltip: 'Xem',
+                                      iconPath: 'assets/icons/eye.svg',
+                                      color: Colors.green,
+                                      onPressed: (item) async {
+                                        onViewDocument(item);
+                                      },
+                                    ),
+                                  ],
+                                  actionsColumnWidth: 120,
+                                  maxHeight: tableMaxHeight,
+                                );
+                              },
                             );
                           },
                         ),

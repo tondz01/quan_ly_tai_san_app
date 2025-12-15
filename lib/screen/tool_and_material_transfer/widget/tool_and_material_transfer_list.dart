@@ -369,102 +369,111 @@ class _ToolAndMaterialTransferListState
                       bottomLeft: Radius.circular(8.0),
                       bottomRight: Radius.circular(8.0),
                     ),
-                    child: riverpod.Consumer(
-                      builder: (context, ref, child) {
-                        totalItems = ref.watch(
-                          tableToolAndMaterialTransferProvider.select(
-                            (s) => s.paginationState.totalItems,
-                          ),
-                        );
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
+                        final tableMaxHeight = (constraints.maxHeight - 65)
+                            .clamp(0.0, constraints.maxHeight)
+                            .toDouble();
 
-                        // Watch currentPageData để reload detail department tree khi data thay đổi
-                        final currentPageData = ref.watch(
-                          tableToolAndMaterialTransferProvider.select(
-                            (s) => s.currentPageData,
-                          ),
-                        );
-
-                        // Reload detail department tree khi data thay đổi và có selected item
-                        if (selected != null && currentPageData.isNotEmpty) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (!mounted) return;
-
-                            final updatedItem = currentPageData.firstWhere(
-                              (element) => element.id == selected?.id,
-                              orElse: () => ToolAndMaterialTransferDto(),
+                        return riverpod.Consumer(
+                          builder: (context, ref, child) {
+                            totalItems = ref.watch(
+                              tableToolAndMaterialTransferProvider.select(
+                                (s) => s.paginationState.totalItems,
+                              ),
                             );
 
-                            if (updatedItem.id != null) {
-                              setState(() {
-                                selected = updatedItem;
-                                _buildDetailDepartmentTree(updatedItem);
+                            // Watch currentPageData để reload detail department tree khi data thay đổi
+                            final currentPageData = ref.watch(
+                              tableToolAndMaterialTransferProvider.select(
+                                (s) => s.currentPageData,
+                              ),
+                            );
+
+                            // Reload detail department tree khi data thay đổi và có selected item
+                            if (selected != null && currentPageData.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+
+                                final updatedItem = currentPageData.firstWhere(
+                                  (element) => element.id == selected?.id,
+                                  orElse: () => ToolAndMaterialTransferDto(),
+                                );
+
+                                if (updatedItem.id != null) {
+                                  setState(() {
+                                    selected = updatedItem;
+                                    _buildDetailDepartmentTree(updatedItem);
+                                  });
+                                }
                               });
                             }
-                          });
-                        }
 
-                        return RiverpodTable<ToolAndMaterialTransferDto>(
-                          tableProvider: tableToolAndMaterialTransferProvider,
-                          columns: _columns,
-                          showCheckboxColumn: _showCheckboxColumn,
-                          enableRowSelection: true,
-                          enableRowHover: true,
-                          showAlternatingRowColors: true,
-                          rowDividerColor: Colors.white.withAlpha(
-                            (0.7 * 255).toInt(),
-                          ),
-                          rowDividerThickness: 1.5,
-                          valueGetter: getValueForColumn,
-                          rowColorBuilder:
-                              (item) => widget.provider.getRowTableColor(item),
-                          cellsBuilder: (_) => [],
-                          cellBuilderByKey: (item, key) {
-                            final builder = _buildersByKey[key];
-                            if (builder != null) return builder(item);
-                            return null;
-                          },
-                          onRowTap: (item) {
-                            widget.provider
-                                .onChangeDetailToolAndMaterialTransfer(item);
-                            setState(() {
-                              nameBenBan =
-                                  'Trạng thái ký " Biên bản ${item.id} "';
-                              isShowDetailDepartmentTree = true;
-                              _buildDetailDepartmentTree(item);
-                            });
-                          },
-                          // onEdit: (item) {},
-                          onDelete: _onDelete,
-                          blockDelete:
-                              (item) =>
-                                  !TableToolAndMaterialTransferConfig.isCheckShowDelete(
-                                    item,
-                                  ),
-                          showActionsColumn: _showActionsColumn,
-                          customActions: [
-                            CustomAction(
-                              tooltip: 'Xem',
-                              iconPath: AppIconSvgPath.iconEye,
-                              color: Colors.green,
-                              onPressed: (item) async {
-                                _loadPdfNetwork(item.tenFile!).then((_) {
-                                  if (!context.mounted) return;
-                                  previewDocumentToolAndMaterial(
-                                    context: context,
-                                    item: item,
-                                    nhanVien: widget.provider.getNhanVienByID(
-                                      widget.provider.userInfo?.tenDangNhap ??
-                                          '',
-                                    ),
-                                    document: _document,
-                                    isShowKy: false,
-                                  );
+                            return RiverpodTable<ToolAndMaterialTransferDto>(
+                              tableProvider: tableToolAndMaterialTransferProvider,
+                              columns: _columns,
+                              showCheckboxColumn: _showCheckboxColumn,
+                              enableRowSelection: true,
+                              enableRowHover: true,
+                              showAlternatingRowColors: true,
+                              rowDividerColor: Colors.white.withAlpha(
+                                (0.7 * 255).toInt(),
+                              ),
+                              rowDividerThickness: 1,
+                              valueGetter: getValueForColumn,
+                              rowColorBuilder:
+                                  (item) => widget.provider.getRowTableColor(item),
+                              cellsBuilder: (_) => [],
+                              cellBuilderByKey: (item, key) {
+                                final builder = _buildersByKey[key];
+                                if (builder != null) return builder(item);
+                                return null;
+                              },
+                              onRowTap: (item) {
+                                widget.provider
+                                    .onChangeDetailToolAndMaterialTransfer(item);
+                                setState(() {
+                                  nameBenBan =
+                                      'Trạng thái ký " Biên bản ${item.id} "';
+                                  isShowDetailDepartmentTree = true;
+                                  _buildDetailDepartmentTree(item);
                                 });
                               },
-                            ),
-                          ],
-                          actionsColumnWidth: 120,
-                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                              // onEdit: (item) {},
+                              onDelete: _onDelete,
+                              blockDelete:
+                                  (item) =>
+                                      !TableToolAndMaterialTransferConfig.isCheckShowDelete(
+                                        item,
+                                      ),
+                              showActionsColumn: _showActionsColumn,
+                              customActions: [
+                                CustomAction(
+                                  tooltip: 'Xem',
+                                  iconPath: AppIconSvgPath.iconEye,
+                                  color: Colors.green,
+                                  onPressed: (item) async {
+                                    _loadPdfNetwork(item.tenFile!).then((_) {
+                                      if (!context.mounted) return;
+                                      previewDocumentToolAndMaterial(
+                                        context: context,
+                                        item: item,
+                                        nhanVien: widget.provider.getNhanVienByID(
+                                          widget.provider.userInfo?.tenDangNhap ??
+                                              '',
+                                        ),
+                                        document: _document,
+                                        isShowKy: false,
+                                      );
+                                    });
+                                  },
+                                ),
+                              ],
+                              actionsColumnWidth: 120,
+                              maxHeight: tableMaxHeight,
+                            );
+                          },
                         );
                       },
                     ),

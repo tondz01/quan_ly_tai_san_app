@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -358,69 +356,86 @@ class _AssetTransferListByHandoverState
                 bottomLeft: Radius.circular(8.0),
                 bottomRight: Radius.circular(8.0),
               ),
-              child: riverpod.Consumer(
-                builder: (context, ref, child) {
-                  log(
-                    'Building RiverpodTable with ${dataAssetTransferFilter.length} items',
-                  );
-                  return RiverpodTable<DieuDongTaiSanDto>(
-                    tableProvider: tableAssetTransferByHandoverProvider,
-                    columns: _columns,
-                    valueGetter: getValueForColumn,
-                    cellsBuilder: (_) => [],
-                    cellBuilderByKey: (item, key) {
-                      final builder = _buildersByKey[key];
-                      if (builder != null) return builder(item);
-                      return null;
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Giảm nhẹ để tránh tràn do margin/padding xung quanh
+                  final tableMaxHeight = (constraints.maxHeight - 65)
+                      .clamp(0.0, constraints.maxHeight)
+                      .toDouble();
+
+                  return riverpod.Consumer(
+                    builder: (context, ref, child) {
+                      return RiverpodTable<DieuDongTaiSanDto>(
+                        tableProvider: tableAssetTransferByHandoverProvider,
+                        columns: _columns,
+                        valueGetter: getValueForColumn,
+                        cellsBuilder: (_) => [],
+                        cellBuilderByKey: (item, key) {
+                          final builder = _buildersByKey[key];
+                          if (builder != null) return builder(item);
+                          return null;
+                        },
+                        showCheckboxColumn: _showCheckboxColumn,
+                        showActionsColumn: _showActionsColumn,
+                        actionsColumnWidth: 120,
+                        rowDividerColor: Colors.white.withAlpha(
+                          (0.7 * 255).toInt(),
+                        ),
+                        rowDividerThickness: 1,
+                        rowColorBuilder:
+                            (item) =>
+                                item.coPhieuBanGiao == true
+                                    ? ColorValue.error.withAlpha(
+                                      (0.6 * 255).toInt(),
+                                    )
+                                    : null,
+                        customActions: [
+                          CustomAction(
+                            tooltip: 'Xem',
+                            iconPath: AppIconSvgPath.iconEye,
+                            color: Colors.green,
+                            onPressed: (item) {
+                              onViewDocument(item);
+                            },
+                          ),
+                          CustomAction(
+                            tooltip: 'Tạo biên bản bàn giao tài sản',
+                            iconPath: AppIconSvgPath.iconNextDocument,
+                            color: ColorValue.mediumGreen,
+                            onPressed: (item) {
+                              DateTime now = DateTime.now();
+                              widget.provider.onChangeDetail(
+                                context,
+                                AssetHandoverDto(
+                                  idCongTy: item.idCongTy,
+                                  banGiaoTaiSan:
+                                      'Biên bản bàn giao ngày ${DateFormat('dd/MM/yyyy').format(now)}',
+                                  quyetDinhDieuDongSo: '',
+                                  lenhDieuDong: item.id,
+                                  idDonViGiao: item.idDonViGiao,
+                                  tenDonViGiao: item.tenDonViGiao,
+                                  idDonViNhan: item.idDonViNhan,
+                                  tenDonViNhan: item.tenDonViNhan,
+                                  ngayBanGiao: '',
+                                  idLanhDao: '',
+                                  tenLanhDao: '',
+                                  tenDaiDienBanHanhQD: '',
+                                  tenDaiDienBenGiao: '',
+                                  tenDaiDienBenNhan: '',
+                                  tenDonViDaiDien: '',
+                                  daXacNhan: false,
+                                  daiDienBenGiaoXacNhan: false,
+                                  daiDienBenNhanXacNhan: false,
+                                  donViDaiDienXacNhan: '0',
+                                ),
+                                isFindNew: true,
+                              );
+                            },
+                          ),
+                        ],
+                        maxHeight: tableMaxHeight,
+                      );
                     },
-                    showCheckboxColumn: _showCheckboxColumn,
-                    showActionsColumn: _showActionsColumn,
-                    actionsColumnWidth: 120,
-                    customActions: [
-                      CustomAction(
-                        tooltip: 'Xem',
-                        iconPath: AppIconSvgPath.iconEye,
-                        color: Colors.green,
-                        onPressed: (item) {
-                          onViewDocument(item);
-                        },
-                      ),
-                      CustomAction(
-                        tooltip: 'Tạo biên bản bàn giao tài sản',
-                        iconPath: AppIconSvgPath.iconNextDocument,
-                        color: ColorValue.mediumGreen,
-                        onPressed: (item) {
-                          DateTime now = DateTime.now();
-                          widget.provider.onChangeDetail(
-                            context,
-                            AssetHandoverDto(
-                              idCongTy: item.idCongTy,
-                              banGiaoTaiSan:
-                                  'Biên bản bàn giao ngày ${DateFormat('dd/MM/yyyy').format(now)}',
-                              quyetDinhDieuDongSo: '',
-                              lenhDieuDong: item.id,
-                              idDonViGiao: item.idDonViGiao,
-                              tenDonViGiao: item.tenDonViGiao,
-                              idDonViNhan: item.idDonViNhan,
-                              tenDonViNhan: item.tenDonViNhan,
-                              ngayBanGiao: '',
-                              idLanhDao: '',
-                              tenLanhDao: '',
-                              tenDaiDienBanHanhQD: '',
-                              tenDaiDienBenGiao: '',
-                              tenDaiDienBenNhan: '',
-                              tenDonViDaiDien: '',
-                              daXacNhan: false,
-                              daiDienBenGiaoXacNhan: false,
-                              daiDienBenNhanXacNhan: false,
-                              donViDaiDienXacNhan: '0',
-                            ),
-                            isFindNew: true,
-                          );
-                        },
-                      ),
-                    ],
-                    maxHeight: MediaQuery.of(context).size.height * 0.8,
                   );
                 },
               ),
@@ -455,9 +470,10 @@ class _AssetTransferListByHandoverState
             final isLoading = ref.watch(
               tableAssetTransferByHandoverProvider.select((s) => s.isLoading),
             );
-            final totals = ref
-                .watch(tableAssetTransferByHandoverProvider.notifier)
-                .getTotals();
+            final totals =
+                ref
+                    .watch(tableAssetTransferByHandoverProvider.notifier)
+                    .getTotals();
             return FindByType(
               isCapPhat: isCapPhat,
               isDieuChuyen: isDieuChuyen,
@@ -499,9 +515,11 @@ class _AssetTransferListByHandoverState
     } else if (isThuHoi) {
       type = 3;
     }
-    
+
     final container = ProviderScope.containerOf(context);
-    container.read(tableAssetTransferByHandoverProvider.notifier).refreshData(type);
+    container
+        .read(tableAssetTransferByHandoverProvider.notifier)
+        .refreshData(type);
   }
 
   void onViewDocument(DieuDongTaiSanDto item) async {
