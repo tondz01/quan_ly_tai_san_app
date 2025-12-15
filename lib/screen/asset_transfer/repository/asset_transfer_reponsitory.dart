@@ -740,7 +740,6 @@ class AssetTransferRepository extends ApiBase {
       } else {
         result['data'] = <AssetManagementDto>[];
       }
-      log("message result: ${result['data']}");
     } catch (e) {
       log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
     }
@@ -792,7 +791,6 @@ class AssetTransferRepository extends ApiBase {
       } else {
         result['data'] = <AssetManagementDto>[];
       }
-      log("message result: ${result['data']}");
     } catch (e) {
       log("Error at getAssetByUnit - AssetTransferRepository: $e");
     }

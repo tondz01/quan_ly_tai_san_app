@@ -99,9 +99,11 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     for (var column in widget.columns) {
       if (column.isEditable) {
-        final value =
-            column.getValueWithIndex?.call(item, rowIndex) ??
-            column.getValue(item);
+        var value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+        // Nếu là field ghi_chu, luôn lấy đúng giá trị hiện tại của item (không lấy cache)
+        if (column.field == 'ghi_chu') {
+          value = (item != null && (item as dynamic).ghiChu != null) ? (item as dynamic).ghiChu : '';
+        }
         final controller = TextEditingController(text: value?.toString() ?? '');
         _controllers[rowIndex]![column.field] = controller;
       }
@@ -129,7 +131,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   @override
   void dispose() {
-    // Dispose all text controllers
+    // Dispose all text controllers and focus nodes
     for (var rowControllers in _controllers.values) {
       for (var controller in rowControllers.values) {
         controller.dispose();
@@ -164,7 +166,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     setState(() {
       _tableData.removeAt(index);
 
-      // Rebuild controllers with updated indices
+      // Always create new controllers for all rows after the deleted row
       final newControllers = <int, Map<String, TextEditingController>>{};
       final newEditableFlags = <int, bool>{};
       for (int i = 0; i < _tableData.length; i++) {
@@ -173,21 +175,20 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           newEditableFlags[i] =
               _rowEditableFlags[i] ?? widget.defaultRowEditable;
         } else {
-          final oldIndex = i + 1;
-          if (_controllers.containsKey(oldIndex)) {
-            newControllers[i] = _controllers[oldIndex] ?? {};
-          } else {
-            _initRowControllers(i);
-            newControllers[i] = _controllers[i] ?? {};
+          // Dispose any old controllers for this row (if exist)
+          if (_controllers.containsKey(i + 1)) {
+            final oldRowControllers = _controllers[i + 1];
+            if (oldRowControllers != null) {
+              for (var controller in oldRowControllers.values) {
+                controller.dispose();
+              }
+            }
           }
-          if (_rowEditableFlags.containsKey(oldIndex)) {
-            newEditableFlags[i] =
-                _rowEditableFlags[oldIndex] ?? widget.defaultRowEditable;
-          } else {
-            newEditableFlags[i] =
-                widget.rowEditableDecider?.call(_tableData[i], i) ??
-                widget.defaultRowEditable;
-          }
+          _initRowControllers(i);
+          newControllers[i] = _controllers[i] ?? {};
+          newEditableFlags[i] =
+              widget.rowEditableDecider?.call(_tableData[i], i) ??
+              widget.defaultRowEditable;
         }
       }
       _controllers = newControllers;
@@ -433,6 +434,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             : widget.oddRowBackgroundColor;
 
     return Container(
+      key: ValueKey('row_${index}_${item.hashCode}'),
       height: widget.rowHeight + 10,
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -494,22 +496,20 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      // Lấy object cho dropdown so sánh (getValueWithIndex ưu tiên)
       final dropdownValue =
           column.getValueWithIndex?.call(item, rowIndex) ??
           column.getValue(item);
-      // Lấy text để hiển thị trong controller (luôn dùng getValue để lấy String)
       final displayText = column.getValue(item)?.toString() ?? '';
       controller.text = displayText;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         child: SGDropdownInputButton<dynamic>(
+          key: ValueKey('dropdown_${rowIndex}_${column.field}'),
           height: 40,
           controller: controller,
           value: dropdownValue,
           defaultValue: dropdownValue,
           items: column.dropdownItems ?? const [],
-          // showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
@@ -527,14 +527,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           onChanged: (value) {
             if (value == null) return;
             _updateCellValue(rowIndex, column.field, value);
-            // cascade updates
             final updater = column.onValueChanged;
             if (updater != null) {
               updater(item, rowIndex, value, (
                 String targetField,
                 dynamic targetValue,
               ) {
-                if (targetField == column.field) return; // avoid recursion
+                if (targetField == column.field) return;
                 _setCellValue(rowIndex, targetField, targetValue);
               });
             }
@@ -546,6 +545,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SGInputText(
+          key: ValueKey('input_${rowIndex}_${column.field}'),
           controller: controller,
           height: 40,
           inputFormatters:
@@ -554,21 +554,19 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                   : null,
           borderRadius: 10,
           enabled: widget.isEditing,
-          // onlyLine: true,
           showBorder: true,
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
               controller.text = value;
               _updateCellValue(rowIndex, column.field, value);
-              // cascade updates
               final updater = column.onValueChanged;
               if (updater != null) {
                 updater(item, rowIndex, value, (
                   String targetField,
                   dynamic targetValue,
                 ) {
-                  if (targetField == column.field) return; // avoid recursion
+                  if (targetField == column.field) return;
                   _setCellValue(rowIndex, targetField, targetValue);
                 });
               }

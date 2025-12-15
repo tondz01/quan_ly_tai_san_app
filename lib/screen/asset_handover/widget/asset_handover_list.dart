@@ -588,6 +588,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                               enableRowHover: true,
                               showAlternatingRowColors: true,
                               valueGetter: getValueForColumn,
+                              rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
                               cellsBuilder: (_) => [],
                               cellBuilderByKey: (item, key) {
                                 final builder = _buildersByKey[key];
