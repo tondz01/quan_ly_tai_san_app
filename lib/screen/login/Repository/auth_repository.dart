@@ -91,12 +91,24 @@ class AuthRepository extends ApiBase {
       AccountHelper.instance.setUserInfo(user);
 
       // Gọi các API phụ trợ
-
-      List<String> roles = onGetPermission(user.tenDangNhap);
-      PermissionService.instance.saveRoles(roles);
-
-      result['data'] = user;
-      result['message'] = '';
+      Map<String, dynamic> responsePer = await PermissionRepository()
+          .getAllPermissionsByUserId(user.id);
+      List<PermissionDto> permissions = [];
+      if (responsePer['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        permissions = responsePer['data'];
+        if (permissions.isNotEmpty) {
+          result['data'] = user;
+          result['message'] = '';
+          log(
+            '[AuthRepository] login success for user: ${jsonEncode(permissions)}',
+          );
+          List<String> roles =
+              permissions.map((perm) => perm.permissionCode).toList();
+          PermissionService.instance.clearRoles();
+          PermissionService.instance.saveRoles(roles);
+          return result;
+        }
+      }
     } catch (e) {
       if (e is DioException) {
         final resp = e.response;
@@ -350,9 +362,11 @@ class AuthRepository extends ApiBase {
       log('Error calling API ASSET_CATEGORY: $e');
     }
   }
+
   Future<void> loadCurrentStatus(String idCongTy) async {
     try {
-      final response = await CurrentStatusRepository().getListCurrentStatusRepository(idCongTy);
+      final response = await CurrentStatusRepository()
+          .getListCurrentStatusRepository(idCongTy);
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         AccountHelper.instance.setCurrentStatus(response['data']);
         log('message test: loadCurrentStatus: ${response['data'].length}');
@@ -572,10 +586,7 @@ class AuthRepository extends ApiBase {
         "[check onGetPermission] 2 - check nhanVien: ${jsonEncode(nhanVien)}",
       );
       final chucVu = AccountHelper.instance.getChucVuById(nhanVien.chucVuId!);
-      log('[check onGetPermission] 3 - chucVu: ${jsonEncode(chucVu)}');
-      log("[check onGetPermission] 4 - check chucVu: ${jsonEncode(chucVu)}");
       if (chucVu == null) return [];
-      log("[check onGetPermission] 5 - check chucVu2: ${jsonEncode(chucVu)}");
       final List<MapEntry<bool, String>> permissionMap = [
         MapEntry(chucVu.quanLyNhanVien, RoleCode.NHANVIEN),
         MapEntry(chucVu.quanLyPhongBan, RoleCode.PHONGBAN),
