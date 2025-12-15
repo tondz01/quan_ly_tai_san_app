@@ -431,8 +431,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                               if (builder != null) return builder(item);
                               return null;
                             },
-                            rowColorBuilder:
-                                (item) => widget.provider.getRowTableColor(item),
+                            // rowColorBuilder:
+                            //     (item) => widget.provider.getRowTableColor(item),
                             onRowTap: (item) {
                               widget.provider.onChangeDetailDieuDongTaiSan(item);
                               // Chỉ setState nếu có thay đổi thực sự
