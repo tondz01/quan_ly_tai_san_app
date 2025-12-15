@@ -144,8 +144,9 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
 
   @override
   Widget build(BuildContext context) {
-    return Table(
-      border: TableBorder.all(),
+    return Center(
+      child: Table(
+      border: TableBorder.all(color: Colors.black, width: 0.5),
       defaultVerticalAlignment: TableCellVerticalAlignment.top,
       columnWidths: const {
         0: FixedColumnWidth(40),
@@ -373,6 +374,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
             ],
           ),
       ],
+    ),
     );
   }
 }

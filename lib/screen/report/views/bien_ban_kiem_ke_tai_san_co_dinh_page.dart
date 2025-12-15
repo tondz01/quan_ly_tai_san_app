@@ -329,8 +329,9 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
     // Khởi tạo dữ liệu ban đầu
     _initializeData();
 
-    return Table(
-      border: TableBorder.all(),
+    return Center(
+      child: Table(
+      border: TableBorder.all(color: Colors.black, width: 0.5),
       defaultVerticalAlignment: TableCellVerticalAlignment.top,
       columnWidths: const {
         0: FixedColumnWidth(40),
@@ -476,6 +477,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
             ],
           ),
       ],
+    ),
     );
   }
 }

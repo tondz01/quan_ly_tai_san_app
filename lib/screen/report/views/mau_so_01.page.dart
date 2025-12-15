@@ -526,21 +526,23 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 2000, // Đặt width cố định để cuộn ngang
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildHeaderRow1(),
-          _buildHeaderRow2(),
-          _buildHeaderRow3(),
+    return Center(
+      child: Container(
+        width: 2000, // Đặt width cố định để cuộn ngang
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeaderRow1(),
+            _buildHeaderRow2(),
+            _buildHeaderRow3(),
 
-          // Render tất cả rows từ widget.assetRows
-          ...widget.assetRows.map((rowData) => _buildDataRow(rowData)),
-        ],
+            // Render tất cả rows từ widget.assetRows
+            ...widget.assetRows.map((rowData) => _buildDataRow(rowData)),
+          ],
+        ),
       ),
     );
   }
@@ -630,7 +632,7 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
     // Style cho hàng group (A, B)
     final bool isGroupHeader = rowData.stt.text == 'A' || rowData.stt.text == 'B';
     final style = isGroupHeader ? const TextStyle(fontWeight: FontWeight.bold) : null;
-    final bgColor = isGroupHeader ? Colors.grey[200] : null;
+    final bgColor = Colors.white;
 
     return IntrinsicHeight(
       child: Row(
@@ -663,11 +665,11 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
-            top: isSubHeader ? const BorderSide(color: Colors.black, width: 1.0) : BorderSide.none,
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
+            top: isSubHeader ? const BorderSide(color: Colors.black, width: 0.5) : BorderSide.none,
           ),
-          color: Colors.grey[200],
+          color: Colors.white,
         ),
         alignment: Alignment.center,
         child: child,
@@ -689,10 +691,10 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
       flex: flex,
       child: Container(
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: Colors.white,
           border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
           ),
         ),
         child: TextField(
@@ -717,11 +719,10 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
       child: Container(
         decoration: BoxDecoration(
           border: Border(
-            // Vẽ border dưới cho hàng 2
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
           ),
-          color: Colors.grey[200], // Thêm màu nền cho đồng bộ
+          color: Colors.white,
         ),
       ),
     );
