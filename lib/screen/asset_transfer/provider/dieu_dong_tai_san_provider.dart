@@ -10,7 +10,6 @@ import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/locale/asset_cache_service.dart';
 import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
@@ -135,7 +134,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _isShowCollapse = true;
   bool _isLoading = false;
   bool _isLoadingAsset = false; // Flag chống gọi onGetDataAsset nhiều lần
-  bool _isLoadingAssetByUnit = false; // Flag chống gọi onReloadDataAssetByCurrentUnit nhiều lần
+  bool _isLoadingAssetByUnit =
+      false; // Flag chống gọi onReloadDataAssetByCurrentUnit nhiều lần
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
@@ -172,6 +172,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _isLoading = value;
     if (!_isBatching) notifyListeners();
   }
+
   set loadingMessage(String value) {
     if (_loadingMessage == value) return;
     _loadingMessage = value;
@@ -285,7 +286,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     try {
       // 1. Load từ cache trước
       _dataAsset = await AssetListCacheService().loadAssetList();
-      
+
       // 2. Nếu cache rỗng hoặc null → gọi API để lấy dữ liệu mới
       if (_dataAsset == null || _dataAsset!.isEmpty) {
         await AssetManagementRepository().getListAssetManagement('ct001');
@@ -371,7 +372,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _batchUpdate(() async {
       _itemPreview = null;
       _item = item;
-      if(item!=null){
+      if (item != null) {
         await onReloadDataAssetByCurrentUnit(item.idDonViGiao ?? '');
       }
       _isShowInput = true;
@@ -742,31 +743,37 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
-    print('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
     // Bỏ qua nếu id rỗng
     if (idDonViHienthoi.isEmpty) {
-      print('onReloadDataAssetByCurrentUnit: SKIPPED - id rỗng');
       return;
     }
-    
+
     // Chống gọi nhiều lần liên tiếp
     if (_isLoadingAssetByUnit) {
-      print('onReloadDataAssetByCurrentUnit: SKIPPED - đang loading');
+      SGLog.debug(
+        "AssetTransferProvider",
+        'onReloadDataAssetByCurrentUnit: SKIPPED - đang loading',
+      );
       return;
     }
-    
+
     _isLoadingAssetByUnit = true;
     _batchUpdate(() {
       _isLoading = true;
       _loadingMessage = 'Đang tải dữ liệu tài sản...';
     });
 
-    print('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
-    
+    SGLog.debug(
+      "AssetTransferProvider",
+      'onReloadDataAssetByCurrentUnit: $idDonViHienthoi',
+    );
+
     try {
       Map<String, dynamic> result;
       if (typeDieuDongTaiSan == 1) {
-        result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+        result = await AssetTransferRepository().getAssetByUnit(
+          idDonViHienthoi,
+        );
       } else {
         result = await AssetTransferRepository().getAssetByCurrentUnit(
           idDonViHienthoi,
@@ -781,7 +788,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         //           ?.where((element) => element.idDonViHienThoi == '')
         //           .toList();
         // }
-        print('result: ${result['data']}');
+        SGLog.debug(
+          "AssetTransferProvider",
+          'onReloadDataAssetByCurrentUnit: ${result['data']}',
+        );
       } else {
         SGLog.debug(
           "AssetTransferProvider",
@@ -789,7 +799,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         );
       }
     } catch (e) {
-      print('onReloadDataAssetByCurrentUnit error: $e');
+      SGLog.debug(
+        "AssetTransferProvider",
+        'onReloadDataAssetByCurrentUnit error: $e',
+      );
     } finally {
       _isLoadingAssetByUnit = false;
       _isLoading = false;
@@ -812,16 +825,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     });
   }
 
-  String genID() {
-    final now = DateTime.now();
-    final year = now.year;
-    String code =
-        typeDieuDongTaiSan == 1
-            ? "CPTS"
-            : typeDieuDongTaiSan == 2
-            ? "DDTS"
-            : "THTS";
-    String random = UUIDGenerator.generateRandomNumber(6);
-    return "$code-$year-$random";
+  Color? getRowTableColor(DieuDongTaiSanDto item) {
+    return item.coPhieuBanGiao == false
+        ? ColorValue.error.withAlpha((0.6 * 255).toInt())
+        : item.trangThaiPhieu == 2
+        ? ColorValue.amber.withAlpha((0.25 * 255).toInt())
+        : null;
   }
 }

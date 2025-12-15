@@ -415,12 +415,15 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                         showAlternatingRowColors: true,
                         valueGetter: getValueForColumn,
                         cellsBuilder: (_) => [],
+                        rowDividerColor: Colors.white.withAlpha((0.7*255).toInt()),
+                        rowDividerThickness: 1.5,
                         cellBuilderByKey: (item, key) {
                           final builder = _buildersByKey[key];
                           if (builder != null) return builder(item);
                           return null;
                         },
-                        rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
+                        rowColorBuilder:
+                            (item) => widget.provider.getRowTableColor(item),
                         onRowTap: (item) {
                           widget.provider.onChangeDetailDieuDongTaiSan(item);
                           // Chỉ setState nếu có thay đổi thực sự

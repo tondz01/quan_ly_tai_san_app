@@ -133,9 +133,7 @@ class _ToolAndMaterialTransferListState
           item.trangThai ?? 0,
         );
       case 'permission_signing':
-        return TableToolAndMaterialTransferConfig.getStatusSigningName(
-          item,
-        );
+        return TableToolAndMaterialTransferConfig.getStatusSigningName(item);
       case 'status_document':
         return TableToolAndMaterialTransferConfig.getStatusDocumentName(item);
       case 'share':
@@ -390,12 +388,12 @@ class _ToolAndMaterialTransferListState
                         if (selected != null && currentPageData.isNotEmpty) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (!mounted) return;
-                            
+
                             final updatedItem = currentPageData.firstWhere(
                               (element) => element.id == selected?.id,
                               orElse: () => ToolAndMaterialTransferDto(),
                             );
-                            
+
                             if (updatedItem.id != null) {
                               setState(() {
                                 selected = updatedItem;
@@ -412,8 +410,13 @@ class _ToolAndMaterialTransferListState
                           enableRowSelection: true,
                           enableRowHover: true,
                           showAlternatingRowColors: true,
+                          rowDividerColor: Colors.white.withAlpha(
+                            (0.7 * 255).toInt(),
+                          ),
+                          rowDividerThickness: 1.5,
                           valueGetter: getValueForColumn,
-                          rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
+                          rowColorBuilder:
+                              (item) => widget.provider.getRowTableColor(item),
                           cellsBuilder: (_) => [],
                           cellBuilderByKey: (item, key) {
                             final builder = _buildersByKey[key];

@@ -926,4 +926,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     String random = UUIDGenerator.generateRandomNumber(6);
     return "$code-$year-$random";
   }
+
+  Color? getRowTableColor(ToolAndMaterialTransferDto item) {
+    return item.coPhieuBanGiao == false
+        ? ColorValue.error.withAlpha((0.6 * 255).toInt())
+        : item.trangThaiPhieu == 2
+        ? ColorValue.amber.withAlpha((0.25 * 255).toInt())
+        : null;
+  }
 }

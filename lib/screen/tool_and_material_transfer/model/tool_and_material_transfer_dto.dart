@@ -60,11 +60,9 @@ class ToolAndMaterialTransferDto {
   bool? trinhDuyetCapPhongXacNhan;
   bool? trinhDuyetGiamDocXacNhan;
 
-
   // Thời gian giao nhận
   String? tggnTuNgay;
   String? tggnDenNgay;
-
 
   String? diaDiemGiaoNhan;
   String? noiNhan;
@@ -73,18 +71,14 @@ class ToolAndMaterialTransferDto {
   String? tenFile;
   String? ngayKy;
 
-
   int? trangThai;
   String? idCongTy;
-
 
   String? ngayTao;
   String? ngayCapNhat;
 
-
   String? nguoiTao;
   String? nguoiCapNhat;
-
 
   int? coHieuLuc;
   int? loai;
@@ -94,6 +88,7 @@ class ToolAndMaterialTransferDto {
   bool? byStep;
 
   int? trangThaiPhieu;
+  bool? coPhieuBanGiao;
 
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
   List<SignatoryDto>? listSignatory;
@@ -154,6 +149,7 @@ class ToolAndMaterialTransferDto {
     this.daBanGiao,
     this.byStep,
     this.trangThaiPhieu,
+    this.coPhieuBanGiao,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -234,6 +230,7 @@ class ToolAndMaterialTransferDto {
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
+      coPhieuBanGiao: json['coPhieuBanGiao'] ?? false,
     );
   }
 
@@ -301,7 +298,6 @@ class ToolAndMaterialTransferDto {
     };
   }
 
-
   // Tạo một instance rỗng cho việc khởi tạo mới
   factory ToolAndMaterialTransferDto.empty() {
     return ToolAndMaterialTransferDto(
@@ -363,6 +359,7 @@ class ToolAndMaterialTransferDto {
       daBanGiao: false,
       byStep: false,
       trangThaiPhieu: 0,
+      coPhieuBanGiao: false
     );
   }
 
@@ -423,6 +420,7 @@ class ToolAndMaterialTransferDto {
     bool? daBanGiao,
     bool? byStep,
     int? trangThaiPhieu,
+    bool? coPhieuBanGiao,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -494,6 +492,7 @@ class ToolAndMaterialTransferDto {
           detailToolAndMaterialTransfers ?? this.detailToolAndMaterialTransfers,
       listSignatory: listSignatory ?? this.listSignatory,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
+      coPhieuBanGiao: coPhieuBanGiao ?? this.coPhieuBanGiao,
     );
   }
 }
