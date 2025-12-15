@@ -1,13 +1,17 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/table_tool_and_supplies_handover_transfer_config.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/table_tool_and_supplies_handover_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -42,7 +46,8 @@ enum FilterType {
   const FilterType(this.label, this.activeColor);
 }
 
-class ToolAndSuppliesHandoverTransferList extends StatefulWidget {
+class ToolAndSuppliesHandoverTransferList
+    extends riverpod.ConsumerStatefulWidget {
   final ToolAndSuppliesHandoverProvider provider;
 
   const ToolAndSuppliesHandoverTransferList({
@@ -51,12 +56,12 @@ class ToolAndSuppliesHandoverTransferList extends StatefulWidget {
   });
 
   @override
-  State<ToolAndSuppliesHandoverTransferList> createState() =>
+  riverpod.ConsumerState<ToolAndSuppliesHandoverTransferList> createState() =>
       _ToolAndSuppliesHandoverTransferListState();
 }
 
 class _ToolAndSuppliesHandoverTransferListState
-    extends State<ToolAndSuppliesHandoverTransferList> {
+    extends riverpod.ConsumerState<ToolAndSuppliesHandoverTransferList> {
   bool isUploading = false;
   List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
   List<ToolAndMaterialTransferDto> dataAssetTransferFilter = [];
@@ -83,6 +88,21 @@ class _ToolAndSuppliesHandoverTransferListState
 
   PdfDocument? _document;
 
+  // Realtime listener
+  riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
+  Timer? _debounceTimer;
+
+  // Cache constants
+  static const int _toolAndSuppliesHandoverType =
+      FunctionType.TOOL_AND_SUPPLIES_HANDOVER;
+  static const int _allFunctionType = FunctionType.ALL_FUNCTION;
+
+  // Cache timestamp để tránh xử lý trùng message
+  int? _lastProcessedMessageTime;
+
+  // Cache username hiện tại để tối ưu so khớp id_need_to_do
+  String _currentUsername = '';
+
   // RiverpodTable configuration
   late List<ColumnDefinition> _definitions;
   late List<TableColumnData> _columns;
@@ -92,12 +112,97 @@ class _ToolAndSuppliesHandoverTransferListState
   final bool _showCheckboxColumn = true;
   final bool _showActionsColumn = true;
 
+  // Lưu type filter hiện tại để reload đúng filter khi realtime
+  int _currentTypeFilter = -1;
+
   @override
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    _currentUsername =
+        userInfo?.tenDangNhap ??
+        AccountHelper.instance.getUserInfo()?.tenDangNhap ??
+        '';
     dataAssetTransferFilter = dataAssetTransfer;
     _initializeTableConfig();
+
+    // Listen Firebase realtime để tự động reload table
+    _messageSub = ref.listenManual<
+      Map<String, dynamic>?
+    >(messageLatestJsonProvider, (previous, next) {
+      // Log raw message để kiểm tra realtime
+      SGLog.info('TOOL_HANDOVER', 'TOOL_HANDOVER realtime raw message: $next');
+
+      // Early return: kiểm tra null/empty trước
+      if (next == null || next.isEmpty || !mounted) return;
+
+      // Lấy typeFunc và check nhanh
+      final typeFunc = next['type_func'];
+      SGLog.info('TOOL_HANDOVER', 'TOOL_HANDOVER type_func: $typeFunc');
+      if (typeFunc is! int) return;
+
+      // Chỉ xử lý message liên quan đến bàn giao CCDC-vật tư hoặc all
+      if (typeFunc != _toolAndSuppliesHandoverType &&
+          typeFunc != _allFunctionType) {
+        SGLog.info('TOOL_HANDOVER', 'TOOL_HANDOVER skip: type_func not match');
+        return;
+      }
+
+      // Nếu message có danh sách id_need_to_do thì chỉ reload
+      // khi user hiện tại nằm trong danh sách cần xử lý
+      final idNeedToDo = next['id_need_to_do'];
+      if (_currentUsername.isNotEmpty && idNeedToDo is String) {
+        final inList = AppUtility.userInList(_currentUsername, idNeedToDo);
+        SGLog.info(
+          'TOOL_HANDOVER',
+          'TOOL_HANDOVER check id_need_to_do, user=$_currentUsername, inList=$inList',
+        );
+        if (!inList) {
+          return;
+        }
+      }
+
+      // Tránh xử lý duplicate message theo timestamp
+      final messageTime = next['time'];
+      if (messageTime is int && _lastProcessedMessageTime != null) {
+        if (messageTime <= _lastProcessedMessageTime!) {
+          SGLog.info(
+            'TOOL_HANDOVER',
+            'TOOL_HANDOVER skip duplicate message, time=$messageTime, last=$_lastProcessedMessageTime',
+          );
+          return;
+        }
+        _lastProcessedMessageTime = messageTime;
+      } else if (messageTime is int) {
+        _lastProcessedMessageTime = messageTime;
+      }
+
+      SGLog.info(
+        'TOOL_HANDOVER',
+        'TOOL_HANDOVER trigger debounce reload, currentTypeFilter=$_currentTypeFilter',
+      );
+
+      // Debounce để tránh reload quá nhiều lần
+      _debouncedReloadTable();
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _messageSub?.close();
+    super.dispose();
+  }
+
+  void _debouncedReloadTable() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      // Reload lại table với type filter hiện tại, giữ nguyên page
+      ref
+          .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+          .refreshData(_currentTypeFilter, false);
+    });
   }
 
   void _initializeTableConfig() {
@@ -376,14 +481,16 @@ class _ToolAndSuppliesHandoverTransferListState
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
-                  final tableMaxHeight = (constraints.maxHeight - 65)
-                      .clamp(0.0, constraints.maxHeight)
-                      .toDouble();
+                  final tableMaxHeight =
+                      (constraints.maxHeight - 65)
+                          .clamp(0.0, constraints.maxHeight)
+                          .toDouble();
 
                   return riverpod.Consumer(
                     builder: (context, ref, child) {
                       return RiverpodTable<ToolAndMaterialTransferDto>(
-                        tableProvider: tableToolAndSuppliesHandoverTransferProvider,
+                        tableProvider:
+                            tableToolAndSuppliesHandoverTransferProvider,
                         columns: _columns,
                         valueGetter: getValueForColumn,
                         cellsBuilder: (_) => [],
@@ -399,8 +506,6 @@ class _ToolAndSuppliesHandoverTransferListState
                         showCheckboxColumn: _showCheckboxColumn,
                         showActionsColumn: _showActionsColumn,
                         actionsColumnWidth: 120,
-                        rowColorBuilder:
-                            (item) => item.coPhieuBanGiao == true ? ColorValue.error.withAlpha((0.6 * 255).toInt()) : null,
                         customActions: [
                           CustomAction(
                             tooltip: 'Xem',
@@ -414,6 +519,8 @@ class _ToolAndSuppliesHandoverTransferListState
                             tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
                             iconPath: AppIconSvgPath.iconNextDocument,
                             color: ColorValue.mediumGreen,
+                            block: (item) => (item.detailToolAndMaterialTransfers?.length ?? 0) <= 0,
+                            blockTooltip: 'Đã bàn giao hết',
                             onPressed: (item) {
                               DateTime now = DateTime.now();
                               widget.provider.onChangeDetail(
@@ -527,6 +634,9 @@ class _ToolAndSuppliesHandoverTransferListState
     } else if (isThuHoi) {
       type = 3;
     }
+
+    // Cập nhật type filter hiện tại để realtime reload đúng trạng thái
+    _currentTypeFilter = type;
 
     final container = ProviderScope.containerOf(context);
     container

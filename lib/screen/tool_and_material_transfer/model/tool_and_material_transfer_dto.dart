@@ -89,6 +89,7 @@ class ToolAndMaterialTransferDto {
 
   int? trangThaiPhieu;
   bool? coPhieuBanGiao;
+  int? trangThaiPhieuDieuDong;
 
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
   List<SignatoryDto>? listSignatory;
@@ -150,6 +151,7 @@ class ToolAndMaterialTransferDto {
     this.byStep,
     this.trangThaiPhieu,
     this.coPhieuBanGiao,
+    this.trangThaiPhieuDieuDong,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -231,6 +233,7 @@ class ToolAndMaterialTransferDto {
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
       coPhieuBanGiao: json['coPhieuBanGiao'] ?? false,
+      trangThaiPhieuDieuDong: json['trangThaiPhieuDieuDong'],
     );
   }
 
@@ -295,6 +298,7 @@ class ToolAndMaterialTransferDto {
       "daBanGiao": daBanGiao,
       "byStep": byStep,
       "trangThaiPhieu": trangThaiPhieu,
+      "trangThaiPhieuDieuDong": trangThaiPhieuDieuDong,
     };
   }
 
@@ -359,7 +363,8 @@ class ToolAndMaterialTransferDto {
       daBanGiao: false,
       byStep: false,
       trangThaiPhieu: 0,
-      coPhieuBanGiao: false
+      coPhieuBanGiao: false,
+      trangThaiPhieuDieuDong: 0,
     );
   }
 
@@ -421,6 +426,7 @@ class ToolAndMaterialTransferDto {
     bool? byStep,
     int? trangThaiPhieu,
     bool? coPhieuBanGiao,
+    int? trangThaiPhieuDieuDong,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -493,6 +499,7 @@ class ToolAndMaterialTransferDto {
       listSignatory: listSignatory ?? this.listSignatory,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
       coPhieuBanGiao: coPhieuBanGiao ?? this.coPhieuBanGiao,
+      trangThaiPhieuDieuDong: trangThaiPhieuDieuDong ?? this.trangThaiPhieuDieuDong,
     );
   }
 }

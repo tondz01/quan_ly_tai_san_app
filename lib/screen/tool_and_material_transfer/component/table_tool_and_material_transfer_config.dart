@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
+import 'package:quan_ly_tai_san_app/core/utils/handover_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -177,7 +178,7 @@ class TableToolAndMaterialTransferConfig {
         ),
         builder: (item) {
           return TableCellData(
-            widget: AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+            widget: AppUtility.showStatusDocument(item.trangThaiPhieuDieuDong ?? 0),
           );
         },
       ),
@@ -367,12 +368,16 @@ class TableToolAndMaterialTransferConfig {
 
   static String getStatusDocumentName(ToolAndMaterialTransferDto item) {
     String statusName =
-        item.trangThaiPhieu == 0
-            ? 'Chưa hoàn thành'
-            : item.trangThaiPhieu == 1
-            ? 'Sắp hết hạn'
-            : item.trangThaiPhieu == 2
-            ? 'Đã hoàn thành'
+        item.trangThaiPhieuDieuDong == HandoverStatus.chuaTaoBienBan
+            ? 'Chưa tạo biên bản'
+            : item.trangThaiPhieuDieuDong == HandoverStatus.banGiaoMotPhan
+            ? 'Bàn giao một phần'
+            : item.trangThaiPhieuDieuDong == HandoverStatus.daBanGiaoHet
+            ? 'Đã bàn giao hết'
+            : item.trangThaiPhieuDieuDong == HandoverStatus.sapQuaHanBanGiao
+            ? 'Sắp quá hạn bàn giao'
+            : item.trangThaiPhieuDieuDong == HandoverStatus.daQuaHanBanGiao
+            ? 'Đã quá hạn bàn giao'
             : 'Không xác định';
     return statusName;
   }

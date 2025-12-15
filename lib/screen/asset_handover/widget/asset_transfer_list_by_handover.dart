@@ -1,11 +1,14 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_transfer_by_handover_config.dart';
@@ -18,6 +21,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
@@ -42,7 +46,7 @@ enum FilterType {
   const FilterType(this.label, this.activeColor);
 }
 
-class AssetTransferListByHandover extends StatefulWidget {
+class AssetTransferListByHandover extends riverpod.ConsumerStatefulWidget {
   final List<DieuDongTaiSanDto> data;
   final AssetHandoverProvider provider;
 
@@ -53,12 +57,12 @@ class AssetTransferListByHandover extends StatefulWidget {
   });
 
   @override
-  State<AssetTransferListByHandover> createState() =>
+  riverpod.ConsumerState<AssetTransferListByHandover> createState() =>
       _AssetTransferListByHandoverState();
 }
 
 class _AssetTransferListByHandoverState
-    extends State<AssetTransferListByHandover> {
+    extends riverpod.ConsumerState<AssetTransferListByHandover> {
   bool isUploading = false;
   List<DieuDongTaiSanDto> dataAssetTransfer = [];
   List<DieuDongTaiSanDto> dataAssetTransferFilter = [];
@@ -85,6 +89,20 @@ class _AssetTransferListByHandoverState
 
   PdfDocument? _document;
 
+  // Realtime listener
+  riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
+  Timer? _debounceTimer;
+
+  // Cache constants
+  static const int _assetHandoverType = FunctionType.ASSET_HANDOVER;
+  static const int _allFunctionType = FunctionType.ALL_FUNCTION;
+
+  // Cache timestamp để tránh xử lý trùng message
+  int? _lastProcessedMessageTime;
+
+  // Cache username hiện tại để tối ưu so khớp id_need_to_do
+  String _currentUsername = '';
+
   // RiverpodTable configuration
   late List<ColumnDefinition> _definitions;
   late List<TableColumnData> _columns;
@@ -94,14 +112,79 @@ class _AssetTransferListByHandoverState
   final bool _showCheckboxColumn = true;
   final bool _showActionsColumn = true;
 
+  // Lưu type filter hiện tại để reload đúng filter khi realtime
+  int _currentTypeFilter = -1;
+
   @override
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    _currentUsername = userInfo?.tenDangNhap ??
+        AccountHelper.instance.getUserInfo()?.tenDangNhap ??
+        '';
     dataAssetTransfer = widget.data;
     dataAssetTransferFilter =
         dataAssetTransfer.where((item) => item.daBanGiao == false).toList();
     _initializeTableConfig();
+
+    // Listen Firebase realtime để tự động reload table
+    _messageSub =
+        ref.listenManual<Map<String, dynamic>?>(messageLatestJsonProvider,
+            (previous, next) {
+      // Log raw message để kiểm tra realtime
+      SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER realtime raw message: $next');
+
+      // Early return: kiểm tra null/empty trước
+      if (next == null || next.isEmpty || !mounted) return;
+
+      // Lấy typeFunc và check nhanh
+      final typeFunc = next['type_func'];
+      SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER type_func: $typeFunc');
+      if (typeFunc is! int) return;
+
+      // Chỉ xử lý message liên quan đến bàn giao tài sản hoặc all
+      if (typeFunc != _assetHandoverType && typeFunc != _allFunctionType) {
+        SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER skip: type_func not match');
+        return;
+      }
+
+      // Nếu message có danh sách id_need_to_do thì chỉ reload
+      // khi user hiện tại nằm trong danh sách cần xử lý
+      final idNeedToDo = next['id_need_to_do'];
+      if (_currentUsername.isNotEmpty && idNeedToDo is String) {
+        final inList = AppUtility.userInList(_currentUsername, idNeedToDo);
+        SGLog.info(
+          'ASSET_HANDOVER',
+          'ASSET_HANDOVER check id_need_to_do, user=$_currentUsername, inList=$inList',
+        );
+        if (!inList) {
+          return;
+        }
+      }
+
+      // Tránh xử lý duplicate message theo timestamp
+      final messageTime = next['time'];
+      if (messageTime is int && _lastProcessedMessageTime != null) {
+        if (messageTime <= _lastProcessedMessageTime!) {
+          SGLog.info(
+            'ASSET_HANDOVER',
+            'ASSET_HANDOVER skip duplicate message, time=$messageTime, last=$_lastProcessedMessageTime',
+          );
+          return;
+        }
+        _lastProcessedMessageTime = messageTime;
+      } else if (messageTime is int) {
+        _lastProcessedMessageTime = messageTime;
+      }
+
+      SGLog.info(
+        'ASSET_HANDOVER',
+        'ASSET_HANDOVER trigger debounce reload, currentTypeFilter=$_currentTypeFilter',
+      );
+
+      // Debounce để tránh reload quá nhiều lần
+      _debouncedReloadTable();
+    });
   }
 
   @override
@@ -114,6 +197,24 @@ class _AssetTransferListByHandoverState
       container
           .read(tableAssetTransferByHandoverProvider.notifier)
           .refreshData(-1);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _messageSub?.close();
+    super.dispose();
+  }
+
+  void _debouncedReloadTable() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      // Reload lại table với type filter hiện tại, giữ nguyên page
+      ref
+          .read(tableAssetTransferByHandoverProvider.notifier)
+          .refreshData(_currentTypeFilter);
     });
   }
 
@@ -382,13 +483,6 @@ class _AssetTransferListByHandoverState
                           (0.7 * 255).toInt(),
                         ),
                         rowDividerThickness: 1,
-                        rowColorBuilder:
-                            (item) =>
-                                item.coPhieuBanGiao == true
-                                    ? ColorValue.error.withAlpha(
-                                      (0.6 * 255).toInt(),
-                                    )
-                                    : null,
                         customActions: [
                           CustomAction(
                             tooltip: 'Xem',
@@ -402,6 +496,8 @@ class _AssetTransferListByHandoverState
                             tooltip: 'Tạo biên bản bàn giao tài sản',
                             iconPath: AppIconSvgPath.iconNextDocument,
                             color: ColorValue.mediumGreen,
+                            block: (item) => (item.chiTietDieuDongTaiSans?.length ?? 0) <= 0,
+                            blockTooltip: 'Đã hoàn thành bàn giao tài sản',
                             onPressed: (item) {
                               DateTime now = DateTime.now();
                               widget.provider.onChangeDetail(
@@ -515,6 +611,9 @@ class _AssetTransferListByHandoverState
     } else if (isThuHoi) {
       type = 3;
     }
+
+    // Cập nhật type filter hiện tại để realtime reload đúng trạng thái
+    _currentTypeFilter = type;
 
     final container = ProviderScope.containerOf(context);
     container
