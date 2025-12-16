@@ -38,6 +38,12 @@ class _MauSo01PageState extends State<MauSo01Page> {
     }
   }
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
+  }
+
   /// Parse InventoryMinutes và CCDCInventoryReport sang AssetRowData
   void _parseDataToAssetRows() {
     final List<AssetRowData> result = [];
@@ -60,7 +66,7 @@ class _MauSo01PageState extends State<MauSo01Page> {
         tenNhanHieu: asset.tenTaiSan ?? '',
         dvt: asset.donViTinh ?? '',
         nuocSx: '',
-        soDuDauKy: asset.soLuong?.toString() ?? '',
+        soDuDauKy: _formatNumber(asset.soLuong),
         tangSoLuong: '',
         tangLyDo: asset.lyDo ?? '',
         giamSoLuong: '',
@@ -90,7 +96,7 @@ class _MauSo01PageState extends State<MauSo01Page> {
         tenNhanHieu: ccdc.tenTaiSan ?? '',
         dvt: ccdc.donViTinh ?? '',
         nuocSx: '',
-        soDuDauKy: ccdc.soLuong?.toString() ?? '',
+        soDuDauKy: _formatNumber(ccdc.soLuong),
         tangSoLuong: '',
         tangLyDo: ccdc.lyDo ?? '',
         giamSoLuong: '',
@@ -526,77 +532,199 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 2000, // Đặt width cố định để cuộn ngang
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildHeaderRow1(),
-          _buildHeaderRow2(),
-          _buildHeaderRow3(),
+    return Center(
+      child: Container(
+        width: 2000, // Đặt width cố định để cuộn ngang
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeaderRow1(),
+            _buildHeaderRow2(),
+            _buildHeaderRow3(),
 
-          // Render tất cả rows từ widget.assetRows
-          ...widget.assetRows.map((rowData) => _buildDataRow(rowData)),
-        ],
+            // Render tất cả rows từ widget.assetRows
+            ...widget.assetRows.map((rowData) => _buildDataRow(rowData)),
+          ],
+        ),
       ),
     );
   }
 
-  /// Hàng header 1: STT, Tên... (rowspan 2) và Tăng/Giảm (colspan 2)
+  /// Hàng header 1 + 2 kết hợp: các cột merge 2 hàng và Tăng/Giảm với sub-header
   Widget _buildHeaderRow1() {
     const style = TextStyle(fontWeight: FontWeight.bold);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeaderCell(Text('STT', style: style), _flexStt, rowSpan: 2),
-          _buildHeaderCell(Text('Tên nhãn hiệu, quy cách tài sản cố định, công cụ dụng cụ', style: style, textAlign: TextAlign.center), _flexTen, rowSpan: 2),
-          _buildHeaderCell(Text('Đơn vị tính', style: style), _flexDvt, rowSpan: 2),
-          _buildHeaderCell(Text('Nước sản xuất', style: style), _flexNuocSx, rowSpan: 2),
-          _buildHeaderCell(Text('Số dư đầu kỳ', style: style), _flexSoDuDauKy, rowSpan: 2),
-          
-          // "Tăng trong kỳ" (colspan 2)
-          _buildHeaderCell(Text('Tăng trong kỳ', style: style), _flexTang),
-          
-          // "Giảm trong kỳ" (colspan 2)
-          _buildHeaderCell(Text('Giảm trong kỳ', style: style), _flexGiam),
-          
-          _buildHeaderCell(Text('Số dư cuối kỳ', style: style), _flexSoDuCuoiKy, rowSpan: 2),
-          _buildHeaderCell(Text('Tình trạng kỹ thuật', style: style), _flexTinhTrang, rowSpan: 2),
-          _buildHeaderCell(Text('Ghi chú', style: style), _flexGhiChu, rowSpan: 2, isLast: true),
+          // STT - merge 2 hàng
+          _buildMergedHeaderCell(Text('STT', style: style), _flexStt),
+
+          // Tên nhãn hiệu - merge 2 hàng
+          _buildMergedHeaderCell(Text('Tên nhãn hiệu, quy cách tài sản cố định, công cụ dụng cụ', style: style, textAlign: TextAlign.center), _flexTen),
+
+          // Đơn vị tính - merge 2 hàng
+          _buildMergedHeaderCell(Text('Đơn vị tính', style: style), _flexDvt),
+
+          // Nước sản xuất - merge 2 hàng
+          _buildMergedHeaderCell(Text('Nước sản xuất', style: style), _flexNuocSx),
+
+          // Số dư đầu kỳ - merge 2 hàng
+          _buildMergedHeaderCell(Text('Số dư đầu kỳ', style: style), _flexSoDuDauKy),
+
+          // "Tăng trong kỳ" với sub-header (Số lượng, Lý do tăng)
+          Expanded(
+            flex: _flexTang,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black, width: 0.5),
+                      right: BorderSide(color: Colors.black, width: 0.5),
+                    ),
+                    color: Colors.white,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text('Tăng trong kỳ', style: style),
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: _flexTangSl,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                            color: Colors.white,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('Số lượng', style: style),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _flexTangLyDo,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                            color: Colors.white,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('Lý do tăng', style: style),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // "Giảm trong kỳ" với sub-header (Số lượng, Lý do giảm)
+          Expanded(
+            flex: _flexGiam,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black, width: 0.5),
+                      right: BorderSide(color: Colors.black, width: 0.5),
+                    ),
+                    color: Colors.white,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text('Giảm trong kỳ', style: style),
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: _flexGiamSl,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                            color: Colors.white,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('Số lượng', style: style),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _flexGiamLyDo,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                            color: Colors.white,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text('Lý do giảm', style: style),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Số dư cuối kỳ - merge 2 hàng
+          _buildMergedHeaderCell(Text('Số dư cuối kỳ', style: style), _flexSoDuCuoiKy),
+
+          // Tình trạng kỹ thuật - merge 2 hàng
+          _buildMergedHeaderCell(Text('Tình trạng kỹ thuật', style: style), _flexTinhTrang),
+
+          // Ghi chú - merge 2 hàng (isLast)
+          _buildMergedHeaderCell(Text('Ghi chú', style: style), _flexGhiChu, isLast: true),
         ],
       ),
     );
   }
 
-  /// Hàng header 2: Các ô con của Tăng/Giảm
+  /// Hàng header 2: Không cần nữa vì đã merge vào header 1
   Widget _buildHeaderRow2() {
-    const style = TextStyle(fontWeight: FontWeight.bold);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildEmptyFlex(_flexStt), // Ô rỗng cho STT
-          _buildEmptyFlex(_flexTen), // Ô rỗng cho Tên
-          _buildEmptyFlex(_flexDvt), // Ô rỗng cho ĐVT
-          _buildEmptyFlex(_flexNuocSx), // Ô rỗng cho Nước SX
-          _buildEmptyFlex(_flexSoDuDauKy), // Ô rỗng cho Số dư đầu
-          
-          // Con của "Tăng"
-          _buildHeaderCell(Text('Số lượng', style: style), _flexTangSl, isSubHeader: true),
-          _buildHeaderCell(Text('Lý do tăng', style: style), _flexTangLyDo, isSubHeader: true),
-          
-          // Con của "Giảm"
-          _buildHeaderCell(Text('Số lượng', style: style), _flexGiamSl, isSubHeader: true),
-          _buildHeaderCell(Text('Lý do giảm', style: style), _flexGiamLyDo, isSubHeader: true),
-          
-          _buildEmptyFlex(_flexSoDuCuoiKy), // Ô rỗng cho Số dư cuối
-          _buildEmptyFlex(_flexTinhTrang), // Ô rỗng cho Tình trạng
-          _buildEmptyFlex(_flexGhiChu, isLast: true), // Ô rỗng cho Ghi chú
-        ],
+    // Trả về widget rỗng vì đã merge vào _buildHeaderRow1
+    return const SizedBox.shrink();
+  }
+
+  /// Helper cho ô header merge 2 hàng
+  Widget _buildMergedHeaderCell(Widget child, int flex, {bool isLast = false}) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
+          ),
+          color: Colors.white,
+        ),
+        alignment: Alignment.center,
+        child: child,
       ),
     );
   }
@@ -630,7 +758,7 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
     // Style cho hàng group (A, B)
     final bool isGroupHeader = rowData.stt.text == 'A' || rowData.stt.text == 'B';
     final style = isGroupHeader ? const TextStyle(fontWeight: FontWeight.bold) : null;
-    final bgColor = isGroupHeader ? Colors.grey[200] : null;
+    final bgColor = Colors.white;
 
     return IntrinsicHeight(
       child: Row(
@@ -656,18 +784,18 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 
   /// Helper cho ô Header
-  Widget _buildHeaderCell(Widget child, int flex, {int rowSpan = 1, bool isSubHeader = false, bool isLast = false}) {
+  Widget _buildHeaderCell(Widget child, int flex, {bool isSubHeader = false, bool isLast = false}) {
     return Expanded(
       flex: flex,
       child: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
-            top: isSubHeader ? const BorderSide(color: Colors.black, width: 1.0) : BorderSide.none,
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
+            top: isSubHeader ? const BorderSide(color: Colors.black, width: 0.5) : BorderSide.none,
           ),
-          color: Colors.grey[200],
+          color: Colors.white,
         ),
         alignment: Alignment.center,
         child: child,
@@ -689,10 +817,10 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
       flex: flex,
       child: Container(
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: Colors.white,
           border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
           ),
         ),
         child: TextField(
@@ -710,22 +838,6 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
     );
   }
 
-  /// Helper cho ô rỗng (do rowSpan)
-  Widget _buildEmptyFlex(int flex, {bool isLast = false}) {
-    return Expanded(
-      flex: flex,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            // Vẽ border dưới cho hàng 2
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
-          ),
-          color: Colors.grey[200], // Thêm màu nền cho đồng bộ
-        ),
-      ),
-    );
-  }
 }
 
 // footer

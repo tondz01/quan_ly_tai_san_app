@@ -507,4 +507,18 @@ class TableAssetHandoverConfig {
     return userInfo.tenDangNhap == 'admin' ||
         (item.trangThai == 0 && item.nguoiTao == userInfo.tenDangNhap);
   }
+
+  static String getPermissionSigningText(int status) {
+    return status == 2
+        ? 'Không được phép ký'
+        : status == 1
+        ? 'Chưa đến lượt ký'
+        : status == 3
+        ? 'Đã ký'
+        : status == 4
+        ? 'Đã ký & tạo'
+        : status == 5
+        ? 'Cần ký & tạo'
+        : 'Cần ký';
+  }
 }

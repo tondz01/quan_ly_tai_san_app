@@ -177,7 +177,7 @@ class ReportRepository extends ApiBase {
   }
 
   /// Lấy báo cáo tăng giảm trong kỳ (Mẫu số 01)
-  /// API: GET /api/baocao/tang-giam-trong-ky?idPhongBan={idPhongBan}&denNgay={denNgay}
+  /// API: GET /api/baocao/tang-giam-trong-ky?idPhongBan={idPhongBan}&thangNam={thangNam}
   /// Trả về danh sách gộp cả TaiSan và CCDCVatTu
   Future<Map<String, dynamic>> getTangGiamTrongKy(
     String idPhongBan,
@@ -191,7 +191,7 @@ class ReportRepository extends ApiBase {
 
     try {
       final Map<String, dynamic> queryParams = {
-        'denNgay': denNgay,
+        'thangNam': denNgay,
       };
       if (idPhongBan.isNotEmpty) {
         queryParams['idPhongBan'] = idPhongBan;

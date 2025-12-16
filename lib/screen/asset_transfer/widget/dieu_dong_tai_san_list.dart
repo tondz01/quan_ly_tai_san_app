@@ -372,115 +372,126 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     bottomLeft: Radius.circular(8.0),
                     bottomRight: Radius.circular(8.0),
                   ),
-                  child: riverpod.Consumer(
-                    builder: (context, ref, child) {
-                      totalItems = ref.watch(
-                        tableAssetTransferProvider.select(
-                          (s) => s.paginationState.totalItems,
-                        ),
-                      );
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
+                      final tableMaxHeight = (constraints.maxHeight - 65)
+                          .clamp(0.0, constraints.maxHeight)
+                          .toDouble();
 
-                      // Watch currentPageData để reload detail department tree khi data thay đổi
-                      final currentPageData = ref.watch(
-                        tableAssetTransferProvider.select(
-                          (s) => s.currentPageData,
-                        ),
-                      );
-
-                      // Reload detail department tree khi data thay đổi và có selected item
-                      if (selected != null && currentPageData.isNotEmpty) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (!mounted) return;
-
-                          final updatedItem = currentPageData.firstWhere(
-                            (element) => element.id == selected?.id,
-                            orElse: () => DieuDongTaiSanDto(),
+                      return riverpod.Consumer(
+                        builder: (context, ref, child) {
+                          totalItems = ref.watch(
+                            tableAssetTransferProvider.select(
+                              (s) => s.paginationState.totalItems,
+                            ),
                           );
 
-                          if (updatedItem.id != null) {
-                            setState(() {
-                              selected = updatedItem;
-                              _buildDetailDepartmentTree(updatedItem);
-                            });
-                          }
-                        });
-                      }
+                          // Watch currentPageData để reload detail department tree khi data thay đổi
+                          final currentPageData = ref.watch(
+                            tableAssetTransferProvider.select(
+                              (s) => s.currentPageData,
+                            ),
+                          );
 
-                      return RiverpodTable<DieuDongTaiSanDto>(
-                        tableProvider: tableAssetTransferProvider,
-                        columns: _columns,
-                        showCheckboxColumn: _showCheckboxColumn,
-                        enableRowSelection: true,
-                        enableRowHover: true,
-                        showAlternatingRowColors: true,
-                        valueGetter: getValueForColumn,
-                        cellsBuilder: (_) => [],
-                        rowDividerColor: Colors.white.withAlpha((0.7*255).toInt()),
-                        rowDividerThickness: 1.5,
-                        cellBuilderByKey: (item, key) {
-                          final builder = _buildersByKey[key];
-                          if (builder != null) return builder(item);
-                          return null;
-                        },
-                        rowColorBuilder:
-                            (item) => widget.provider.getRowTableColor(item),
-                        onRowTap: (item) {
-                          widget.provider.onChangeDetailDieuDongTaiSan(item);
-                          // Chỉ setState nếu có thay đổi thực sự
-                          String newNameBenBan =
-                              'Trạng thái ký " Biên bản ${item.id} "';
-                          if (selected?.id != item.id ||
-                              nameBenBan != newNameBenBan ||
-                              !isShowDetailDepartmentTree) {
-                            setState(() {
-                              nameBenBan = newNameBenBan;
-                              isShowDetailDepartmentTree = true;
-                              _buildDetailDepartmentTree(item);
+                          // Reload detail department tree khi data thay đổi và có selected item
+                          if (selected != null && currentPageData.isNotEmpty) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!mounted) return;
+
+                              final updatedItem = currentPageData.firstWhere(
+                                (element) => element.id == selected?.id,
+                                orElse: () => DieuDongTaiSanDto(),
+                              );
+
+                              if (updatedItem.id != null) {
+                                setState(() {
+                                  selected = updatedItem;
+                                  _buildDetailDepartmentTree(updatedItem);
+                                });
+                              }
                             });
                           }
+
+                          return RiverpodTable<DieuDongTaiSanDto>(
+                            tableProvider: tableAssetTransferProvider,
+                            columns: _columns,
+                            showCheckboxColumn: _showCheckboxColumn,
+                            enableRowSelection: true,
+                            enableRowHover: true,
+                            showAlternatingRowColors: true,
+                            valueGetter: getValueForColumn,
+                            cellsBuilder: (_) => [],
+                            rowDividerColor: Colors.white.withAlpha(
+                              (0.7 * 255).toInt(),
+                            ),
+                            rowDividerThickness: 1,
+                            cellBuilderByKey: (item, key) {
+                              final builder = _buildersByKey[key];
+                              if (builder != null) return builder(item);
+                              return null;
+                            },
+                            // rowColorBuilder:
+                            //     (item) => widget.provider.getRowTableColor(item),
+                            onRowTap: (item) {
+                              widget.provider.onChangeDetailDieuDongTaiSan(item);
+                              // Chỉ setState nếu có thay đổi thực sự
+                              String newNameBenBan =
+                                  'Trạng thái ký " Biên bản ${item.id} "';
+                              if (selected?.id != item.id ||
+                                  nameBenBan != newNameBenBan ||
+                                  !isShowDetailDepartmentTree) {
+                                setState(() {
+                                  nameBenBan = newNameBenBan;
+                                  isShowDetailDepartmentTree = true;
+                                  _buildDetailDepartmentTree(item);
+                                });
+                              }
+                            },
+                            // onEdit: (item) {},
+                            onDelete: _onDelete,
+                            blockDelete:
+                                (item) =>
+                                    !TabelAssetTransferConfig.isCheckShowDelete(
+                                      item,
+                                    ),
+                            showActionsColumn: _showActionsColumn,
+                            customActions: [
+                              CustomAction(
+                                tooltip: 'Xem',
+                                iconPath: 'assets/icons/building.svg',
+                                color: Colors.blue,
+                                block: (item) => item.coPhieuBanGiao == false,
+                                blockTooltip: 'Không có phiếu bàn giao',
+                                onPressed: (item) async {
+                                  // Hiển thị popup với danh sách biên bản bàn giao theo dạng page
+                                  ToolAndSuppliesHandoverPagesViewer.showPopup(
+                                    context,
+                                    item.id ?? '',
+                                  );
+                                },
+                              ),
+                              CustomAction(
+                                tooltip: 'Xem',
+                                iconPath: 'assets/icons/eye.svg',
+                                color: Colors.blue,
+                                onPressed: (item) async {
+                                  await _loadPdfNetwork(item.tenFile!);
+                                  if (!context.mounted) return;
+                                  previewDocument(
+                                    context: context,
+                                    item: item,
+                                    provider: widget.provider,
+                                    isShowKy: false,
+                                    document: _document,
+                                  );
+                                },
+                              ),
+                            ],
+                            actionsColumnWidth: 120,
+                            maxHeight: tableMaxHeight,
+                          );
                         },
-                        // onEdit: (item) {},
-                        onDelete: _onDelete,
-                        blockDelete:
-                            (item) =>
-                                !TabelAssetTransferConfig.isCheckShowDelete(
-                                  item,
-                                ),
-                        showActionsColumn: _showActionsColumn,
-                        customActions: [
-                          CustomAction(
-                            tooltip: 'Xem',
-                            iconPath: 'assets/icons/building.svg',
-                            color: Colors.blue,
-                            block: (item) => item.coPhieuBanGiao == false,
-                            blockTooltip: 'Không có phiếu bàn giao',
-                            onPressed: (item) async {
-                              // Hiển thị popup với danh sách biên bản bàn giao theo dạng page
-                              ToolAndSuppliesHandoverPagesViewer.showPopup(
-                                context,
-                                item.id ?? '',
-                              );
-                            },
-                          ),
-                          CustomAction(
-                            tooltip: 'Xem',
-                            iconPath: 'assets/icons/eye.svg',
-                            color: Colors.blue,
-                            onPressed: (item) async {
-                              await _loadPdfNetwork(item.tenFile!);
-                              if (!context.mounted) return;
-                              previewDocument(
-                                context: context,
-                                item: item,
-                                provider: widget.provider,
-                                isShowKy: false,
-                                document: _document,
-                              );
-                            },
-                          ),
-                        ],
-                        actionsColumnWidth: 120,
-                        maxHeight: MediaQuery.of(context).size.height * 0.7,
                       );
                     },
                   ),

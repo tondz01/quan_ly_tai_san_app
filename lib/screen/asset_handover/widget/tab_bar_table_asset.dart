@@ -32,7 +32,7 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
   Timer? _debounceTimer;
 
   // Cache constants để tránh lookup nhiều lần
-  static const int _assetTransferType = FunctionType.ASSET_TRANSFER;
+  static const int _assetTransferType = FunctionType.ASSET_HANDOVER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
 
   // Cache message timestamp để tránh xử lý duplicate

@@ -667,6 +667,12 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
     }
   }
 
+  // Helper: format số, nếu = 0 thì trả về ''
+  String _formatNumber(num? value) {
+    if (value == null || value == 0) return '';
+    return value.toString();
+  }
+
   void _rebuildRowsFromData(List<DataMap> data) {
     // Dọn các controller cũ
     for (var row in _dataRows) {
@@ -691,14 +697,14 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           ctTangNgayThang: isIncrease ? (item.ngayThang ?? '') : '',
           tenTs: item.tenTaiSan ?? '',
           dvt: item.donViTinh ?? '',
-          tangSl: isIncrease ? (item.soLuong?.toString() ?? '') : '',
-          tangDonGia: isIncrease ? (item.donGia?.toString() ?? '') : '',
-          tangSoTien: isIncrease ? (item.soTien?.toString() ?? '') : '',
+          tangSl: isIncrease ? _formatNumber(item.soLuong) : '',
+          tangDonGia: isIncrease ? _formatNumber(item.donGia) : '',
+          tangSoTien: isIncrease ? _formatNumber(item.soTien) : '',
           ctGiamSoHieu: isReduce ? (item.soHieu ?? '') : '',
           ctGiamNgayThang: isReduce ? (item.ngayThang ?? '') : '',
           giamLyDo: isReduce ? (item.lyDo ?? '') : '',
-          giamSl: isReduce ? (item.soLuong?.toString() ?? '') : '',
-          giamSoTien: isReduce ? (item.soTien?.toString() ?? '') : '',
+          giamSl: isReduce ? _formatNumber(item.soLuong) : '',
+          giamSoTien: isReduce ? _formatNumber(item.soTien) : '',
           ghiChu: item.ghiChu ?? '',
         ),
       );
@@ -745,21 +751,23 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   @override
   Widget build(BuildContext context) {
     // Tổng flex = 19 + 12 + 4 = 35. Đặt width đủ lớn để kích hoạt cuộn ngang.
-    return Container(
-      width: 1800,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildHeaderRow1(),
-          _buildHeaderRow2(),
-          _buildHeaderRow3(),
-          // Build các hàng dữ liệu từ list
-          ..._dataRows.map((rowData) => _buildDataRow(rowData)),
-          // _buildAddRowButton(),
-        ],
+    return Center(
+      child: Container(
+        width: 1800,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHeaderRow1(),
+            _buildHeaderRow2(),
+            _buildHeaderRow3(),
+            // Build các hàng dữ liệu từ list
+            ..._dataRows.map((rowData) => _buildDataRow(rowData)),
+            // _buildAddRowButton(),
+          ],
+        ),
       ),
     );
   }
@@ -993,7 +1001,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
 
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 
-  /// Helper cho ô Header (Excel-like styling)
+  /// Helper cho ô Header
   Widget _buildHeaderCell(
     Widget child,
     int flex, {
@@ -1006,25 +1014,20 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
       child: Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          // Excel-like header background
-          color: const Color(0xFFF0F0F0), // Màu xám nhạt như Excel header
+          color: Colors.white,
           border: Border(
-            // Không vẽ border dưới nếu ô đó chiếm nhiều hàng
             bottom:
                 rowSpan == 1 || isSubHeader
-                    ? const BorderSide(color: Color(0xFFD0D0D0), width: 1.0)
+                    ? const BorderSide(color: Colors.black, width: 0.5)
                     : BorderSide.none,
             right:
                 isLast
                     ? BorderSide.none
-                    : const BorderSide(color: Color(0xFFD0D0D0), width: 1.0),
-            // Vẽ border trên cho các ô con (sub-header)
+                    : const BorderSide(color: Colors.black, width: 0.5),
             top:
                 isSubHeader
-                    ? const BorderSide(color: Color(0xFFD0D0D0), width: 1.0)
+                    ? const BorderSide(color: Colors.black, width: 0.5)
                     : BorderSide.none,
-            // Border trái
-            left: const BorderSide(color: Color(0xFFD0D0D0), width: 1.0),
           ),
         ),
         alignment: Alignment.center,
@@ -1045,19 +1048,19 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
       flex: flex,
       child: Container(
         decoration: BoxDecoration(
+          color: Colors.white,
           border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
             right:
                 isLast
                     ? BorderSide.none
-                    : const BorderSide(color: Colors.black, width: 1.0),
+                    : const BorderSide(color: Colors.black, width: 0.5),
           ),
         ),
         child: TextField(
           controller: controller,
           textAlign: align,
           keyboardType: keyboardType,
-          // Trang trí để bỏ gạch chân, làm cho nó giống 1 ô
           decoration: const InputDecoration(
             isDense: true,
             border: InputBorder.none,
@@ -1074,13 +1077,13 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
       flex: flex,
       child: Container(
         decoration: BoxDecoration(
-          // Vẫn vẽ border phải để giữ cấu trúc cột
+          color: Colors.white,
           border: Border(
             right:
                 isLast
                     ? BorderSide.none
-                    : const BorderSide(color: Colors.black, width: 1.0),
-            bottom: const BorderSide(color: Colors.black, width: 1.0),
+                    : const BorderSide(color: Colors.black, width: 0.5),
+            bottom: const BorderSide(color: Colors.black, width: 0.5),
           ),
         ),
       ),

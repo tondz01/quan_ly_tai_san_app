@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart
 import 'package:quan_ly_tai_san_app/screen/report/service/excel_export_service.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
+import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 class MauSo01Screen extends StatefulWidget {
   const MauSo01Screen({super.key});
@@ -249,10 +250,12 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
           },
         ),
         CmFormDate(
-          label: 'Ngày kiểm kê',
+          label: 'Kỳ báo cáo',
           controller: controllerImportDate,
           isEditing: true,
           fieldName: 'importDate',
+          dateTimeMode: SGDateTimeMode.monthYear,
+          showTimeSection: false,
           onChanged: (date) {
             setState(() {});
           },

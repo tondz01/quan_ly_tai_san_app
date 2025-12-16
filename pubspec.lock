@@ -1184,7 +1184,7 @@ packages:
     description:
       path: "."
       ref: "dev/new_table_expand"
-      resolved-ref: d353213889c9a4de3d22af997e33fc8b7d801742
+      resolved-ref: "826c77c2e826bd2369641d3a971b5696da4e9292"
       url: "https://github.com/chienpntb/table_base.git"
     source: git
     version: "1.0.0+1"

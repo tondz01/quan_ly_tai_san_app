@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/enum/loai_kho_enum.dart';
+import 'package:quan_ly_tai_san_app/core/utils/handover_status.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -434,23 +435,31 @@ abstract class AppUtility {
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(
           color:
-              status == 0
+              status == HandoverStatus.chuaTaoBienBan
                   ? Colors.red
-                  : status == 1
+                  : status == HandoverStatus.banGiaoMotPhan
                   ? Colors.deepOrangeAccent
-                  : status == 2
+                  : status == HandoverStatus.daBanGiaoHet
                   ? Colors.blue
-                  : Colors.green,
+                  : status == HandoverStatus.sapQuaHanBanGiao
+                  ? Colors.purple
+                  : status == HandoverStatus.daQuaHanBanGiao
+                  ? Colors.green
+                  : Colors.grey,
           borderRadius: BorderRadius.circular(4),
         ),
         child: SGText(
           text:
-              status == 0
-                  ? 'Chưa hoàn thành'
-                  : status == 1
-                  ? 'Sắp hết hạn'
-                  : status == 2
-                  ? 'Đã hoàn thành'
+              status == HandoverStatus.chuaTaoBienBan
+                  ? 'Chưa tạo biên bản'
+                  : status == HandoverStatus.banGiaoMotPhan
+                  ? 'Bàn giao một phần'
+                  : status == HandoverStatus.daBanGiaoHet
+                  ? 'Đã bàn giao hết'
+                  : status == HandoverStatus.sapQuaHanBanGiao
+                  ? 'Sắp quá hạn bàn giao'
+                  : status == HandoverStatus.daQuaHanBanGiao
+                  ? 'Đã quá hạn bàn giao'
                   : 'Không xác đinh',
           size: 12,
           style: TextStyle(

@@ -130,7 +130,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 ?.hoTen ??
             '';
       case 'trang_thai_ky':
-        return 'Trạng thái ký'; // Sẽ được xử lý bởi cellBuilder
+        return TableAssetHandoverConfig.getPermissionSigningText(
+          TableAssetHandoverConfig.getPermissionSigning(item, userInfo!),
+        ); // Sẽ được xử lý bởi cellBuilder
       case 'trang_thai_phieu':
         return TableAssetHandoverConfig.getStatusHandoverText(
           item.trangThaiPhieu ?? 0,
@@ -547,88 +549,101 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           },
                         ),
                       ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(8.0),
-                          bottomRight: Radius.circular(8.0),
-                        ),
-                        child: riverpod.Consumer(
-                          builder: (context, ref, child) {
-                            // Watch currentPageData để reload detail department tree khi data thay đổi
-                            final currentPageData = ref.watch(
-                              tableAssetHandoverProvider.select(
-                                (s) => s.currentPageData,
-                              ),
-                            );
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(8.0),
+                            bottomRight: Radius.circular(8.0),
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Giảm nhẹ để tránh tràn do margin/padding xung quanh
+                              final tableMaxHeight = (constraints.maxHeight - 65)
+                                  .clamp(0.0, constraints.maxHeight)
+                                  .toDouble();
 
-                            // Reload detail department tree khi data thay đổi và có selected item
-                            if (selected != null && currentPageData.isNotEmpty) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (!mounted) return;
-                                
-                                final updatedItem = currentPageData.firstWhere(
-                                  (element) => element.id == selected?.id,
-                                  orElse: () => AssetHandoverDto(),
-                                );
-                                
-                                if (updatedItem.id != null) {
-                                  setState(() {
-                                    selected = updatedItem;
-                                    _buildDetailDepartmentTree(updatedItem);
-                                  });
-                                }
-                              });
-                            }
-                            
-                            return RiverpodTable<AssetHandoverDto>(
-                              tableProvider: tableAssetHandoverProvider,
-                              columns: _columns,
-                              showCheckboxColumn: _showCheckboxColumn,
-                              enableRowSelection: true,
-                              enableRowHover: true,
-                              showAlternatingRowColors: true,
-                              valueGetter: getValueForColumn,
-                              rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
-                              cellsBuilder: (_) => [],
-                              cellBuilderByKey: (item, key) {
-                                final builder = _buildersByKey[key];
-                                if (builder != null) return builder(item);
-                                return null;
-                              },
+                              return riverpod.Consumer(
+                                builder: (context, ref, child) {
+                                  // Watch currentPageData để reload detail department tree khi data thay đổi
+                                  final currentPageData = ref.watch(
+                                    tableAssetHandoverProvider.select(
+                                      (s) => s.currentPageData,
+                                    ),
+                                  );
 
-                              onRowTap: (item) {
-                                widget.provider.onChangeDetail(context, item);
-                                setState(() {
-                                  nameBenBan =
-                                      'Trạng thái ký " Biên bản ${item.id} "';
-                                  isShowDetailDepartmentTree = true;
-                                  _buildDetailDepartmentTree(item);
-                                });
-                              },
-                              showActionsColumn: _showActionsColumn,
-                              onDelete: onDelete,
-                              blockDelete: (item) => !TableAssetHandoverConfig.isCheckShowDelete(item),
-                              customActions: [
-                                CustomAction(
-                                  tooltip: 'Xem',
-                                  iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.green,
-                                  onPressed: (item) {
-                                    onViewDocument(item);
-                                  },
-                                ),
-                                // CustomAction(
-                                //   tooltip: 'Xóa',
-                                //   iconPath: AppIconSvg.iconTrash2,
-                                //   color: Colors.red,
-                                //   onPressed: onDelete,
-                                // ),
-                              ],
-                              actionsColumnWidth: 120,
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * 0.65,
-                            );
-                          },
+                                  // Reload detail department tree khi data thay đổi và có selected item
+                                  if (selected != null && currentPageData.isNotEmpty) {
+                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      if (!mounted) return;
+                                      
+                                      final updatedItem = currentPageData.firstWhere(
+                                        (element) => element.id == selected?.id,
+                                        orElse: () => AssetHandoverDto(),
+                                      );
+                                      
+                                      if (updatedItem.id != null) {
+                                        setState(() {
+                                          selected = updatedItem;
+                                          _buildDetailDepartmentTree(updatedItem);
+                                        });
+                                      }
+                                    });
+                                  }
+                                  
+                                  return RiverpodTable<AssetHandoverDto>(
+                                    tableProvider: tableAssetHandoverProvider,
+                                    columns: _columns,
+                                    showCheckboxColumn: _showCheckboxColumn,
+                                    enableRowSelection: true,
+                                    enableRowHover: true,
+                                    showAlternatingRowColors: true,
+                                    valueGetter: getValueForColumn,
+                                    // rowColorBuilder: (item) => item.trangThaiPhieu == 2 ? ColorValue.amber.withAlpha((0.25 * 255).toInt()) : null,
+                                    cellsBuilder: (_) => [],
+                                    cellBuilderByKey: (item, key) {
+                                      final builder = _buildersByKey[key];
+                                      if (builder != null) return builder(item);
+                                      return null;
+                                    },
+                                    rowDividerColor: Colors.white.withAlpha(
+                                      (0.7 * 255).toInt(),
+                                    ),
+                                    rowDividerThickness: 1,
+                                    onRowTap: (item) {
+                                      widget.provider.onChangeDetail(context, item);
+                                      setState(() {
+                                        nameBenBan =
+                                            'Trạng thái ký " Biên bản ${item.id} "';
+                                        isShowDetailDepartmentTree = true;
+                                        _buildDetailDepartmentTree(item);
+                                      });
+                                    },
+                                    showActionsColumn: _showActionsColumn,
+                                    onDelete: onDelete,
+                                    blockDelete: (item) => !TableAssetHandoverConfig.isCheckShowDelete(item),
+                                    customActions: [
+                                      CustomAction(
+                                        tooltip: 'Xem',
+                                        iconPath: 'assets/icons/eye.svg',
+                                        color: Colors.green,
+                                        onPressed: (item) {
+                                          onViewDocument(item);
+                                        },
+                                      ),
+                                      // CustomAction(
+                                      //   tooltip: 'Xóa',
+                                      //   iconPath: AppIconSvg.iconTrash2,
+                                      //   color: Colors.red,
+                                      //   onPressed: onDelete,
+                                      // ),
+                                    ],
+                                    actionsColumnWidth: 120,
+                                    maxHeight: tableMaxHeight,
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
