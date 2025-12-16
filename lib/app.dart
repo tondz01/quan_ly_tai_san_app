@@ -314,7 +314,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     
     // Load bất đồng bộ, không await để không block UI
     _countService.loadAllCounts(force: true).then((counts) {
-      log('[App] Loaded all counts: $counts');
     }).catchError((error) {
       log('[App] Error loading counts: $error');
       _isCountsLoaded = false; // Reset để có thể retry

@@ -124,10 +124,6 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
     
     _isApiLoading = true;
     _lastApiCallTime = now;
-    
-    log(
-      'loadDataFromApi AssetTransfer: page=$page -- type=$type -- trangThai=$trangThai -- isRefresh=$isRefresh',
-    );
 
     _currentType = type; // cập nhật type
     _currentTrangThai = trangThai; // cập nhật trạng thái
