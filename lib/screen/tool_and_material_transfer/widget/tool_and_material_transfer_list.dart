@@ -519,10 +519,9 @@ class _ToolAndMaterialTransferListState
   Widget headerList() {
     return riverpod.Consumer(
       builder: (context, ref, _) {
+        ref.watch(tableToolAndMaterialTransferProvider);
         final totals =
-            ref
-                .watch(tableToolAndMaterialTransferProvider.notifier)
-                .getTotals();
+            ref.read(tableToolAndMaterialTransferProvider.notifier).getTotals();
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,

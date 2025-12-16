@@ -30,7 +30,7 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   Timer? _debounceTimer;
   
   // Cache constants để tránh lookup nhiều lần
-  static const int _toolAndMaterialTransferType = FunctionType.TOOL_AND_MATERIAL_TRANSFER;
+  static const int _toolAndSuppliesHandoverType = FunctionType.TOOL_AND_SUPPLIES_HANDOVER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
   
   // Cache message timestamp để tránh xử lý duplicate
@@ -88,7 +88,7 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
       if (typeFunc is! int) return;
       
       // Fast comparison với cached constants
-      if (typeFunc != _toolAndMaterialTransferType && 
+      if (typeFunc != _toolAndSuppliesHandoverType && 
           typeFunc != _allFunctionType) {
         return; // Không phải message cần xử lý
       }

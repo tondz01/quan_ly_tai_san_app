@@ -18,7 +18,7 @@ class MauSo01Page extends StatefulWidget {
 }
 
 class _MauSo01PageState extends State<MauSo01Page> {
-  bool _isExporting = false;
+  bool isExporting = false;
   final GlobalKey _repaintKey = GlobalKey();
   List<AssetRowData> _allAssetRows = [];
 
@@ -126,7 +126,7 @@ class _MauSo01PageState extends State<MauSo01Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: LoadingOverlay(
-        isLoading: _isExporting,
+        isLoading: isExporting,
         message: 'Đang xuất PDF...',
         child: Scrollbar(
           child: SingleChildScrollView(
@@ -560,8 +560,12 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // STT - merge 2 hàng
-          _buildMergedHeaderCell(Text('STT', style: style), _flexStt),
+          // STT - merge 2 hàng (ấn định width để cột không quá hẹp)
+          _buildMergedHeaderCell(
+            Text('STT', style: style),
+            _flexStt,
+            width: 60, // có thể chỉnh: 50, 70...
+          ),
 
           // Tên nhãn hiệu - merge 2 hàng
           _buildMergedHeaderCell(Text('Tên nhãn hiệu, quy cách tài sản cố định, công cụ dụng cụ', style: style, textAlign: TextAlign.center), _flexTen),
@@ -711,21 +715,39 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
   }
 
   /// Helper cho ô header merge 2 hàng
-  Widget _buildMergedHeaderCell(Widget child, int flex, {bool isLast = false}) {
+  /// - Nếu truyền width => dùng SizedBox cố định width
+  /// - Nếu không => dùng Expanded với flex như cũ
+  Widget _buildMergedHeaderCell(
+    Widget child,
+    int flex, {
+    bool isLast = false,
+    double? width,
+  }) {
+    final cell = Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: const BorderSide(color: Colors.black, width: 0.5),
+          right: isLast
+              ? BorderSide.none
+              : const BorderSide(color: Colors.black, width: 0.5),
+        ),
+        color: Colors.white,
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+
+    if (width != null) {
+      return SizedBox(
+        width: width,
+        child: cell,
+      );
+    }
+
     return Expanded(
       flex: flex,
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 0.5),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
-          ),
-          color: Colors.white,
-        ),
-        alignment: Alignment.center,
-        child: child,
-      ),
+      child: cell,
     );
   }
 
@@ -736,7 +758,7 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeaderCell(Text('A', style: style), _flexStt),
+          _buildHeaderCell(Text('A', style: style), _flexStt,width: 60,),
           _buildHeaderCell(Text('B', style: style), _flexTen),
           _buildHeaderCell(Text('C', style: style), _flexDvt),
           _buildHeaderCell(Text('1', style: style), _flexNuocSx),
@@ -784,22 +806,39 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 
   /// Helper cho ô Header
-  Widget _buildHeaderCell(Widget child, int flex, {bool isSubHeader = false, bool isLast = false}) {
+  /// - Nếu truyền width => dùng SizedBox cố định width
+  /// - Nếu không => dùng Expanded với flex như cũ
+  Widget _buildHeaderCell(
+    Widget child,
+    int flex, {
+    bool isSubHeader = false,
+    bool isLast = false,
+    double? width,
+  }) {
+    final cell = Container(
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: const BorderSide(color: Colors.black, width: 0.5),
+          right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
+          top: isSubHeader ? const BorderSide(color: Colors.black, width: 0.5) : BorderSide.none,
+        ),
+        color: Colors.white,
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+
+    if (width != null) {
+      return SizedBox(
+        width: width,
+        child: cell,
+      );
+    }
+
     return Expanded(
       flex: flex,
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: const BorderSide(color: Colors.black, width: 0.5),
-            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 0.5),
-            top: isSubHeader ? const BorderSide(color: Colors.black, width: 0.5) : BorderSide.none,
-          ),
-          color: Colors.white,
-        ),
-        alignment: Alignment.center,
-        child: child,
-      ),
+      child: cell,
     );
   }
   

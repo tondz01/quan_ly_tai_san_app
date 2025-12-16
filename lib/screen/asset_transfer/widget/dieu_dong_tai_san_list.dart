@@ -631,8 +631,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   Widget headerList() {
     return riverpod.Consumer(
       builder: (context, ref, _) {
+        // watch state để khi table thay đổi (sau khi load API) header cũng rebuild
+        ref.watch(tableAssetTransferProvider);
+
+        // đọc totals từ notifier
         final totals =
-            ref.watch(tableAssetTransferProvider.notifier).getTotals();
+            ref.read(tableAssetTransferProvider.notifier).getTotals();
+
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,

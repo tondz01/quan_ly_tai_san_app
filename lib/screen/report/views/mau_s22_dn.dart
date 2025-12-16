@@ -773,147 +773,440 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   }
 
   /// Hàng header 1: Ghi tăng / Ghi giảm / Ghi chú
+  /// Được build theo kiểu giống MauSo01: dùng Column + Row để giả lập merge hàng
   Widget _buildHeaderRow1() {
     const style = TextStyle(fontWeight: FontWeight.bold);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeaderCell(
-            Text(
-              'Ghi tăng ${widget.title} cố định',
-              style: style,
-              textAlign: TextAlign.center,
+          // Khối "Ghi tăng ..."
+          Expanded(
+            flex: _flexGhiTang,
+            child: Column(
+              children: [
+                // Tiêu đề "Ghi tăng ..."
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black, width: 0.5),
+                      right: BorderSide(color: Colors.black, width: 0.5),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Ghi tăng ${widget.title} cố định',
+                    style: style,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                // Hàng dưới: Chứng từ (Số hiệu/Ngày tháng) + Tên TS + DVT + SL + Đơn giá + Số tiền
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Nhóm "Chứng từ" với sub-header "Số hiệu" / "Ngày, tháng"
+                      Expanded(
+                        flex: _flexCtTang,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                border: Border(
+                                  bottom:
+                                      BorderSide(color: Colors.black, width: 0.5),
+                                  right:
+                                      BorderSide(color: Colors.black, width: 0.5),
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'Chứng từ',
+                                style: style,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(
+                                    flex: _flexCtSoHieu,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          bottom: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                          right: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Số hiệu',
+                                        style: style,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: _flexCtNgay,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          bottom: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                          right: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Ngày, tháng',
+                                        style: style,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Tên, nhãn hiệu...
+                      Expanded(
+                        flex: _flexTenTs,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Tên, nhãn hiệu, quy cách ${widget.title} cố định',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Đơn vị tính
+                      Expanded(
+                        flex: _flexDvt,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Đơn vị tính',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Số lượng
+                      Expanded(
+                        flex: _flexSlTang,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Số lượng',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Đơn giá
+                      Expanded(
+                        flex: _flexDonGia,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Đơn giá',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Số tiền
+                      Expanded(
+                        flex: _flexStTang,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Số tiền',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            _flexGhiTang,
           ),
-          _buildHeaderCell(
-            Text(
-              'Ghi giảm ${widget.title} cố định',
-              style: style,
-              textAlign: TextAlign.center,
+
+          // Khối "Ghi giảm ..."
+          Expanded(
+            flex: _flexGhiGiam,
+            child: Column(
+              children: [
+                // Tiêu đề "Ghi giảm ..."
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Colors.black, width: 0.5),
+                      right: BorderSide(color: Colors.black, width: 0.5),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Ghi giảm ${widget.title} cố định',
+                    style: style,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                // Hàng dưới: Chứng từ (Số hiệu/Ngày tháng) + Lý do + Số lượng + Số tiền
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Nhóm "Chứng từ" giảm
+                      Expanded(
+                        flex: _flexCtGiam,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                border: Border(
+                                  bottom:
+                                      BorderSide(color: Colors.black, width: 0.5),
+                                  right:
+                                      BorderSide(color: Colors.black, width: 0.5),
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'Chứng từ',
+                                style: style,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(
+                                    flex: _flexCtGiamSoHieu,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          bottom: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                          right: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Số hiệu',
+                                        style: style,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: _flexCtGiamNgay,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          bottom: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                          right: BorderSide(
+                                              color: Colors.black, width: 0.5),
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Ngày, tháng',
+                                        style: style,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Lý do
+                      Expanded(
+                        flex: _flexLyDo,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Lý do',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Số lượng giảm
+                      Expanded(
+                        flex: _flexSlGiam,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Số lượng',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+
+                      // Số tiền giảm
+                      Expanded(
+                        flex: _flexStGiam,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            border: Border(
+                              bottom:
+                                  BorderSide(color: Colors.black, width: 0.5),
+                              right: BorderSide(color: Colors.black, width: 0.5),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Số tiền',
+                            style: style,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            _flexGhiGiam,
           ),
-          _buildHeaderCell(
-            Text('Ghi chú', style: style),
-            _flexGhiChu,
-            rowSpan: 3,
-            isLast: true,
-          ), // Cột này chiếm 3 hàng
+
+          // Khối "Ghi chú" - merge toàn bộ chiều cao
+          Expanded(
+            flex: _flexGhiChu,
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.black, width: 0.5),
+                  right: BorderSide.none,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Ghi chú',
+                style: style,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// Hàng header 2: Chứng từ / Tên / ... / Lý do / ...
+  /// Hàng header 2: không cần nữa vì đã gộp logic vào header 1
   Widget _buildHeaderRow2() {
-    const style = TextStyle(fontWeight: FontWeight.bold);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // "Ghi tăng" children
-          _buildHeaderCell(Text('Chứng từ', style: style), _flexCtTang),
-          _buildHeaderCell(
-            Text(
-              'Tên, nhãn hiệu, quy cách ${widget.title} cố định',
-              style: style,
-              textAlign: TextAlign.center,
-            ),
-            _flexTenTs,
-            rowSpan: 2,
-          ),
-          _buildHeaderCell(
-            Text('Đơn vị tính', style: style),
-            _flexDvt,
-            rowSpan: 2,
-          ),
-          _buildHeaderCell(
-            Text('Số lượng', style: style),
-            _flexSlTang,
-            rowSpan: 2,
-          ),
-          _buildHeaderCell(
-            Text('Đơn giá', style: style),
-            _flexDonGia,
-            rowSpan: 2,
-          ),
-          _buildHeaderCell(
-            Text('Số tiền', style: style),
-            _flexStTang,
-            rowSpan: 2,
-          ),
-
-          // "Ghi giảm" children
-          _buildHeaderCell(Text('Chứng từ', style: style), _flexCtGiam),
-          _buildHeaderCell(Text('Lý do', style: style), _flexLyDo, rowSpan: 2),
-          _buildHeaderCell(
-            Text('Số lượng', style: style),
-            _flexSlGiam,
-            rowSpan: 2,
-          ),
-          _buildHeaderCell(
-            Text('Số tiền', style: style),
-            _flexStGiam,
-            rowSpan: 2,
-          ),
-
-          // Ô trống cho cột Ghi chú (đã bị rowSpan)
-          _buildEmptyFlex(_flexGhiChu, isLast: true),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
-  /// Hàng header 3: Số hiệu / Ngày / ...
+  /// Hàng header 3: không cần nữa vì đã gộp vào header 1
   Widget _buildHeaderRow3() {
-    const style = TextStyle(fontWeight: FontWeight.bold);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // "Chứng từ" (tăng) children
-          _buildHeaderCell(
-            Text('Số hiệu', style: style),
-            _flexCtSoHieu,
-            isSubHeader: true,
-          ),
-          _buildHeaderCell(
-            Text('Ngày, tháng', style: style),
-            _flexCtNgay,
-            isSubHeader: true,
-          ),
-
-          // Ô rỗng cho các cột đã bị rowSpan
-          _buildEmptyFlex(_flexTenTs),
-          _buildEmptyFlex(_flexDvt),
-          _buildEmptyFlex(_flexSlTang),
-          _buildEmptyFlex(_flexDonGia),
-          _buildEmptyFlex(_flexStTang),
-
-          // "Chứng từ" (giảm) children
-          _buildHeaderCell(
-            Text('Số hiệu', style: style),
-            _flexCtGiamSoHieu,
-            isSubHeader: true,
-          ),
-          _buildHeaderCell(
-            Text('Ngày, tháng', style: style),
-            _flexCtGiamNgay,
-            isSubHeader: true,
-          ),
-
-          // Ô rỗng cho các cột đã bị rowSpan
-          _buildEmptyFlex(_flexLyDo),
-          _buildEmptyFlex(_flexSlGiam),
-          _buildEmptyFlex(_flexStGiam),
-
-          // Ô trống cho cột Ghi chú
-          _buildEmptyFlex(_flexGhiChu, isLast: true),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   /// Hàng dữ liệu (TextField)
@@ -1002,39 +1295,39 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 
   /// Helper cho ô Header
-  Widget _buildHeaderCell(
-    Widget child,
-    int flex, {
-    int rowSpan = 1,
-    bool isSubHeader = false,
-    bool isLast = false,
-  }) {
-    return Expanded(
-      flex: flex,
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            bottom:
-                rowSpan == 1 || isSubHeader
-                    ? const BorderSide(color: Colors.black, width: 0.5)
-                    : BorderSide.none,
-            right:
-                isLast
-                    ? BorderSide.none
-                    : const BorderSide(color: Colors.black, width: 0.5),
-            top:
-                isSubHeader
-                    ? const BorderSide(color: Colors.black, width: 0.5)
-                    : BorderSide.none,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: child,
-      ),
-    );
-  }
+  // Widget _buildHeaderCell(
+  //   Widget child,
+  //   int flex, {
+  //   int rowSpan = 1,
+  //   bool isSubHeader = false,
+  //   bool isLast = false,
+  // }) {
+  //   return Expanded(
+  //     flex: flex,
+  //     child: Container(
+  //       padding: const EdgeInsets.all(8.0),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         border: Border(
+  //           bottom:
+  //               rowSpan == 1 || isSubHeader
+  //                   ? const BorderSide(color: Colors.black, width: 0.5)
+  //                   : BorderSide.none,
+  //           right:
+  //               isLast
+  //                   ? BorderSide.none
+  //                   : const BorderSide(color: Colors.black, width: 0.5),
+  //           top:
+  //               isSubHeader
+  //                   ? const BorderSide(color: Colors.black, width: 0.5)
+  //                   : BorderSide.none,
+  //         ),
+  //       ),
+  //       alignment: Alignment.center,
+  //       child: child,
+  //     ),
+  //   );
+  // }
 
   /// Helper cho ô TextField
   Widget _buildTextFieldCell(
@@ -1072,7 +1365,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   }
 
   /// Helper cho ô rỗng (do rowSpan)
-  Widget _buildEmptyFlex(int flex, {bool isLast = false}) {
+  Widget buildEmptyFlex(int flex, {bool isLast = false}) {
     return Expanded(
       flex: flex,
       child: Container(
