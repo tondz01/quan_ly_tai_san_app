@@ -611,6 +611,7 @@ class AssetTransferRepository extends ApiBase {
         result['totalCancel'] = 0;
         result['totalComplete'] = 0;
       }
+      print('check result: $result');
     } catch (e) {
       log("Error at getDataWithPagination - AssetTransferRepository: $e");
     }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart';
 // ignore: avoid_web_libraries_in_flutter
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 
 /// Service để export báo cáo sang Excel bằng cách chụp screenshot UI
 ///
@@ -88,13 +88,13 @@ class ScreenshotToExcelService {
       sheet.pageSetup.orientation = ExcelPageOrientation.portrait;
 
       // 4. Save and download
-      final List<int> bytes = workbook.saveAsStream();
-      workbook.dispose();
+      // final List<int> bytes = workbook.saveAsStream();
+      // workbook.dispose();
 
-      // Generate filename with timestamp
-      final now = DateTime.now();
-      final formatter = DateFormat('yyyy-MM-dd_HH-mm-ss');
-      final filename = '${reportTitle}_${formatter.format(now)}.xlsx';
+      // // Generate filename with timestamp
+      // final now = DateTime.now();
+      // final formatter = DateFormat('yyyy-MM-dd_HH-mm-ss');
+      // final filename = '${reportTitle}_${formatter.format(now)}.xlsx';
 
       // Download file (web only)
       // final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -156,13 +156,13 @@ class ScreenshotToExcelService {
         sheet.pageSetup.orientation = ExcelPageOrientation.portrait;
       }
 
-      // Save and download
-      final List<int> bytes = workbook.saveAsStream();
-      workbook.dispose();
+      // // Save and download
+      // final List<int> bytes = workbook.saveAsStream();
+      // workbook.dispose();
 
-      final now = DateTime.now();
-      final formatter = DateFormat('yyyy-MM-dd_HH-mm-ss');
-      final filename = '${reportTitle}_${formatter.format(now)}.xlsx';
+      // final now = DateTime.now();
+      // final formatter = DateFormat('yyyy-MM-dd_HH-mm-ss');
+      // final filename = '${reportTitle}_${formatter.format(now)}.xlsx';
 
       // final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       // final url = html.Url.createObjectUrlFromBlob(blob);

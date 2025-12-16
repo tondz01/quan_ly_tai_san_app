@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
@@ -9,6 +10,7 @@ import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/table_tool_and_material_transfer_provider.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
 import 'package:table_base/widgets/box_search.dart';
@@ -28,8 +30,6 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/table_tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/table_tool_and_material_transfer_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
@@ -372,9 +372,10 @@ class _ToolAndMaterialTransferListState
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
-                        final tableMaxHeight = (constraints.maxHeight - 65)
-                            .clamp(0.0, constraints.maxHeight)
-                            .toDouble();
+                        final tableMaxHeight =
+                            (constraints.maxHeight - 65)
+                                .clamp(0.0, constraints.maxHeight)
+                                .toDouble();
 
                         return riverpod.Consumer(
                           builder: (context, ref, child) {
@@ -392,7 +393,8 @@ class _ToolAndMaterialTransferListState
                             );
 
                             // Reload detail department tree khi data thay đổi và có selected item
-                            if (selected != null && currentPageData.isNotEmpty) {
+                            if (selected != null &&
+                                currentPageData.isNotEmpty) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 if (!mounted) return;
 
@@ -411,7 +413,8 @@ class _ToolAndMaterialTransferListState
                             }
 
                             return RiverpodTable<ToolAndMaterialTransferDto>(
-                              tableProvider: tableToolAndMaterialTransferProvider,
+                              tableProvider:
+                                  tableToolAndMaterialTransferProvider,
                               columns: _columns,
                               showCheckboxColumn: _showCheckboxColumn,
                               enableRowSelection: true,
@@ -432,7 +435,9 @@ class _ToolAndMaterialTransferListState
                               },
                               onRowTap: (item) {
                                 widget.provider
-                                    .onChangeDetailToolAndMaterialTransfer(item);
+                                    .onChangeDetailToolAndMaterialTransfer(
+                                      item,
+                                    );
                                 setState(() {
                                   nameBenBan =
                                       'Trạng thái ký " Biên bản ${item.id} "';
@@ -459,10 +464,14 @@ class _ToolAndMaterialTransferListState
                                       previewDocumentToolAndMaterial(
                                         context: context,
                                         item: item,
-                                        nhanVien: widget.provider.getNhanVienByID(
-                                          widget.provider.userInfo?.tenDangNhap ??
-                                              '',
-                                        ),
+                                        nhanVien: widget.provider
+                                            .getNhanVienByID(
+                                              widget
+                                                      .provider
+                                                      .userInfo
+                                                      ?.tenDangNhap ??
+                                                  '',
+                                            ),
                                         document: _document,
                                         isShowKy: false,
                                       );
@@ -508,27 +517,43 @@ class _ToolAndMaterialTransferListState
   }
 
   Widget headerList() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return riverpod.Consumer(
+      builder: (context, ref, _) {
+        ref.watch(tableToolAndMaterialTransferProvider);
+        final totals =
+            ref.read(tableToolAndMaterialTransferProvider.notifier).getTotals();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-            SizedBox(width: 8),
-            Text(
-              '${TableToolAndMaterialTransferConfig.getName(widget.typeAssetTransfer)} ($totalItems)',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
+            Row(
+              children: [
+                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  '${TableToolAndMaterialTransferConfig.getName(widget.typeAssetTransfer)} (${totals['totalAll']})',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                SizedBox(width: 8),
+              ],
+            ),
+            Expanded(
+              child: RowFindByStatusCcdc(
+                provider: widget.provider,
+                totalAll: totals['totalAll'] ?? 0,
+                totalDraft: totals['totalDraft'] ?? 0,
+                totalApprove: totals['totalApprove'] ?? 0,
+                totalCancel: totals['totalCancel'] ?? 0,
+                totalComplete: totals['totalComplete'] ?? 0,
               ),
             ),
-            SizedBox(width: 8),
           ],
-        ),
-        Expanded(child: RowFindByStatusCcdc(provider: widget.provider)),
-      ],
+        );
+      },
     );
   }
 

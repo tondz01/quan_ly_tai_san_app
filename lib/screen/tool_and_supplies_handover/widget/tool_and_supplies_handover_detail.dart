@@ -730,6 +730,19 @@ class _ToolAndSuppliesHandoverDetailState
       );
       return;
     }
+    // Validate soLuongXuat > 0 for all request details
+    final invalidSoLuongXuat = listDetailSubppliesHandover.any(
+      (e) => ((e.soLuong <= 0)),
+    );
+    if (invalidSoLuongXuat) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Số lượng xuất của từng CCDC bàn giao phải lớn hơn 0'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     _saveToolAndSuppliesHandover();
   }
@@ -1004,7 +1017,7 @@ class _ToolAndSuppliesHandoverDetailState
                               )
                               .toList();
                       getToolAndSuppliesHandoverPreview();
-                      
+
                       // Chỉ setState cho preview, không rebuild table
                       // Table đã tự quản lý state riêng, không cần rebuild từ parent
                       setState(() {});

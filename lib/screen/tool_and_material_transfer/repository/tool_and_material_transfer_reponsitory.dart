@@ -609,7 +609,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety
-      final groupCounts = response.data['groupCounts'];
+      final groupCounts = response.data['trangThaiCounts'];
       if (groupCounts is Map<String, dynamic>) {
         // Helper function để parse giá trị từ groupCounts
         int parseGroupCount(String key, [String? altKey]) {
@@ -633,6 +633,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         result['totalCancel'] = 0;
         result['totalComplete'] = 0;
       }
+      print('check result getDataWithPagination: $result');
     } catch (e) {
       log(
         "Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e",

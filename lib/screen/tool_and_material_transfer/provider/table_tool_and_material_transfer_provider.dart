@@ -15,6 +15,21 @@ final tableToolAndMaterialTransferProvider = StateNotifierProvider.autoDispose<
   return TableToolAndMaterialTransferProvider(repository);
 });
 
+/// Helper class để lấy các giá trị total
+/// Sử dụng: ref.read(tableAssetTransferProvider.notifier).getTotals()
+extension TableToolAndMaterialTransferTotals on TableToolAndMaterialTransferProvider {
+  /// Lấy tất cả các totals dưới dạng Map
+  Map<String, int> getTotals() {
+    return {
+      'totalAll': totalAll,
+      'totalDraft': totalDraft,
+      'totalApprove': totalApprove,
+      'totalCancel': totalCancel,
+      'totalComplete': totalComplete,
+    };
+  }
+}
+
 class TableToolAndMaterialTransferProvider
     extends TableNotifier<ToolAndMaterialTransferDto> {
   final ToolAndMaterialTransferRepository repository;
@@ -37,7 +52,7 @@ class TableToolAndMaterialTransferProvider
 
   // Lưu valueGetter để filter offline
   dynamic Function(ToolAndMaterialTransferDto item, int columnIndex)?
-      _localValueGetter;
+  _localValueGetter;
 
   // === CHỐNG GỌI API LIÊN TỤC ===
   bool _isApiLoading = false; // Flag đang gọi API
@@ -51,7 +66,7 @@ class TableToolAndMaterialTransferProvider
   void initialize({
     required Map<String, double> columnWidths,
     required dynamic Function(ToolAndMaterialTransferDto item, int columnIndex)
-        valueGetter,
+    valueGetter,
     int itemsPerPage = 20,
   }) {
     // Lưu lại valueGetter để dùng cho filter offline
@@ -91,10 +106,12 @@ class TableToolAndMaterialTransferProvider
     // === CHỐNG GỌI API LIÊN TỤC ===
     // Nếu đang gọi API thì bỏ qua
     if (_isApiLoading) {
-      log('loadDataFromApi ToolAndMaterialTransfer: SKIPPED - API đang loading');
+      log(
+        'loadDataFromApi ToolAndMaterialTransfer: SKIPPED - API đang loading',
+      );
       return;
     }
-    
+
     // Debounce: bỏ qua nếu gọi quá nhanh (< 300ms)
     final now = DateTime.now();
     if (_lastApiCallTime != null) {
@@ -104,10 +121,10 @@ class TableToolAndMaterialTransferProvider
         return;
       }
     }
-    
+
     _isApiLoading = true;
     _lastApiCallTime = now;
-    
+
     _currentType = type; // cập nhật type
     _currentTrangThai = trangThai; // cập nhật trạng thái
 
@@ -157,7 +174,7 @@ class TableToolAndMaterialTransferProvider
         state = state.copyWith(isLoading: false);
       }
     } catch (error) {
-      log('Error loading ToolAndMaterialTransfer data: $error');
+      print('Error loading ToolAndMaterialTransfer data: $error');
 
       state = state.copyWith(
         isLoading: false,

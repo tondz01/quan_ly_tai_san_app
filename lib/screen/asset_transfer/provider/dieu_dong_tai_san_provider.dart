@@ -61,6 +61,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   get itemsDDNhanVien => _itemsDDNhanVien;
 
   String get loadingMessage => _loadingMessage;
+  String get titleDetail => _titleDetail;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -129,6 +130,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   String? _subScreen;
   String mainScreen = '';
   String _loadingMessage = 'Đang tải dữ liệu...';
+  String _titleDetail = 'Chi tiết điều động tài sản';
+
 
   bool _isShowInput = false;
   bool _isShowCollapse = true;
@@ -230,6 +233,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // onDispose();
     onGetDataAsset(context);
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
+    _titleDetail = getScreenTitleDetail();
     _userInfo = AccountHelper.instance.getUserInfo();
     // _dataAsset = AccountHelper.instance.getAllAssets();
     // Khởi tạo các biến pagination
@@ -281,7 +285,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu...';
-    print('AssetListCacheService message onGetDataAsset');
 
     try {
       // 1. Load từ cache trước
@@ -721,6 +724,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         return 'Điều chuyển tài sản';
       case 3:
         return 'Thu hồi tài sản';
+      default:
+        return 'Quản lý tài sản';
+    }
+  }
+
+  String getScreenTitleDetail() {
+    switch (typeDieuDongTaiSan) {
+      case 1:
+        return 'Chi tiết cấp phát tài sản';
+      case 2:
+        return 'Chi tiết điều chuyển tài sản';
+      case 3:
+        return 'Chi tiết thu hồi tài sản';
       default:
         return 'Quản lý tài sản';
     }

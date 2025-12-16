@@ -375,9 +375,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
-                      final tableMaxHeight = (constraints.maxHeight - 65)
-                          .clamp(0.0, constraints.maxHeight)
-                          .toDouble();
+                      final tableMaxHeight =
+                          (constraints.maxHeight - 65)
+                              .clamp(0.0, constraints.maxHeight)
+                              .toDouble();
 
                       return riverpod.Consumer(
                         builder: (context, ref, child) {
@@ -434,7 +435,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             // rowColorBuilder:
                             //     (item) => widget.provider.getRowTableColor(item),
                             onRowTap: (item) {
-                              widget.provider.onChangeDetailDieuDongTaiSan(item);
+                              widget.provider.onChangeDetailDieuDongTaiSan(
+                                item,
+                              );
                               // Chỉ setState nếu có thay đổi thực sự
                               String newNameBenBan =
                                   'Trạng thái ký " Biên bản ${item.id} "';
@@ -626,38 +629,46 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   }
 
   Widget headerList() {
-    final ref = riverpod.ProviderScope.containerOf(context);
-    final notifier = ref.read(tableAssetTransferProvider.notifier);
-    final totals = notifier.getTotals();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return riverpod.Consumer(
+      builder: (context, ref, _) {
+        // watch state để khi table thay đổi (sau khi load API) header cũng rebuild
+        ref.watch(tableAssetTransferProvider);
+
+        // đọc totals từ notifier
+        final totals =
+            ref.read(tableAssetTransferProvider.notifier).getTotals();
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-            SizedBox(width: 8),
-            Text(
-              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} (${totals['totalAll']})',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
+            Row(
+              children: [
+                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} (${totals['totalAll']})',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: RowFindByStatus(
+                provider: widget.provider,
+                totalAll: totals['totalAll'] ?? 0,
+                totalDraft: totals['totalDraft'] ?? 0,
+                totalApprove: totals['totalApprove'] ?? 0,
+                totalCancel: totals['totalCancel'] ?? 0,
+                totalComplete: totals['totalComplete'] ?? 0,
               ),
             ),
           ],
-        ),
-        Expanded(
-          child: RowFindByStatus(
-            provider: widget.provider,
-            totalAll: totals['totalAll'] ?? 0,
-            totalDraft: totals['totalDraft'] ?? 0,
-            totalApprove: totals['totalApprove'] ?? 0,
-            totalCancel: totals['totalCancel'] ?? 0,
-            totalComplete: totals['totalComplete'] ?? 0,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

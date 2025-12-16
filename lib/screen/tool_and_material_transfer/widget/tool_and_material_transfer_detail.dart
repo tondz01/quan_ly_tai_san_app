@@ -1403,6 +1403,18 @@ class _ToolAndMaterialTransferDetailState
       );
       return;
     }
+    // Validate soLuongXuat > 0 for all request details
+    final requestDetail = _createDieuDongRequestDetail();
+    final invalidSoLuongXuat = requestDetail.any((e) => ((e.soLuongXuat <= 0)));
+    if (invalidSoLuongXuat) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Số lượng xuất của từng CCDC phải lớn hơn 0'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     UserInfoDTO userInfo = widget.provider.userInfo!;
     // final bloc = context.read<DieuDongTaiSanBloc>();
     if (item == null) {

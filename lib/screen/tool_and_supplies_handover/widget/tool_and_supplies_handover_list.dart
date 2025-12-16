@@ -281,40 +281,52 @@ class _ToolAndSuppliesHandoverListState
                             topRight: Radius.circular(8),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              spacing: 8,
+                        child: riverpod.Consumer(
+                          builder: (context, ref, _) {
+                            // Watch state so this header rebuilds when data (and totals) change
+                            ref.watch(tableToolAndSuppliesHandoverProvider);
+                            final totals = ref
+                                .read(
+                                  tableToolAndSuppliesHandoverProvider.notifier,
+                                )
+                                .getTotals();
+
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(
-                                  Icons.table_chart,
-                                  color: Colors.grey.shade600,
-                                  size: 18,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 2.5),
-                                  child: Text(
-                                    'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade700,
+                                Row(
+                                  spacing: 8,
+                                  children: [
+                                    Icon(
+                                      Icons.table_chart,
+                                      color: Colors.grey.shade600,
+                                      size: 18,
                                     ),
-                                  ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 2.5),
+                                      child: Text(
+                                        'Biên bản bàn giao tài sản (${totals['totalAll']})',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            
+                                FindByStateToolHandover(
+                                  provider: widget.provider,
+                                  totalAll: totals['totalAll'] ?? 0,
+                                  totalDraft: totals['totalDraft'] ?? 0,
+                                  totalBrowser: totals['totalApprove'] ?? 0,
+                                  totalCancel: totals['totalCancel'] ?? 0,
+                                  totalComplete: totals['totalComplete'] ?? 0,
                                 ),
                               ],
-                            ),
-
-                            FindByStateToolHandover(
-                              provider: widget.provider,
-                              totalAll: widget.provider.allCount,
-                              totalDraft: widget.provider.draftCount,
-                              totalBrowser: widget.provider.browserCount,
-                              totalCancel: widget.provider.cancelCount,
-                              totalComplete: widget.provider.completeCount,
-                            ),
-                          ],
+                            );
+                          }
                         ),
                       ),
                       Divider(
