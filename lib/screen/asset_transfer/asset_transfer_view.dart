@@ -190,7 +190,7 @@ class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> 
                                 typeAssetTransfer: currentType,
                                 idCongTy: 'CT001',
                               ),
-                              title: "Chi tiết điều chuyển tài sản",
+                              title: provider.titleDetail,
                               isShowInput: provider.isShowInput,
                               isShowCollapse: provider.isShowCollapse,
                               onExpandedChanged: (isExpanded) {
