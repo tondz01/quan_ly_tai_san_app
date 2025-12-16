@@ -158,17 +158,32 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
         _selectedDate,
       );
 
+      // Helper function to parse num from dynamic (String or num)
+      int? parseToInt(dynamic value) {
+        if (value == null) return null;
+        if (value is num) return value.toInt();
+        if (value is String) return int.tryParse(value);
+        return null;
+      }
+
+      double? parseToDouble(dynamic value) {
+        if (value == null) return null;
+        if (value is num) return value.toDouble();
+        if (value is String) return double.tryParse(value);
+        return null;
+      }
+
       // Helper function to map API response to DataMap
       List<DataMap> mapToDataMap(List<dynamic> list, DataMapType type) {
         return list.map((item) {
           return DataMap(
-            tenTaiSan: item['tenTaiSan'] ?? '',
-            soHieu: item['idTaiSan'] ?? '',
-            ngayThang: item['ngayThang'] ?? '',
-            donViTinh: item['donViTinh'] ?? '',
-            soLuong: (item['soLuong'] as num?)?.toInt(),
-            donGia: (item['donGia'] as num?)?.toDouble(),
-            soTien: (item['tongTien'] as num?)?.toDouble(),
+            tenTaiSan: item['tenTaiSan']?.toString() ?? '',
+            soHieu: item['idTaiSan']?.toString() ?? '',
+            ngayThang: item['ngayThang']?.toString() ?? '',
+            donViTinh: item['donViTinh']?.toString() ?? '',
+            soLuong: parseToInt(item['soLuong']),
+            donGia: parseToDouble(item['donGia']),
+            soTien: parseToDouble(item['tongTien']),
             type: type,
           );
         }).toList();
@@ -763,6 +778,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
             _buildHeaderRow1(),
             _buildHeaderRow2(),
             _buildHeaderRow3(),
+            _buildHeaderRow4(), // Hàng hiển thị A, B, C, D, 1, 2, 3...
             // Build các hàng dữ liệu từ list
             ..._dataRows.map((rowData) => _buildDataRow(rowData)),
             // _buildAddRowButton(),
@@ -911,6 +927,31 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
 
           // Ô trống cho cột Ghi chú
           _buildEmptyFlex(_flexGhiChu, isLast: true),
+        ],
+      ),
+    );
+  }
+
+  /// Hàng header 4: A, B, C, D, 1, 2, 3...
+  Widget _buildHeaderRow4() {
+    const style = TextStyle(fontWeight: FontWeight.bold);
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeaderCell(Text('A', style: style), _flexCtSoHieu),
+          _buildHeaderCell(Text('B', style: style), _flexCtNgay),
+          _buildHeaderCell(Text('C', style: style), _flexTenTs),
+          _buildHeaderCell(Text('D', style: style), _flexDvt),
+          _buildHeaderCell(Text('1', style: style), _flexSlTang),
+          _buildHeaderCell(Text('2', style: style), _flexDonGia),
+          _buildHeaderCell(Text('3', style: style), _flexStTang),
+          _buildHeaderCell(Text('E', style: style), _flexCtGiamSoHieu),
+          _buildHeaderCell(Text('G', style: style), _flexCtGiamNgay),
+          _buildHeaderCell(Text('H', style: style), _flexLyDo),
+          _buildHeaderCell(Text('4', style: style), _flexSlGiam),
+          _buildHeaderCell(Text('5', style: style), _flexStGiam),
+          _buildHeaderCell(Text('I', style: style), _flexGhiChu, isLast: true),
         ],
       ),
     );
