@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
@@ -24,6 +25,9 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   // Request ID để tránh race condition khi switch tab liên tục
   int _currentRequestId = 0;
 
+  // Debounce timer cho search - chờ 500ms sau khi ngừng nhập
+  Timer? _searchDebounceTimer;
+
   TableAssetManagementProvider(this.repository);
   // FIXED: Signature đúng với named parameters
   @override
@@ -45,10 +49,17 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
     loadDataFromApi(0, _currentIdNhomTaiSan);
   }
 
-  // Tìm kiếm với API
+  // Tìm kiếm với API - debounce 500ms
   set searchTerm(String value) {
     _currentSearchTerm = value;
-    loadDataFromApi(0, _currentIdNhomTaiSan); // Reset về trang đầu khi search
+
+    // Hủy timer cũ nếu có
+    _searchDebounceTimer?.cancel();
+
+    // Tạo timer mới - chỉ gọi API sau 500ms ngừng nhập
+    _searchDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      loadDataFromApi(0, _currentIdNhomTaiSan); // Reset về trang đầu khi search
+    });
   }
 
   // Load dữ liệu từ API
@@ -126,6 +137,9 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   }
 
   Future<void> refreshTab(int typeTab, [bool isRefresh = true]) async {
+    // Hủy pending search khi switch tab
+    _searchDebounceTimer?.cancel();
+
     this.typeTab = typeTab;
     log('API URL Tab: $typeTab');
     // Clear search term và reset về page 0 khi switch tab
@@ -135,6 +149,12 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
       _currentIdNhomTaiSan,
       isRefresh,
     );
+  }
+
+  @override
+  void dispose() {
+    _searchDebounceTimer?.cancel();
+    super.dispose();
   }
 
   @override

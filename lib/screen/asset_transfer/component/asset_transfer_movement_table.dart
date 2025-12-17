@@ -183,18 +183,13 @@ class _AssetTransferMovementTableState
                 },
                 sortValueGetter: (item) => item.tenTaiSan,
                 isCellEditableDecider: (item, rowIndex) => true,
-                editor: EditableCellEditor.dropdown,
-                dropdownItems: [
-                  for (var element in widget.allAssets)
-                    DropdownMenuItem<AssetManagementDto>(
-                      value: element,
-                      child: Text(element.tenTaiSan ?? ''),
-                    ),
-                ],
+                editor: EditableCellEditor.searchableDropdown,
+                searchableDropdownOptions: widget.allAssets,
+                displayStringForOption: (option) => (option as AssetManagementDto).tenTaiSan ?? '',
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
                   if (newValue is AssetManagementDto) {
                     log('onValueChanged: ${newValue.tenTaiSan}, rowIndex: $rowIndex');
-                    
+
                     // Cập nhật đầy đủ thông tin của item trong listAsset
                     if (rowIndex < listAsset.length) {
                       final updatedItem = listAsset[rowIndex];
@@ -205,19 +200,19 @@ class _AssetTransferMovementTableState
                       updatedItem.hienTrang = newValue.hienTrang;
                       updatedItem.ghiChu = newValue.ghiChu ?? '';
                       updatedItem.idDonViHienThoi = newValue.idDonViHienThoi;
-                      
+
                       log('Updated item in listAsset: ${updatedItem.id} - ${updatedItem.tenTaiSan}');
                     }
-                    
+
                     // Cập nhật các cột khác
                     updateRow('don_vi_tinh', newValue.donViTinh);
                     updateRow('so_luong', newValue.soLuong);
                     updateRow('tinh_trang', newValue.hienTrang);
                     updateRow('ghi_chu', newValue.ghiChu ?? '');
-                    
+
                     // Force rebuild để hiển thị đúng item đã chọn
                     setState(() {});
-                    
+
                     // Force trigger onDataChanged để parent nhận được thay đổi
                     Future.microtask(() => _forceNotifyDataChanged());
                   }

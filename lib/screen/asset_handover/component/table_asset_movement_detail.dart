@@ -264,7 +264,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   setValue: (item, value) {
                     // Ép kiểu value về ChiTietDieuDongTaiSan để type-safe
                     if (value is! ChiTietDieuDongTaiSan) return;
-                    
+
                     final selectedAsset = value;
                     item.idDieuDongTaiSan = selectedAsset.tenTaiSan;
                     item.soQuyetDinh = selectedAsset.soQuyetDinh;
@@ -277,8 +277,9 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                     item.ghiChu = selectedAsset.ghiChu;
                   },
                   sortValueGetter: (item) => item.tenTaiSan,
-                  editor: EditableCellEditor.dropdown,
-                  dropdownItems: items,
+                  editor: EditableCellEditor.searchableDropdown,
+                  searchableDropdownOptions: widget.listDetailAssetMobilization,
+                  displayStringForOption: (option) => (option as ChiTietDieuDongTaiSan).tenTaiSan,
                 ),
                 SgEditableColumn<ChiTietDieuDongTaiSan>(
                   field: 'unit',
