@@ -13,7 +13,7 @@ import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 enum SortDirection { none, ascending, descending }
 
 // Add editor type enum for editable cells
-enum EditableCellEditor { text, dropdown }
+enum EditableCellEditor { text, dropdown, searchableDropdown }
 
 // Add validation result class for better error handling
 class ValidationResult {
@@ -716,6 +716,111 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
         ),
       );
     }
+
+    // Searchable dropdown using Autocomplete
+    if (column.editor == EditableCellEditor.searchableDropdown) {
+      final options = column.searchableDropdownOptions?.cast<Object>() ?? <Object>[];
+      final displayString = column.displayStringForOption ?? (option) => option.toString();
+      final currentValue = column.getValue(item);
+      final initialText = currentValue != null ? displayString(currentValue) : '';
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Autocomplete<Object>(
+              key: ValueKey('searchable_${rowIndex}_${column.field}_${item.hashCode}'),
+              initialValue: TextEditingValue(text: initialText),
+              displayStringForOption: displayString,
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return options;
+                }
+                final searchText = textEditingValue.text.toLowerCase();
+                return options.where((option) {
+                  final optionText = displayString(option).toLowerCase();
+                  return optionText.contains(searchText);
+                });
+              },
+              optionsMaxHeight: 200,
+              fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
+                return Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: SGAppColors.colorBorderGray),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: TextField(
+                    controller: textController,
+                    focusNode: focusNode,
+                    style: const TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      border: InputBorder.none,
+                      hintText: 'Nhập để tìm kiếm...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                      suffixIcon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
+                    ),
+                    onSubmitted: (_) => onFieldSubmitted(),
+                  ),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(6),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: 200,
+                        maxWidth: constraints.maxWidth > 0 ? constraints.maxWidth : 250,
+                      ),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final option = options.elementAt(index);
+                          final isHighlighted = AutocompleteHighlightedOption.of(context) == index;
+                          return InkWell(
+                            onTap: () => onSelected(option),
+                            child: Container(
+                              color: isHighlighted ? Colors.blue.shade50 : null,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              child: Text(
+                                displayString(option),
+                                style: const TextStyle(fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+              onSelected: (value) {
+                _updateCellValue(rowIndex, column.field, value);
+                final updater = column.onValueChanged;
+                if (updater != null) {
+                  updater(item, rowIndex, value, (
+                    String targetField,
+                    dynamic targetValue,
+                  ) {
+                    if (targetField == column.field) return;
+                    _setCellValue(rowIndex, targetField, targetValue);
+                  });
+                }
+              },
+            );
+          },
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -899,6 +1004,10 @@ class DetailEditableColumn<T> {
   )?
   onValueChanged;
 
+  // Searchable dropdown config
+  final List<dynamic>? searchableDropdownOptions;
+  final String Function(dynamic)? displayStringForOption;
+
   DetailEditableColumn({
     required this.field,
     required this.title,
@@ -917,5 +1026,7 @@ class DetailEditableColumn<T> {
     this.onValueChanged,
     this.inputType,
     this.errorText = '',
+    this.searchableDropdownOptions,
+    this.displayStringForOption,
   });
 }
