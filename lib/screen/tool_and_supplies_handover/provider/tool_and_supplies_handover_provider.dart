@@ -481,6 +481,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _setLoadingState(true, 'Đang tải dữ liệu...');
 
     try {
+      log('check isFindNew: $isFindNew');
       // Load dữ liệu song song khi có thể
       await Future.wait([
         _ensureCcdcLoaded(),

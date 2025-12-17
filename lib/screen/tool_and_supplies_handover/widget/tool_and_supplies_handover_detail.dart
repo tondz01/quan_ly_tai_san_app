@@ -644,7 +644,7 @@ class _ToolAndSuppliesHandoverDetailState
                   "congSuat": e.congSuat,
                   "nuocSanXuat": e.nuocSanXuat,
                   "namSanXuat": e.namSanXuat,
-                  "ghiChu": e.chiTietDieuDongCCDCVatTuDTO?.ghiChu ?? '',
+                  "ghiChu": e.ghiChu,
                   "nguoiCapNhat": e.nguoiCapNhat,
                   "active": e.isActive,
                 },
@@ -967,62 +967,74 @@ class _ToolAndSuppliesHandoverDetailState
                 visible: dieuDongCcdc != null,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: DetailCcdcTransferTable(
-                    context,
-                    isEditing: isEditing,
-                    movementDetails:
-                        dieuDongCcdc?.detailToolAndMaterialTransfers ?? [],
-                    initialDetailsSuppliesHandover:
-                        item?.listDetailSubppliesHandover ?? [],
-                    listOwnershipUnit: widget.provider.listOwnershipUnit,
-                    allAssets: widget.provider.dataCcdc ?? [],
-                    onDataChanged: (data) {
-                      // Cập nhật listDetailSubppliesHandover mà không setState để tránh reset table
-                      // Chỉ map những item hợp lệ (có idCCDCVatTu và idDetaiAsset)
-                      listDetailSubppliesHandover =
-                          data
-                              .where(
-                                (e) =>
-                                    e.idCCDCVatTu.isNotEmpty &&
-                                    e.idDetaiAsset.isNotEmpty,
-                              )
-                              .map(
-                                (e) => DetailSubppliesHandoverDto(
-                                  id: UUIDGenerator.generateWithFormat(
-                                    "CTBGCCDC-******",
-                                  ),
-                                  idBanGiaoCCDCVatTu:
-                                      controllerHandoverNumber.text,
-                                  idCCDCVatTu: e.idCCDCVatTu,
-                                  soLuong: e.soLuongXuat,
-                                  idChiTietCCDCVatTu: e.idDetaiAsset,
-                                  iddieudongccdcvattu: e.id,
-                                  soKyHieu: e.soKyHieu,
-                                  kyHieu: e.kyHieu,
-                                  ngayTao: AppUtility.formatDateString(
-                                    DateTime.now(),
-                                  ),
-                                  ngayTaoChungTu: AppUtility.formatDateString(
-                                    DateTime.now(),
-                                  ),
-                                  ngayCapNhat: AppUtility.formatDateString(
-                                    DateTime.now(),
-                                  ),
-                                  nguoiTao: currentUser!.tenDangNhap,
-                                  nguoiCapNhat: '',
-                                  isActive: true,
-                                  chiTietDieuDongCCDCVatTuDTO:
-                                      e.chiTietDieuDongCCDCVatTuDTO,
-                                ),
-                              )
-                              .toList();
-                      getToolAndSuppliesHandoverPreview();
-
-                      // Chỉ setState cho preview, không rebuild table
-                      // Table đã tự quản lý state riêng, không cần rebuild từ parent
-                      setState(() {});
-                    },
-                  ),
+                  child: dieuDongCcdc != null && 
+                         dieuDongCcdc!.detailToolAndMaterialTransfers != null &&
+                         dieuDongCcdc!.detailToolAndMaterialTransfers!.isNotEmpty
+                      ? DetailCcdcTransferTable(
+                          context,
+                          key: ValueKey('table_${dieuDongCcdc?.id}_${isEditing}'),
+                          isEditing: isEditing,
+                          movementDetails:
+                              dieuDongCcdc!.detailToolAndMaterialTransfers!,
+                          initialDetailsSuppliesHandover:
+                              item?.listDetailSubppliesHandover ?? [],
+                          listOwnershipUnit: widget.provider.listOwnershipUnit,
+                          allAssets: widget.provider.dataCcdc ?? [],
+                          onDataChanged: (data) {
+                            // Cập nhật listDetailSubppliesHandover mà không setState để tránh reset table
+                            // Chỉ map những item hợp lệ (có idCCDCVatTu và idDetaiAsset)
+                            listDetailSubppliesHandover =
+                                data
+                                    .where(
+                                      (e) =>
+                                          e.idCCDCVatTu.isNotEmpty &&
+                                          e.idDetaiAsset.isNotEmpty,
+                                    )
+                                    .map(
+                                      (e) => DetailSubppliesHandoverDto(
+                                        id: UUIDGenerator.generateWithFormat(
+                                          "CTBGCCDC-******",
+                                        ),
+                                        idBanGiaoCCDCVatTu:
+                                            controllerHandoverNumber.text,
+                                        idCCDCVatTu: e.idCCDCVatTu,
+                                        soLuong: e.soLuongXuat,
+                                        idChiTietCCDCVatTu: e.idDetaiAsset,
+                                        iddieudongccdcvattu: e.id,
+                                        soKyHieu: e.soKyHieu,
+                                        kyHieu: e.kyHieu,
+                                        ghiChu: e.ghiChu,
+                                        ngayTao: AppUtility.formatDateString(
+                                          DateTime.now(),
+                                        ),
+                                        ngayTaoChungTu: AppUtility.formatDateString(
+                                          DateTime.now(),
+                                        ),
+                                        ngayCapNhat: AppUtility.formatDateString(
+                                          DateTime.now(),
+                                        ),
+                                        nguoiTao: currentUser!.tenDangNhap,
+                                        nguoiCapNhat: '',
+                                        isActive: true,
+                                        chiTietDieuDongCCDCVatTuDTO:
+                                            e.chiTietDieuDongCCDCVatTuDTO,
+                                      ),
+                                    )
+                                    .toList();
+                            
+                            // Defer setState để tránh rebuild trong build phase và mất focus
+                            // Chỉ update preview khi cần thiết, không rebuild table
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) {
+                                getToolAndSuppliesHandoverPreview();
+                                // Chỉ setState nếu thực sự cần thiết để update preview
+                                // Không rebuild table vì table đã tự quản lý state riêng
+                                setState(() {});
+                              }
+                            });
+                          },
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ),
               previewDocumentCcdcHandover(
@@ -1124,6 +1136,7 @@ class _ToolAndSuppliesHandoverDetailState
                       idCCDCVatTu: e.idCCDCVatTu,
                       idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
                       iddieudongccdcvattu: e.id,
+                      ghiChu: e.ghiChu,
                       ngayTao: AppUtility.formatDateString(DateTime.now()),
                       ngayTaoChungTu: AppUtility.formatDateString(
                         DateTime.now(),
@@ -1644,7 +1657,7 @@ class _ToolAndSuppliesHandoverDetailState
           "congSuat": newVal.congSuat,
           "nuocSanXuat": newVal.nuocSanXuat,
           "namSanXuat": newVal.namSanXuat,
-          "ghiChu": newVal.chiTietDieuDongCCDCVatTuDTO?.ghiChu ?? '',
+          "ghiChu": newVal.ghiChu,
           "ngayTao": newVal.ngayTao,
           "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
           "nguoiTao": newVal.nguoiTao,

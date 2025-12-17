@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_utils.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
@@ -813,21 +812,94 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SGInputText(
-          key: ValueKey('input_${rowIndex}_${column.field}'),
-          controller: controller,
-          height: 40,
-          inputFormatters:
-              column.inputType == TextInputType.number
-                  ? [FilteringTextInputFormatter.digitsOnly]
-                  : null,
-          borderRadius: 10,
-          enabled: widget.isEditing,
-          showBorder: true,
-          hintText: 'Nhập thông tin',
-          onChanged: (value) {
-            setState(() {
-              controller.text = value;
+        SizedBox(
+          height: 45, // chiều cao ô nhập
+          child: TextField(
+            key: ValueKey('input_${rowIndex}_${column.field}'),
+            controller: controller,
+            enabled: widget.isEditing,
+            keyboardType: column.inputType,
+            inputFormatters:
+                column.inputType == TextInputType.number
+                    ? [FilteringTextInputFormatter.digitsOnly]
+                    : null,
+            textAlign: TextAlign.left,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Nhập thông tin',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: BorderSide(
+                  color: SGAppColors.colorBorderGray,
+                  width: 1,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: BorderSide(
+                  color: SGAppColors.colorBorderGray,
+                  width: 1.2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 8,
+              ),
+            ),
+            onChanged: (raw) {
+              // Chuẩn hoá giá trị input trước khi đẩy vào data / onValueChanged
+              String value = raw;
+
+              if (column.inputType == TextInputType.number) {
+                // Loại bỏ khoảng trắng thừa (phòng tránh copy/paste lỗi)
+                value = value.trim();
+                if (value.isEmpty) {
+                  // Cho phép xoá sạch, không cần parse/clamp
+                  _updateCellValue(rowIndex, column.field, value);
+                  final updater = column.onValueChanged;
+                  if (updater != null) {
+                    updater(item, rowIndex, value, (
+                      String targetField,
+                      dynamic targetValue,
+                    ) {
+                      if (targetField == column.field) return;
+                      _setCellValue(rowIndex, targetField, targetValue);
+                    });
+                  }
+                  return;
+                }
+
+                final maxGetter = column.max;
+                if (maxGetter != null) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null) {
+                    final maxVal = maxGetter(item);
+                    if (parsed > maxVal) {
+                      // Clamp theo max
+                      final clampedText = maxVal.toString();
+                      if (controller.text != clampedText) {
+                        controller.value = TextEditingValue(
+                          text: clampedText,
+                          selection: TextSelection.collapsed(
+                            offset: clampedText.length,
+                          ),
+                          composing: TextRange.empty,
+                        );
+                      }
+                      value = clampedText;
+                    }
+                  }
+                }
+              }
+
+              // Nếu text không đổi thì bỏ qua để tránh setState / notify dư thừa
+              if (controller.text == value) {
+                return;
+              }
+
               _updateCellValue(rowIndex, column.field, value);
               final updater = column.onValueChanged;
               if (updater != null) {
@@ -839,8 +911,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                   _setCellValue(rowIndex, targetField, targetValue);
                 });
               }
-            });
-          },
+            },
+          ),
         ),
         if (column.errorText.isNotEmpty)
           Padding(
@@ -993,6 +1065,7 @@ class SgEditableColumn<T> {
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
   final TextInputType? inputType;
   final String errorText;
+  final int Function(T item)? max;
   // NEW: editor type and dropdown config
   final EditableCellEditor editor;
   // Cho phép kiểu giá trị dropdown khác với kiểu T (row) thông qua dynamic
@@ -1030,5 +1103,6 @@ class SgEditableColumn<T> {
     this.errorText = '',
     this.searchableDropdownOptions,
     this.displayStringForOption,
+    this.max,
   });
 }
