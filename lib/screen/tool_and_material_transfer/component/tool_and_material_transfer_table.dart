@@ -264,20 +264,21 @@ class _DetailToolAndMaterialTransferTableState
                 },
                 sortValueGetter: (item) => item.tenCCDCVatTu,
                 isCellEditableDecider: (item, rowIndex) => true,
-                editor: EditableCellEditor.dropdown,
-                dropdownItems: [
-                  for (final element in listItemDropdownDetailAsset)
-                    DropdownMenuItem<ItemDropdownDetailCcdc>(
-                      value: element,
-                      child: Text(element.tenDetailAsset),
-                    ),
-                ],
+                editor: EditableCellEditor.searchableDropdown,
+                searchableDropdownOptions: listItemDropdownDetailAsset,
+                displayStringForOption:
+                    (option) =>
+                        (option as ItemDropdownDetailCcdc).tenDetailAsset,
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
+                  final selectedItem = newValue as ItemDropdownDetailCcdc;
                   updateRow('asset', item.tenCCDCVatTu);
-                  updateRow('don_vi_tinh', newValue.donViTinh);
-                  updateRow('so_luong', newValue.soLuong);
-                  updateRow('ghi_chu', newValue.ghiChu);
-                  updateRow('so_luong_xuat', newValue.soLuongXuat.toString());
+                  updateRow('don_vi_tinh', selectedItem.donViTinh);
+                  updateRow('so_luong', selectedItem.soLuong);
+                  updateRow('ghi_chu', selectedItem.ghiChu);
+                  updateRow(
+                    'so_luong_xuat',
+                    selectedItem.soLuongXuat.toString(),
+                  );
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
@@ -325,6 +326,7 @@ class _DetailToolAndMaterialTransferTableState
                     );
                     item.soLuongXuat = item.soLuong;
                     updateRow('so_luong_xuat', item.soLuongXuat);
+                    Future.microtask(() => _forceNotifyDataChanged());
                   } else {
                     item.soLuongXuat = int.parse(value);
                   }
@@ -360,7 +362,7 @@ class _DetailToolAndMaterialTransferTableState
                 getValue: (item) => item.ghiChu,
                 setValue: (item, value) => item.ghiChu = value,
                 sortValueGetter: (item) => item.ghiChu,
-                isEditable: false,
+                isEditable: widget.isEditing,
               ),
             ],
           ),

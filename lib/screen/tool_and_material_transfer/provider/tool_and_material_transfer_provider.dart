@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -759,6 +758,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
     if (id.isEmpty) return [];
+    _isLoading = true;
+    _messageLoading = 'Đang tải dữ liệu CCDC theo đơn vị sở hữu...';
+    notifyListeners();
     Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
         .getListOwnershipUnit(id);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
@@ -766,7 +768,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       final list =
           rawData.map((item) => OwnershipUnitDetailDto.fromJson(item)).toList();
       _listOwnershipUnit = list;
-      log('message [getListOwnership] list: ${jsonEncode(_listOwnershipUnit)}');
+      _isLoading = false;
+      _messageLoading = '';
       notifyListeners();
       return list;
     } else {

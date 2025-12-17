@@ -39,12 +39,16 @@ Widget _buildTable() {
           headers
               .map(
                 (title) => DataColumn(
-                  label: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.robotoSerif(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                  label: Expanded(
+                    child: Center(
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.robotoSerif(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ),
                 ),

@@ -396,8 +396,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeaderRow1(),
-          _buildHeaderRow2(),
-          _buildHeaderRow3(),
+          _buildHeaderRows2And3(),
           // Build các hàng dữ liệu
           ..._dataRows.map((rowData) => _buildDataRow(rowData)).toList(),
           _buildAddRowButton(),
@@ -415,70 +414,190 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
         children: [
           _buildHeaderCell(const Text('Ghi tăng tài sản cố định và công cụ, dụng cụ', style: style, textAlign: TextAlign.center), _flexGhiTang),
           _buildHeaderCell(const Text('Ghi giảm tài sản cố định và công cụ, dụng cụ', style: style, textAlign: TextAlign.center), _flexGhiGiam),
-          _buildHeaderCell(const Text('Ghi chú', style: style), _flexGhiChu, rowSpan: 3, isLast: true),
+          _buildHeaderCell(const Text('Ghi chú', style: style, textAlign: TextAlign.center), _flexGhiChu, rowSpan: 3, isLast: true),
         ],
       ),
     );
   }
 
-  /// Hàng header 2: Chứng từ / Tên / ... / Lý do / ...
-  Widget _buildHeaderRow2() {
+  /// Hàng header 2 và 3 kết hợp để hỗ trợ rowSpan thực sự
+  Widget _buildHeaderRows2And3() {
     const style = TextStyle(fontWeight: FontWeight.bold);
-    return IntrinsicHeight(
+    const double rowHeight = 36.0; // Chiều cao mỗi hàng con
+
+    return SizedBox(
+      height: rowHeight * 2, // 2 hàng
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // "Ghi tăng" children
-          _buildHeaderCell(const Text('Chứng từ', style: style), _flexCtTang),
-          _buildHeaderCell(const Text('Tên, nhãn hiệu, quy cách tài sản cố định và công cụ, dụng cụ', style: style, textAlign: TextAlign.center), _flexTenTs, rowSpan: 2),
-          _buildHeaderCell(const Text('Đơn vị tính', style: style), _flexDvt, rowSpan: 2),
-          _buildHeaderCell(const Text('Số lượng', style: style), _flexSlTang, rowSpan: 2),
-          _buildHeaderCell(const Text('Đơn giá', style: style), _flexDonGia, rowSpan: 2),
-          _buildHeaderCell(const Text('Số tiền', style: style), _flexStTang, rowSpan: 2),
+          // === GHI TĂNG ===
+          // Cột "Chứng từ" - chia 2 hàng con
+          Expanded(
+            flex: _flexCtTang,
+            child: Column(
+              children: [
+                // Hàng trên: "Chứng từ"
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: const Border(
+                        bottom: BorderSide(color: Colors.black, width: 1.0),
+                        right: BorderSide(color: Colors.black, width: 1.0),
+                      ),
+                      color: Colors.grey[200],
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Chứng từ', style: style, textAlign: TextAlign.center)],
+                    ),
+                  ),
+                ),
+                // Hàng dưới: "Số hiệu" | "Ngày, tháng"
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: _flexCtSoHieu,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: const Border(
+                              bottom: BorderSide(color: Colors.black, width: 1.0),
+                              right: BorderSide(color: Colors.black, width: 1.0),
+                            ),
+                            color: Colors.grey[200],
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [Text('Số hiệu', style: style, textAlign: TextAlign.center)],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _flexCtNgay,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: const Border(
+                              bottom: BorderSide(color: Colors.black, width: 1.0),
+                              right: BorderSide(color: Colors.black, width: 1.0),
+                            ),
+                            color: Colors.grey[200],
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [Text('Ngày, tháng', style: style, textAlign: TextAlign.center)],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-          // "Ghi giảm" children
-          _buildHeaderCell(const Text('Chứng từ', style: style), _flexCtGiam),
-          _buildHeaderCell(const Text('Lý do', style: style), _flexLyDo, rowSpan: 2),
-          _buildHeaderCell(const Text('Số lượng', style: style), _flexSlGiam, rowSpan: 2),
-          _buildHeaderCell(const Text('Số tiền', style: style), _flexStGiam, rowSpan: 2),
+          // Các cột rowSpan: 2 - chiếm cả 2 hàng
+          _buildSpanCell(const Text('Tên, nhãn hiệu, quy cách tài sản cố định và công cụ, dụng cụ', style: style, textAlign: TextAlign.center), _flexTenTs),
+          _buildSpanCell(const Text('Đơn vị tính', style: style, textAlign: TextAlign.center), _flexDvt),
+          _buildSpanCell(const Text('Số lượng', style: style, textAlign: TextAlign.center), _flexSlTang),
+          _buildSpanCell(const Text('Đơn giá', style: style, textAlign: TextAlign.center), _flexDonGia),
+          _buildSpanCell(const Text('Số tiền', style: style, textAlign: TextAlign.center), _flexStTang),
 
-          // Ô trống cho cột Ghi chú
+          // === GHI GIẢM ===
+          // Cột "Chứng từ" - chia 2 hàng con
+          Expanded(
+            flex: _flexCtGiam,
+            child: Column(
+              children: [
+                // Hàng trên: "Chứng từ"
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: const Border(
+                        bottom: BorderSide(color: Colors.black, width: 1.0),
+                        right: BorderSide(color: Colors.black, width: 1.0),
+                      ),
+                      color: Colors.grey[200],
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Chứng từ', style: style, textAlign: TextAlign.center)],
+                    ),
+                  ),
+                ),
+                // Hàng dưới: "Số hiệu" | "Ngày, tháng"
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: _flexCtGiamSoHieu,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: const Border(
+                              bottom: BorderSide(color: Colors.black, width: 1.0),
+                              right: BorderSide(color: Colors.black, width: 1.0),
+                            ),
+                            color: Colors.grey[200],
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [Text('Số hiệu', style: style, textAlign: TextAlign.center)],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: _flexCtGiamNgay,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: const Border(
+                              bottom: BorderSide(color: Colors.black, width: 1.0),
+                              right: BorderSide(color: Colors.black, width: 1.0),
+                            ),
+                            color: Colors.grey[200],
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [Text('Ngày, tháng', style: style, textAlign: TextAlign.center)],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Các cột rowSpan: 2 của Ghi giảm
+          _buildSpanCell(const Text('Lý do', style: style, textAlign: TextAlign.center), _flexLyDo),
+          _buildSpanCell(const Text('Số lượng', style: style, textAlign: TextAlign.center), _flexSlGiam),
+          _buildSpanCell(const Text('Số tiền', style: style, textAlign: TextAlign.center), _flexStGiam),
+
+          // Ô trống cho Ghi chú (đã ở Row 1)
           _buildEmptyFlex(_flexGhiChu, isLast: true),
         ],
       ),
     );
   }
 
-  /// Hàng header 3: Số hiệu / Ngày / ...
-  Widget _buildHeaderRow3() {
-    const style = TextStyle(fontWeight: FontWeight.bold);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // "Chứng từ" (tăng) children
-          _buildHeaderCell(const Text('Số hiệu', style: style), _flexCtSoHieu, isSubHeader: true),
-          _buildHeaderCell(const Text('Ngày, tháng', style: style), _flexCtNgay, isSubHeader: true),
-
-          // Empties for rowSpan columns
-          _buildEmptyFlex(_flexTenTs),
-          _buildEmptyFlex(_flexDvt),
-          _buildEmptyFlex(_flexSlTang),
-          _buildEmptyFlex(_flexDonGia),
-          _buildEmptyFlex(_flexStTang),
-
-          // "Chứng từ" (giảm) children
-          _buildHeaderCell(const Text('Số hiệu', style: style), _flexCtGiamSoHieu, isSubHeader: true),
-          _buildHeaderCell(const Text('Ngày, tháng', style: style), _flexCtGiamNgay, isSubHeader: true),
-
-          // Empties for rowSpan columns
-          _buildEmptyFlex(_flexLyDo),
-          _buildEmptyFlex(_flexSlGiam),
-          _buildEmptyFlex(_flexStGiam),
-
-          // Ô trống cho cột Ghi chú
-          _buildEmptyFlex(_flexGhiChu, isLast: true),
-        ],
+  /// Helper cho cell span 2 hàng
+  Widget _buildSpanCell(Widget child, int flex, {bool isLast = false}) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        padding: const EdgeInsets.all(4.0),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: const BorderSide(color: Colors.black, width: 1.0),
+            right: isLast ? BorderSide.none : const BorderSide(color: Colors.black, width: 1.0),
+          ),
+          color: Colors.grey[200],
+        ),
+        child: Center(
+          child: SizedBox(
+            width: double.infinity,
+            child: child,
+          ),
+        ),
       ),
     );
   }
@@ -536,8 +655,11 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           ),
           color: Colors.grey[200],
         ),
-        alignment: Alignment.center,
-        child: child,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [child],
+        ),
       ),
     );
   }

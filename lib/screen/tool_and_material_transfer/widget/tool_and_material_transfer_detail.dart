@@ -889,7 +889,6 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             setState(() {
                               donViNhan = value;
-                              log("check donViNhan: ${jsonEncode(donViNhan)}");
                             });
                           },
                           isRequired: true,
@@ -1187,9 +1186,6 @@ class _ToolAndMaterialTransferDetailState
                               soLuongDaBanGiao: 0,
                             );
                           }).toList();
-                      log(
-                        "check listNewDetails: ${jsonEncode(listNewDetails)}",
-                      );
                       if (listNewDetails.isNotEmpty) {
                         isShowPreview = true;
                       } else {

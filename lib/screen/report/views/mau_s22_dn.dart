@@ -1336,39 +1336,39 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 
   /// Helper cho ô Header
-  // Widget _buildHeaderCell(
-  //   Widget child,
-  //   int flex, {
-  //   int rowSpan = 1,
-  //   bool isSubHeader = false,
-  //   bool isLast = false,
-  // }) {
-  //   return Expanded(
-  //     flex: flex,
-  //     child: Container(
-  //       padding: const EdgeInsets.all(8.0),
-  //       decoration: BoxDecoration(
-  //         color: Colors.white,
-  //         border: Border(
-  //           bottom:
-  //               rowSpan == 1 || isSubHeader
-  //                   ? const BorderSide(color: Colors.black, width: 0.5)
-  //                   : BorderSide.none,
-  //           right:
-  //               isLast
-  //                   ? BorderSide.none
-  //                   : const BorderSide(color: Colors.black, width: 0.5),
-  //           top:
-  //               isSubHeader
-  //                   ? const BorderSide(color: Colors.black, width: 0.5)
-  //                   : BorderSide.none,
-  //         ),
-  //       ),
-  //       alignment: Alignment.center,
-  //       child: child,
-  //     ),
-  //   );
-  // }
+  Widget _buildHeaderCell(
+    Widget child,
+    int flex, {
+    int rowSpan = 1,
+    bool isSubHeader = false,
+    bool isLast = false,
+  }) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom:
+                rowSpan == 1 || isSubHeader
+                    ? const BorderSide(color: Colors.black, width: 0.5)
+                    : BorderSide.none,
+            right:
+                isLast
+                    ? BorderSide.none
+                    : const BorderSide(color: Colors.black, width: 0.5),
+            top:
+                isSubHeader
+                    ? const BorderSide(color: Colors.black, width: 0.5)
+                    : BorderSide.none,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: child,
+      ),
+    );
+  }
 
   /// Helper cho ô TextField
   Widget _buildTextFieldCell(
