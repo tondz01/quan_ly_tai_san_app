@@ -41,6 +41,9 @@ class _DetailToolAndMaterialTransferTableState
   final GlobalKey<SgEditableTableState<ItemDropdownDetailCcdc>> _tableKey =
       GlobalKey(); // Thay đổi generic type
 
+  // Debounce snackbar to prevent showing it continuously
+  DateTime? _lastSnackbarTime;
+
   void _forceNotifyDataChanged() {
     widget.onDataChanged?.call(List.from(listAsset));
   }
@@ -168,6 +171,7 @@ class _DetailToolAndMaterialTransferTableState
       }
       final asset = idToAsset[idAsset.idTaiSan];
       if (asset != null) {
+        String note = c.ghiChu.isNotEmpty ? c.ghiChu : asset.ghiChu;
         // Tìm ItemDropdownDetailAsset tương ứng
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
@@ -184,7 +188,7 @@ class _DetailToolAndMaterialTransferTableState
                 soLuong: c.soLuong,
                 soLuongXuat: 0,
                 soLuongConLai: c.soLuongConLai ?? 0,
-                ghiChu: asset.ghiChu,
+                ghiChu: note,
                 soKyHieu: asset.soKyHieu,
                 kyHieu: asset.kyHieu,
                 asset: asset,
@@ -193,6 +197,7 @@ class _DetailToolAndMaterialTransferTableState
         final newDetailAsset = detailAsset.copyWith(
           soLuongXuat: c.soLuongXuat,
           soLuongDaBanGiao: soLuongDaBanGiao,
+          ghiChu: note,
         );
         result.add(newDetailAsset);
       }
@@ -309,37 +314,46 @@ class _DetailToolAndMaterialTransferTableState
                 title: 'Số lượng xuất',
                 titleAlignment: TextAlign.center,
                 width: 100,
-                getValue:
-                    (item) =>
-                        item.soLuongXuat, // Cần thêm field này vào ItemDropdownDetailAsset
+                getValue: (item) => item.soLuongXuat,
                 inputType: TextInputType.number,
                 onValueChanged: (item, rowIndex, value, updateRow) {
-                  if (value == null || value == '') {
+                  final text = (value ?? '').toString();
+                  // Giá trị rỗng -> 0
+                  if (text.isEmpty) {
                     item.soLuongXuat = 0;
+                    Future.microtask(() => _forceNotifyDataChanged());
                     return;
                   }
-                  if (int.parse(value) > item.soLuong) {
-                    AppUtility.showSnackBar(
-                      context,
-                      "Số lượng xuất không được lớn hơn số lượng có sẵn",
-                      isError: true,
-                    );
+                  final parsed = int.tryParse(text) ?? 0;
+                  // nên parsed luôn <= item.soLuong. Ta chỉ gán lại vào model.
+                  item.soLuongXuat = parsed;
+
+                  if (parsed > item.soLuong) {
+                    // Debounce: chỉ show snackbar tối đa 1 lần / 1 giây
+                    final now = DateTime.now();
+                    if (_lastSnackbarTime == null ||
+                        now.difference(_lastSnackbarTime!).inMilliseconds > 1000) {
+                      _lastSnackbarTime = now;
+                      AppUtility.showSnackBar(
+                        context,
+                        "Số lượng xuất không được lớn hơn số lượng có sẵn",
+                        isError: true,
+                      );
+                    }
                     item.soLuongXuat = item.soLuong;
                     updateRow('so_luong_xuat', item.soLuongXuat);
-                    Future.microtask(() => _forceNotifyDataChanged());
-                  } else {
-                    item.soLuongXuat = int.parse(value);
                   }
+                  Future.microtask(() => _forceNotifyDataChanged());
                 },
                 setValue: (item, value) {
-                  if (value == null || value == '') {
+                  final text = (value ?? '').toString();
+                  if (text.isEmpty) {
                     item.soLuongXuat = 0;
                     return;
                   }
-                  if (int.parse(value) > item.soLuong) {
-                    return;
-                  }
-                  item.soLuongXuat = int.parse(value);
+                  final parsed = int.tryParse(text) ?? 0;
+                  final maxQty = item.soLuong;
+                  item.soLuongXuat = parsed > maxQty ? maxQty : parsed;
                 },
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,

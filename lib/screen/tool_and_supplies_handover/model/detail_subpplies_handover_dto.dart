@@ -20,6 +20,7 @@ class DetailSubppliesHandoverDto {
   final String? congSuat;
   final String? nuocSanXuat;
   final String? namSanXuat; // API returns string for this field
+  final String? ghiChu;
 
   // Link to transfer detail
   final String? idChiTietDieuDong; // mirrors iddieudongccdcvattu
@@ -54,6 +55,7 @@ class DetailSubppliesHandoverDto {
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
+    this.ghiChu,
   });
 
   factory DetailSubppliesHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -102,6 +104,7 @@ class DetailSubppliesHandoverDto {
               : DetailToolAndMaterialTransferDto.fromJson(
                 json['chiTietDieuDongCCDCVatTuDTO'] as Map<String, dynamic>,
               ),
+      ghiChu: parseNullableString(json['ghiChu']),
       ngayTao: AppUtility.formatFromISOString(parseString(json['ngayTao'])),
       ngayTaoChungTu: AppUtility.formatFromISOString(
         parseString(json['ngayTaoChungTu']),
@@ -129,6 +132,7 @@ class DetailSubppliesHandoverDto {
       'nuocSanXuat': nuocSanXuat,
       'namSanXuat': namSanXuat,
       'soLuong': soLuong,
+      'ghiChu': ghiChu,
       'ngayTao': AppUtility.formatFromISOString(ngayTao),
       'ngayTaoChungTu': AppUtility.formatFromISOString(ngayTaoChungTu),
       'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
@@ -165,6 +169,7 @@ class DetailSubppliesHandoverDto {
       namSanXuat: null,
       idChiTietDieuDong: null,
       chiTietDieuDongCCDCVatTuDTO: null,
+      ghiChu: null,
       ngayTao: AppUtility.formatFromISOString(now),
       ngayTaoChungTu: AppUtility.formatFromISOString(now),
       ngayCapNhat: AppUtility.formatFromISOString(now),
@@ -195,6 +200,7 @@ class DetailSubppliesHandoverDto {
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
+    String? ghiChu,
     bool? isActive,
   }) {
     return DetailSubppliesHandoverDto(
@@ -225,6 +231,7 @@ class DetailSubppliesHandoverDto {
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
+      ghiChu: ghiChu ?? this.ghiChu,
     );
   }
 }

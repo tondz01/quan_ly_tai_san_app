@@ -345,12 +345,17 @@ class _ToolAndMaterialTransferDetailState
 
         //load date value dropdown
         donViGiao = widget.provider.getPhongBanByID(item?.idDonViGiao ?? '');
-        widget.provider.getListOwnership(item?.idDonViGiao ?? '').then((value) {
-          if (mounted) {
-            setState(() {
-              listOwnershipUnit = value;
-            });
-          }
+
+        // IMPORTANT:
+        // Gọi getListOwnership sau khi frame đầu tiên build xong
+        // để tránh lỗi "setState()/notifyListeners called during build"
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final value =
+              await widget.provider.getListOwnership(item?.idDonViGiao ?? '');
+          if (!mounted) return;
+          setState(() {
+            listOwnershipUnit = value;
+          });
         });
         listStaffByDepartment =
             widget.provider.dataNhanVien

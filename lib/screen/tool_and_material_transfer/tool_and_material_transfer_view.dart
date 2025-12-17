@@ -301,6 +301,7 @@ class _ToolAndMaterialTransferViewState
         if (state is UpdateSigningTAMTStatusFailedState) {
           log('UpdateSigningTAMTStatusFailedState');
           AppUtility.showSnackBar(context, state.message, isError: true);
+          context.read<ToolAndMaterialTransferProvider>().onReloadData(context);
         }
       },
     );

@@ -633,7 +633,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         result['totalCancel'] = 0;
         result['totalComplete'] = 0;
       }
-      print('check result getDataWithPagination: $result');
     } catch (e) {
       log(
         "Error at getDataWithPagination - ToolAndMaterialTransferRepository: $e",
