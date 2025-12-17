@@ -983,6 +983,7 @@ class _ToolAndSuppliesHandoverDetailState
                           onDataChanged: (data) {
                             // Cập nhật listDetailSubppliesHandover mà không setState để tránh reset table
                             // Chỉ map những item hợp lệ (có idCCDCVatTu và idDetaiAsset)
+                            setState(() {
                             listDetailSubppliesHandover =
                                 data
                                     .where(
@@ -1021,6 +1022,8 @@ class _ToolAndSuppliesHandoverDetailState
                                       ),
                                     )
                                     .toList();
+
+                                    log('listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}');
                             
                             // Defer setState để tránh rebuild trong build phase và mất focus
                             // Chỉ update preview khi cần thiết, không rebuild table
@@ -1030,7 +1033,8 @@ class _ToolAndSuppliesHandoverDetailState
                                 // Chỉ setState nếu thực sự cần thiết để update preview
                                 // Không rebuild table vì table đã tự quản lý state riêng
                                 setState(() {});
-                              }
+                                }
+                              });
                             });
                           },
                         )

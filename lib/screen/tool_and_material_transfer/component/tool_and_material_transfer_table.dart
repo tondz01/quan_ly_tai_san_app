@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -321,7 +323,6 @@ class _DetailToolAndMaterialTransferTableState
                   // Giá trị rỗng -> 0
                   if (text.isEmpty) {
                     item.soLuongXuat = 0;
-                    Future.microtask(() => _forceNotifyDataChanged());
                     return;
                   }
                   final parsed = int.tryParse(text) ?? 0;
@@ -343,6 +344,11 @@ class _DetailToolAndMaterialTransferTableState
                     item.soLuongXuat = item.soLuong;
                     updateRow('so_luong_xuat', item.soLuongXuat);
                   }
+                  log('-----value: $value');
+                  log('-----item: $item');
+                  log('-----rowIndex: $rowIndex');
+                  log('-----item.soLuong: ${item.soLuong}');
+                  log('-----item.soLuongXuat: ${item.soLuongXuat}');
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
                 setValue: (item, value) {
@@ -352,8 +358,7 @@ class _DetailToolAndMaterialTransferTableState
                     return;
                   }
                   final parsed = int.tryParse(text) ?? 0;
-                  final maxQty = item.soLuong;
-                  item.soLuongXuat = parsed > maxQty ? maxQty : parsed;
+                  item.soLuongXuat = parsed;
                 },
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,

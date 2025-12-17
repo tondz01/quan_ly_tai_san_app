@@ -24,6 +24,7 @@ class DetailToolAndMaterialTransferDto {
   final String nguoiCapNhat;
   final bool active;
   final int? soLuongConLai;
+  final int? soLuongCon;
 
   DetailToolAndMaterialTransferDto({
     required this.id,
@@ -49,6 +50,7 @@ class DetailToolAndMaterialTransferDto {
     required this.nguoiCapNhat,
     required this.active,
     this.soLuongConLai,
+    this.soLuongCon,
   });
 
   factory DetailToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -101,6 +103,7 @@ class DetailToolAndMaterialTransferDto {
       soLuongConLai: json['soLuongConLai'] is int
           ? json['soLuongConLai'] as int?
           : int.tryParse(json['soLuongConLai']?.toString() ?? '0'),
+      soLuongCon: parseInt(json['soLuongCon'] ?? 0),
     );
   }
 
@@ -133,6 +136,7 @@ class DetailToolAndMaterialTransferDto {
       'active': active,
       'isActive': active, // Tương thích ngược
       'soLuongConLai': soLuongConLai,
+      'soLuongCon': soLuongCon,
     };
   }
 
@@ -162,6 +166,7 @@ class DetailToolAndMaterialTransferDto {
       nguoiCapNhat: '',
       active: false,
       soLuongConLai: 0,
+      soLuongCon: 0,
     );
   }
   
@@ -190,6 +195,7 @@ class DetailToolAndMaterialTransferDto {
     String? nguoiCapNhat,
     bool? active,
     int? soLuongConLai,
+    int? soLuongCon,
   }) {
     return DetailToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -215,6 +221,7 @@ class DetailToolAndMaterialTransferDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       active: active ?? this.active,
       soLuongConLai: soLuongConLai ?? this.soLuongConLai,
+      soLuongCon: soLuongCon ?? this.soLuongCon,
     );
   }
 }
