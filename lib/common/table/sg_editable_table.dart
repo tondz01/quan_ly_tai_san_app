@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_utils.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
@@ -71,15 +72,17 @@ class SgEditableTable<T> extends StatefulWidget {
 }
 
 class SgEditableTableState<T> extends State<SgEditableTable<T>> {
-    // Public getter để truy cập controllers từ ngoài (ví dụ qua _tableKey.currentState.controllers)
-    Map<int, Map<String, TextEditingController>> get controllers => _controllers;
+  // Public getter để truy cập controllers từ ngoài (ví dụ qua _tableKey.currentState.controllers)
+  Map<int, Map<String, TextEditingController>> get controllers => _controllers;
   late List<T> _tableData;
   int? _selectedRowIndex;
   Map<int, Map<String, TextEditingController>> _controllers = {};
   // For RawAutocomplete listeners and state per row/field
-  final Map<int, Map<String, TextEditingController>> _autocompleteTextControllers = {};
+  final Map<int, Map<String, TextEditingController>>
+  _autocompleteTextControllers = {};
   final Map<int, Map<String, FocusNode>> _autocompleteFocusNodes = {};
-  final Map<int, Map<String, VoidCallback>> _autocompleteControllerListeners = {};
+  final Map<int, Map<String, VoidCallback>> _autocompleteControllerListeners =
+      {};
   final Map<int, Map<String, VoidCallback>> _autocompleteFocusListeners = {};
   final Map<int, Map<String, dynamic>> _lastSelectedOption = {};
   final Map<int, Map<String, bool>> _didTapToEdit = {};
@@ -98,6 +101,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   void _initControllers() {
+    // Dispose all existing controllers first to avoid memory leaks and composing state issues
+    for (final rowControllers in _controllers.values) {
+      for (final controller in rowControllers.values) {
+        controller.dispose();
+      }
+    }
     _controllers.clear();
     _rowEditableFlags.clear();
     for (int i = 0; i < _tableData.length; i++) {
@@ -112,10 +121,15 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     for (var column in widget.columns) {
       if (column.isEditable) {
-        var value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+        var value =
+            column.getValueWithIndex?.call(item, rowIndex) ??
+            column.getValue(item);
         // Nếu là field ghi_chu, luôn lấy đúng giá trị hiện tại của item (không lấy cache)
         if (column.field == 'ghi_chu') {
-          value = (item != null && (item as dynamic).ghiChu != null) ? (item as dynamic).ghiChu : '';
+          value =
+              (item != null && (item as dynamic).ghiChu != null)
+                  ? (item as dynamic).ghiChu
+                  : '';
         }
         final controller = TextEditingController(text: value?.toString() ?? '');
         _controllers[rowIndex]![column.field] = controller;
@@ -257,7 +271,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     final controller = _controllers[rowIndex]?[field];
     if (controller != null) {
       final item = _tableData[rowIndex];
-      final displayValue = column.getValueWithIndex?.call(item, rowIndex) ??
+      final displayValue =
+          column.getValueWithIndex?.call(item, rowIndex) ??
           column.getValue(item);
       final textValue = displayValue?.toString() ?? '';
       if (controller.text != textValue) {
@@ -375,7 +390,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   @override
   Widget build(BuildContext context) {
     final screenWidth =
-        MediaQuery.of(context).size.width - (widget.omittedSize ?? 0) - widget.subtractedSize;
+        MediaQuery.of(context).size.width -
+        (widget.omittedSize ?? 0) -
+        widget.subtractedSize;
     final newWidths = adjustColumnWidths(
       originalWidths: {for (final col in widget.columns) col.title: col.width},
       minTableWidth: screenWidth,
@@ -594,10 +611,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     if (column.editor == EditableCellEditor.searchableDropdown) {
       // Always treat null as empty list for options
       final rawOptions = column.searchableDropdownOptions;
-      final options = (rawOptions == null) ? <Object>[] : rawOptions.cast<Object>();
-      final displayString = column.displayStringForOption ?? (option) => option.toString();
+      final options =
+          (rawOptions == null) ? <Object>[] : rawOptions.cast<Object>();
+      final displayString =
+          column.displayStringForOption ?? (option) => option.toString();
       final currentValue = column.getValue(item);
-      final initialText = currentValue != null ? displayString(currentValue) : '';
+      final initialText =
+          currentValue != null ? displayString(currentValue) : '';
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -606,8 +626,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             // Ensure per-row/field controllers and focus nodes exist
             _autocompleteTextControllers[rowIndex] ??= {};
             _autocompleteFocusNodes[rowIndex] ??= {};
-            final textController = _autocompleteTextControllers[rowIndex]![column.field] ??= TextEditingController(text: initialText);
-            final focusNode = _autocompleteFocusNodes[rowIndex]![column.field] ??= FocusNode();
+            final textController =
+                _autocompleteTextControllers[rowIndex]![column
+                    .field] ??= TextEditingController(text: initialText);
+            final focusNode =
+                _autocompleteFocusNodes[rowIndex]![column.field] ??=
+                    FocusNode();
 
             // Track if user explicitly tapped into field to edit
             _didTapToEdit[rowIndex]![column.field] ??= false;
@@ -616,33 +640,43 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             _lastSelectedOption[rowIndex]![column.field] ??= currentValue;
 
             // Attach listeners only once
-            if (!_autocompleteControllerListeners[rowIndex]!.containsKey(column.field)) {
+            if (!_autocompleteControllerListeners[rowIndex]!.containsKey(
+              column.field,
+            )) {
               void listener() {
                 // mark that user typed (used for clearing logic)
                 _didTapToEdit[rowIndex]![column.field] = true;
                 setState(() {});
               }
+
               textController.addListener(listener);
-              _autocompleteControllerListeners[rowIndex]![column.field] = listener;
+              _autocompleteControllerListeners[rowIndex]![column.field] =
+                  listener;
             }
-            if (!_autocompleteFocusListeners[rowIndex]!.containsKey(column.field)) {
+            if (!_autocompleteFocusListeners[rowIndex]!.containsKey(
+              column.field,
+            )) {
               void focusListener() {
                 if (!focusNode.hasFocus) {
                   // On blur: if user typed but didn't select an option, revert to lastSelectedOption
-                  final didEdit = _didTapToEdit[rowIndex]![column.field] as bool;
+                  final didEdit =
+                      _didTapToEdit[rowIndex]![column.field] as bool;
                   final last = _lastSelectedOption[rowIndex]![column.field];
                   if (didEdit) {
                     // Try to find a matching option; if none selected then revert
                     final typed = textController.text;
                     final found = options.firstWhere(
-                      (opt) => displayString(opt).toLowerCase() == typed.toLowerCase(),
+                      (opt) =>
+                          displayString(opt).toLowerCase() ==
+                          typed.toLowerCase(),
                       orElse: () => Object(),
                     );
                     // If not found, found is a dummy Object (not in options)
                     final isValid = options.contains(found);
                     if (!isValid) {
                       // revert text to last selected
-                      final revertText = last != null ? displayString(last) : '';
+                      final revertText =
+                          last != null ? displayString(last) : '';
                       textController.text = revertText;
                       // also update model if needed
                       if (last != null) {
@@ -655,12 +689,16 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                   setState(() {});
                 }
               }
+
               focusNode.addListener(focusListener);
-              _autocompleteFocusListeners[rowIndex]![column.field] = focusListener;
+              _autocompleteFocusListeners[rowIndex]![column.field] =
+                  focusListener;
             }
 
             return RawAutocomplete<Object>(
-              key: ValueKey('searchable_${rowIndex}_${column.field}_${item.hashCode}'),
+              key: ValueKey(
+                'searchable_${rowIndex}_${column.field}_${item.hashCode}',
+              ),
               textEditingController: textController,
               focusNode: focusNode,
               displayStringForOption: displayString,
@@ -669,10 +707,11 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 if (options.isEmpty) return const [_NoDataOption()];
                 if (textEditingValue.text.isEmpty) return options;
                 final searchText = textEditingValue.text.toLowerCase();
-                final filtered = options.where((option) {
-                  final optionText = displayString(option).toLowerCase();
-                  return optionText.contains(searchText);
-                }).toList();
+                final filtered =
+                    options.where((option) {
+                      final optionText = displayString(option).toLowerCase();
+                      return optionText.contains(searchText);
+                    }).toList();
                 // Nếu không có kết quả phù hợp, trả về [_NoDataOption()]
                 if (filtered.isEmpty) return const [_NoDataOption()];
                 return filtered;
@@ -688,7 +727,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxHeight: 200,
-                          maxWidth: constraints.maxWidth > 0 ? constraints.maxWidth : 250,
+                          maxWidth:
+                              constraints.maxWidth > 0
+                                  ? constraints.maxWidth
+                                  : 250,
                         ),
                         child: _buildEmptyView(),
                       ),
@@ -703,7 +745,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxHeight: 200,
-                        maxWidth: constraints.maxWidth > 0 ? constraints.maxWidth : 250,
+                        maxWidth:
+                            constraints.maxWidth > 0
+                                ? constraints.maxWidth
+                                : 250,
                       ),
                       child: ListView.builder(
                         padding: EdgeInsets.zero,
@@ -711,14 +756,19 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                         itemCount: opts.length,
                         itemBuilder: (context, index) {
                           final option = opts.elementAt(index);
-                          final isHighlighted = AutocompleteHighlightedOption.of(context) == index;
+                          final isHighlighted =
+                              AutocompleteHighlightedOption.of(context) ==
+                              index;
                           return InkWell(
                             onTap: () {
                               onSelected(option);
                             },
                             child: Container(
                               color: isHighlighted ? Colors.blue.shade50 : null,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               child: Text(
                                 displayString(option),
                                 style: const TextStyle(fontSize: 13),
@@ -773,21 +823,34 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                       border: InputBorder.none,
                       hintText: 'Nhập để tìm kiếm...',
-                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                      suffixIcon: controller.text.isNotEmpty
-                          ? GestureDetector(
-                              onTap: () {
-                                // clear input
-                                controller.clear();
-                                _didTapToEdit[rowIndex]![column.field] = true;
-                                setState(() {});
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Icon(Icons.clear, size: 20, color: Colors.grey.shade600),
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 13,
+                      ),
+                      suffixIcon:
+                          controller.text.isNotEmpty
+                              ? GestureDetector(
+                                onTap: () {
+                                  // clear input
+                                  controller.clear();
+                                  _didTapToEdit[rowIndex]![column.field] = true;
+                                  setState(() {});
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
+                                  child: Icon(
+                                    Icons.clear,
+                                    size: 20,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              )
+                              : Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.grey.shade600,
                               ),
-                            )
-                          : Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
                     ),
                     onTap: () {
                       // clicking into field will allow editing and clear previous display if desired
@@ -795,7 +858,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                       // Optionally clear input when user taps if it matches the last selected display
                       // only clear if current text equals last selected display
                       final last = _lastSelectedOption[rowIndex]![column.field];
-                      if (last != null && controller.text == displayString(last)) {
+                      if (last != null &&
+                          controller.text == displayString(last)) {
                         controller.clear();
                       }
                       setState(() {});
@@ -812,114 +876,45 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 45, // chiều cao ô nhập
-          child: TextField(
-            key: ValueKey('input_${rowIndex}_${column.field}'),
-            controller: controller,
-            enabled: widget.isEditing,
-            keyboardType: column.inputType,
-            inputFormatters:
-                column.inputType == TextInputType.number
-                    ? [FilteringTextInputFormatter.digitsOnly]
-                    : null,
-            textAlign: TextAlign.left,
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: 'Nhập thông tin',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(
-                  color: SGAppColors.colorBorderGray,
-                  width: 1,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(
-                  color: SGAppColors.colorBorderGray,
-                  width: 1.2,
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 8,
-              ),
-            ),
-            onChanged: (raw) {
-              // Chuẩn hoá giá trị input trước khi đẩy vào data / onValueChanged
-              String value = raw;
-
-              if (column.inputType == TextInputType.number) {
-                // Loại bỏ khoảng trắng thừa (phòng tránh copy/paste lỗi)
-                value = value.trim();
-                if (value.isEmpty) {
-                  // Cho phép xoá sạch, không cần parse/clamp
-                  _updateCellValue(rowIndex, column.field, value);
-                  final updater = column.onValueChanged;
-                  if (updater != null) {
-                    updater(item, rowIndex, value, (
-                      String targetField,
-                      dynamic targetValue,
-                    ) {
-                      if (targetField == column.field) return;
-                      _setCellValue(rowIndex, targetField, targetValue);
-                    });
-                  }
-                  return;
-                }
-
-                final maxGetter = column.max;
-                if (maxGetter != null) {
-                  final parsed = int.tryParse(value);
-                  if (parsed != null) {
-                    final maxVal = maxGetter(item);
-                    if (parsed > maxVal) {
-                      // Clamp theo max
-                      final clampedText = maxVal.toString();
-                      if (controller.text != clampedText) {
-                        controller.value = TextEditingValue(
-                          text: clampedText,
-                          selection: TextSelection.collapsed(
-                            offset: clampedText.length,
-                          ),
-                          composing: TextRange.empty,
-                        );
-                      }
-                      value = clampedText;
-                    }
-                  }
-                }
-              }
-
-              // Nếu text không đổi thì bỏ qua để tránh setState / notify dư thừa
-              if (controller.text == value) {
-                return;
-              }
-
+        SGInputText(
+          controller: controller,
+          height: 40,
+          inputFormatters:
+              column.inputType == TextInputType.number
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
+          borderRadius: 10,
+          enabled: widget.isEditing,
+          // onlyLine: true,
+          showBorder: true,
+          hintText: 'Nhập thông tin',
+          onChanged: (value) {
+            // Don't set controller.text here - it's already updated by the TextField
+            // Setting it again can cause issues with composing state
+            setState(() {
+              controller.text = value;
               _updateCellValue(rowIndex, column.field, value);
+              
+              // cascade updates
               final updater = column.onValueChanged;
               if (updater != null) {
                 updater(item, rowIndex, value, (
                   String targetField,
                   dynamic targetValue,
                 ) {
-                  if (targetField == column.field) return;
+                  if (targetField == column.field) return; // avoid recursion
                   _setCellValue(rowIndex, targetField, targetValue);
                 });
               }
-            },
-          ),
+            });
+          },
         ),
         if (column.errorText.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(4),
             child: Text(
               "*${column.errorText}",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ),
       ],
@@ -1025,6 +1020,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       ),
     );
   }
+
   Widget _buildEmptyView() {
     return Container(
       alignment: Alignment.center,
@@ -1080,8 +1076,10 @@ class SgEditableColumn<T> {
   onValueChanged;
 
   // Searchable dropdown config
-  final List<dynamic>? searchableDropdownOptions; // Danh sách options cho searchable dropdown
-  final String Function(dynamic)? displayStringForOption; // Hàm chuyển option thành chuỗi hiển thị
+  final List<dynamic>?
+  searchableDropdownOptions; // Danh sách options cho searchable dropdown
+  final String Function(dynamic)?
+  displayStringForOption; // Hàm chuyển option thành chuỗi hiển thị
 
   SgEditableColumn({
     required this.field,

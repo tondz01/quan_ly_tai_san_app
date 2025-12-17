@@ -424,6 +424,10 @@ class _ToolAndMaterialTransferDetailState
                 )
                 .toList() ??
             [];
+
+          itemPreview = _createToolAndMaterialTransPreview(
+            widget.type,
+          );
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
         controllerSoChungTu.text = widget.provider.genID();
@@ -1138,8 +1142,7 @@ class _ToolAndMaterialTransferDetailState
                 listOwnershipUnit: widget.provider.listOwnershipUnit,
                 onDataChanged: (data) {
                   // Defer setState to avoid calling during build
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!mounted) return;
+                
                     setState(() {
                       String keyOf(
                         String idCCDCVatTu,
@@ -1189,25 +1192,28 @@ class _ToolAndMaterialTransferDetailState
                               active: true,
                               soLuongXuat: e.soLuongXuat,
                               soLuongDaBanGiao: 0,
+                              soLuongCon: e.soLuong,
                             );
                           }).toList();
+
                       if (listNewDetails.isNotEmpty) {
                         isShowPreview = true;
                       } else {
                         isShowPreview = false;
                       }
+                    
                       itemPreview = _createToolAndMaterialTransPreview(
                         typeTransfer,
                       );
                     });
-                  });
+                 
                 },
               ),
 
               SizedBox(height: 10),
               previewDocumentToolAndMaterialTransfer(
                 context: context,
-                item: item ?? itemPreview,
+                item: itemPreview,
                 nhanVien: widget.provider.getNhanVienByID(
                   widget.provider.userInfo?.tenDangNhap ?? '',
                 ),
