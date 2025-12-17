@@ -11,6 +11,11 @@ import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 // Add sort direction enum
 enum SortDirection { none, ascending, descending }
 
+// Đối tượng đặc biệt để nhận biết trạng thái không có dữ liệu trong dropdown
+class _NoDataOption {
+  const _NoDataOption();
+}
+
 // Add editor type enum for editable cells
 enum EditableCellEditor { text, dropdown, searchableDropdown }
 
@@ -67,9 +72,18 @@ class SgEditableTable<T> extends StatefulWidget {
 }
 
 class SgEditableTableState<T> extends State<SgEditableTable<T>> {
+    // Public getter để truy cập controllers từ ngoài (ví dụ qua _tableKey.currentState.controllers)
+    Map<int, Map<String, TextEditingController>> get controllers => _controllers;
   late List<T> _tableData;
   int? _selectedRowIndex;
   Map<int, Map<String, TextEditingController>> _controllers = {};
+  // For RawAutocomplete listeners and state per row/field
+  final Map<int, Map<String, TextEditingController>> _autocompleteTextControllers = {};
+  final Map<int, Map<String, FocusNode>> _autocompleteFocusNodes = {};
+  final Map<int, Map<String, VoidCallback>> _autocompleteControllerListeners = {};
+  final Map<int, Map<String, VoidCallback>> _autocompleteFocusListeners = {};
+  final Map<int, Map<String, dynamic>> _lastSelectedOption = {};
+  final Map<int, Map<String, bool>> _didTapToEdit = {};
   // NEW: track per-row editable flags
   Map<int, bool> _rowEditableFlags = {};
 
@@ -108,6 +122,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]![column.field] = controller;
       }
     }
+    // prepare supporting maps for this row
+    _autocompleteTextControllers[rowIndex] = {};
+    _autocompleteFocusNodes[rowIndex] = {};
+    _autocompleteControllerListeners[rowIndex] = {};
+    _autocompleteFocusListeners[rowIndex] = {};
+    _lastSelectedOption[rowIndex] = {};
+    _didTapToEdit[rowIndex] = {};
   }
 
   void _initRowEditableFlag(int rowIndex) {
@@ -135,6 +156,17 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     for (var rowControllers in _controllers.values) {
       for (var controller in rowControllers.values) {
         controller.dispose();
+      }
+    }
+    // Dispose autocomplete controllers and focus nodes
+    for (var rowMap in _autocompleteTextControllers.values) {
+      for (var controller in rowMap.values) {
+        controller.dispose();
+      }
+    }
+    for (var rowMap in _autocompleteFocusNodes.values) {
+      for (var node in rowMap.values) {
+        node.dispose();
       }
     }
     super.dispose();
@@ -194,6 +226,23 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       _controllers = newControllers;
       _rowEditableFlags = newEditableFlags;
     });
+    // Also remove autocomplete resources for removed row
+    if (_autocompleteTextControllers.containsKey(index)) {
+      for (var c in _autocompleteTextControllers[index]!.values) {
+        c.dispose();
+      }
+      _autocompleteTextControllers.remove(index);
+    }
+    if (_autocompleteFocusNodes.containsKey(index)) {
+      for (var n in _autocompleteFocusNodes[index]!.values) {
+        n.dispose();
+      }
+      _autocompleteFocusNodes.remove(index);
+    }
+    _autocompleteControllerListeners.remove(index);
+    _autocompleteFocusListeners.remove(index);
+    _lastSelectedOption.remove(index);
+    _didTapToEdit.remove(index);
     _notifyDataChanged();
   }
 
@@ -544,7 +593,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     // Searchable dropdown using Autocomplete
     if (column.editor == EditableCellEditor.searchableDropdown) {
-      final options = column.searchableDropdownOptions?.cast<Object>() ?? <Object>[];
+      // Always treat null as empty list for options
+      final rawOptions = column.searchableDropdownOptions;
+      final options = (rawOptions == null) ? <Object>[] : rawOptions.cast<Object>();
       final displayString = column.displayStringForOption ?? (option) => option.toString();
       final currentValue = column.getValue(item);
       final initialText = currentValue != null ? displayString(currentValue) : '';
@@ -553,45 +604,98 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return Autocomplete<Object>(
+            // Ensure per-row/field controllers and focus nodes exist
+            _autocompleteTextControllers[rowIndex] ??= {};
+            _autocompleteFocusNodes[rowIndex] ??= {};
+            final textController = _autocompleteTextControllers[rowIndex]![column.field] ??= TextEditingController(text: initialText);
+            final focusNode = _autocompleteFocusNodes[rowIndex]![column.field] ??= FocusNode();
+
+            // Track if user explicitly tapped into field to edit
+            _didTapToEdit[rowIndex]![column.field] ??= false;
+
+            // Keep last selected option to revert when blur without selection
+            _lastSelectedOption[rowIndex]![column.field] ??= currentValue;
+
+            // Attach listeners only once
+            if (!_autocompleteControllerListeners[rowIndex]!.containsKey(column.field)) {
+              void listener() {
+                // mark that user typed (used for clearing logic)
+                _didTapToEdit[rowIndex]![column.field] = true;
+                setState(() {});
+              }
+              textController.addListener(listener);
+              _autocompleteControllerListeners[rowIndex]![column.field] = listener;
+            }
+            if (!_autocompleteFocusListeners[rowIndex]!.containsKey(column.field)) {
+              void focusListener() {
+                if (!focusNode.hasFocus) {
+                  // On blur: if user typed but didn't select an option, revert to lastSelectedOption
+                  final didEdit = _didTapToEdit[rowIndex]![column.field] as bool;
+                  final last = _lastSelectedOption[rowIndex]![column.field];
+                  if (didEdit) {
+                    // Try to find a matching option; if none selected then revert
+                    final typed = textController.text;
+                    final found = options.firstWhere(
+                      (opt) => displayString(opt).toLowerCase() == typed.toLowerCase(),
+                      orElse: () => Object(),
+                    );
+                    // If not found, found is a dummy Object (not in options)
+                    final isValid = options.contains(found);
+                    if (!isValid) {
+                      // revert text to last selected
+                      final revertText = last != null ? displayString(last) : '';
+                      textController.text = revertText;
+                      // also update model if needed
+                      if (last != null) {
+                        _setCellValue(rowIndex, column.field, last);
+                      }
+                    }
+                  }
+                  // reset tap/edit flag
+                  _didTapToEdit[rowIndex]![column.field] = false;
+                  setState(() {});
+                }
+              }
+              focusNode.addListener(focusListener);
+              _autocompleteFocusListeners[rowIndex]![column.field] = focusListener;
+            }
+
+            return RawAutocomplete<Object>(
               key: ValueKey('searchable_${rowIndex}_${column.field}_${item.hashCode}'),
-              initialValue: TextEditingValue(text: initialText),
+              textEditingController: textController,
+              focusNode: focusNode,
               displayStringForOption: displayString,
               optionsBuilder: (TextEditingValue textEditingValue) {
-                if (textEditingValue.text.isEmpty) {
-                  return options;
-                }
+                // Nếu không có option nào, trả về [_NoDataOption()]
+                if (options.isEmpty) return const [_NoDataOption()];
+                if (textEditingValue.text.isEmpty) return options;
                 final searchText = textEditingValue.text.toLowerCase();
-                return options.where((option) {
+                final filtered = options.where((option) {
                   final optionText = displayString(option).toLowerCase();
                   return optionText.contains(searchText);
-                });
+                }).toList();
+                // Nếu không có kết quả phù hợp, trả về [_NoDataOption()]
+                if (filtered.isEmpty) return const [_NoDataOption()];
+                return filtered;
               },
-              optionsMaxHeight: 200,
-              fieldViewBuilder: (context, textController, focusNode, onFieldSubmitted) {
-                return Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: SGAppColors.colorBorderGray),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: TextField(
-                    controller: textController,
-                    focusNode: focusNode,
-                    style: const TextStyle(fontSize: 14),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                      border: InputBorder.none,
-                      hintText: 'Nhập để tìm kiếm...',
-                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                      suffixIcon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
+              optionsViewBuilder: (context, onSelected, opts) {
+                // Nếu phần tử đầu tiên là _NoDataOption thì show view không có dữ liệu
+                if (opts.isNotEmpty && opts.first is _NoDataOption) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(6),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: 200,
+                          maxWidth: constraints.maxWidth > 0 ? constraints.maxWidth : 250,
+                        ),
+                        child: _buildEmptyView(),
+                      ),
                     ),
-                    onSubmitted: (_) => onFieldSubmitted(),
-                  ),
-                );
-              },
-              optionsViewBuilder: (context, onSelected, options) {
+                  );
+                }
                 return Align(
                   alignment: Alignment.topLeft,
                   child: Material(
@@ -605,12 +709,14 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                       child: ListView.builder(
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
-                        itemCount: options.length,
+                        itemCount: opts.length,
                         itemBuilder: (context, index) {
-                          final option = options.elementAt(index);
+                          final option = opts.elementAt(index);
                           final isHighlighted = AutocompleteHighlightedOption.of(context) == index;
                           return InkWell(
-                            onTap: () => onSelected(option),
+                            onTap: () {
+                              onSelected(option);
+                            },
                             child: Container(
                               color: isHighlighted ? Colors.blue.shade50 : null,
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -628,6 +734,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 );
               },
               onSelected: (value) {
+                // Nếu chọn vào dòng "Không có dữ liệu" thì không làm gì
+                if (value is _NoDataOption) return;
+                // store last selected and update model + controller
+                _lastSelectedOption[rowIndex]![column.field] = value;
+                final disp = displayString(value);
+                textController.text = disp;
                 _updateCellValue(rowIndex, column.field, value);
                 final updater = column.onValueChanged;
                 if (updater != null) {
@@ -639,6 +751,59 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                     _setCellValue(rowIndex, targetField, targetValue);
                   });
                 }
+                // reset edit flag
+                _didTapToEdit[rowIndex]![column.field] = false;
+                setState(() {});
+              },
+              fieldViewBuilder: (context, controller, node, onSubmitted) {
+                return Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: SGAppColors.colorBorderGray),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: TextField(
+                    controller: controller,
+                    focusNode: node,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.left,
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      border: InputBorder.none,
+                      hintText: 'Nhập để tìm kiếm...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                      suffixIcon: controller.text.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                // clear input
+                                controller.clear();
+                                _didTapToEdit[rowIndex]![column.field] = true;
+                                setState(() {});
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Icon(Icons.clear, size: 20, color: Colors.grey.shade600),
+                              ),
+                            )
+                          : Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
+                    ),
+                    onTap: () {
+                      // clicking into field will allow editing and clear previous display if desired
+                      _didTapToEdit[rowIndex]![column.field] = true;
+                      // Optionally clear input when user taps if it matches the last selected display
+                      // only clear if current text equals last selected display
+                      final last = _lastSelectedOption[rowIndex]![column.field];
+                      if (last != null && controller.text == displayString(last)) {
+                        controller.clear();
+                      }
+                      setState(() {});
+                    },
+                    onSubmitted: (_) => onSubmitted(),
+                  ),
+                );
               },
             );
           },
@@ -785,6 +950,28 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           foregroundColor: Colors.blue,
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
+      ),
+    );
+  }
+  Widget _buildEmptyView() {
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.inbox, color: Colors.grey.shade400, size: 36),
+          const SizedBox(height: 8),
+          Text(
+            'Không có dữ liệu',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

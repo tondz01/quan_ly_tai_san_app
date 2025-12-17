@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
-import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
+import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -281,7 +281,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
-          child: DetailEditableTable<ItemDropdownDetailCcdc>(
+          child: SgEditableTable<ItemDropdownDetailCcdc>(
             // Thay đổi generic type
             // Sử dụng ValueKey với _tableKeyValue để force rebuild khi movementDetails thay đổi
             key: ValueKey<int>(_tableKeyValue),
@@ -304,7 +304,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
               widget.onDataChanged?.call(data);
             },
             columns: [
-              DetailEditableColumn<ItemDropdownDetailCcdc>(
+              SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'asset',
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
@@ -364,7 +364,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
-              DetailEditableColumn<ItemDropdownDetailCcdc>(
+              SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'don_vi_tinh',
                 title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
@@ -384,7 +384,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                         '',
                 isEditable: false,
               ),
-              DetailEditableColumn<ItemDropdownDetailCcdc>(
+              SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong',
                 title: 'Số lượng cần bàn giao',
                 titleAlignment: TextAlign.center,
@@ -396,7 +396,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 sortValueGetter: (item) => item.soLuong,
                 isEditable: false,
               ),
-              DetailEditableColumn<ItemDropdownDetailCcdc>(
+              SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong_xuat',
                 title: 'Số lượng bàn giao',
                 titleAlignment: TextAlign.center,
@@ -435,7 +435,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,
               ),
-              DetailEditableColumn<ItemDropdownDetailCcdc>(
+              SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'ghi_chu',
                 title: 'Ghi chú',
                 titleAlignment: TextAlign.center,
@@ -443,7 +443,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 getValue: (item) => item.ghiChu,
                 setValue: (item, value) => item.ghiChu = value,
                 sortValueGetter: (item) => item.ghiChu,
-                isEditable: false,
+                isEditable: widget.isEditing,
               ),
             ],
           ),

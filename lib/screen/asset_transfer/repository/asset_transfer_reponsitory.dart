@@ -707,17 +707,10 @@ class AssetTransferRepository extends ApiBase {
         result['message'] = 'Thiếu id đơn vị hiện thời.';
         return result;
       }
-      final userInfo = AccountHelper.instance.getUserInfo();
-      final idCongTy = userInfo?.idCongTy;
-      if (idCongTy == null || idCongTy.isEmpty) {
-        result['message'] = 'Không tìm thấy thông tin công ty.';
-        return result;
-      }
-
       final response = await get(
         '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-hienthoi/paged',
         queryParameters: {
-          'idcongty': idCongTy,
+          'idcongty': 'ct001',
           'iddonvihienthoi': idDonViHienthoi,
           'page': 0,
           'size': 9999,
@@ -758,17 +751,10 @@ class AssetTransferRepository extends ApiBase {
         result['message'] = 'Thiếu id đơn vị ban đầu.';
         return result;
       }
-      final userInfo = AccountHelper.instance.getUserInfo();
-      final idCongTy = userInfo?.idCongTy;
-      if (idCongTy == null || idCongTy.isEmpty) {
-        result['message'] = 'Không tìm thấy thông tin công ty.';
-        return result;
-      }
-
       final response = await get(
         '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-bandau/paged',
         queryParameters: {
-          'idcongty': idCongTy,
+          'idcongty': 'ct001',
           'iddonvibandau': idDonViBandau,
           'page': 0,
           'size': 9999,
