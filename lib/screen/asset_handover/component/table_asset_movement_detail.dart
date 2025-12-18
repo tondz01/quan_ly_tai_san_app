@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -67,6 +69,20 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
         )
         .toList() ??
         [];
+  }
+
+  /// Tìm CurrentStatus từ dropdown items để đảm bảo cùng reference
+  CurrentStatus? _findHienTrangFromItems(int? id) {
+    if (id == null) return null;
+    for (final item in hienTrangItems) {
+      if (item.value is CurrentStatus) {
+        final status = item.value as CurrentStatus;
+        if (status.id == id) {
+          return status;
+        }
+      }
+    }
+    return null;
   }
 
   @override
@@ -140,7 +156,8 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
             donViTinh: chiTiet.donViTinh.isNotEmpty ? chiTiet.donViTinh : (d.donViTinh ?? ''),
             hienTrang: d.hienTrang ?? chiTiet.hienTrang,
             soLuong: d.soLuong ?? chiTiet.soLuong,
-            ghiChu: d.moTa ?? chiTiet.ghiChu,
+            ghiChu: d.ghiChu ?? chiTiet.ghiChu,
+            moTa: chiTiet.moTa,
             kyHieu: chiTiet.kyHieu,
             soKyHieu: chiTiet.soKyHieu,
             namSanXuat: chiTiet.namSanXuat,
@@ -163,13 +180,14 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
             donViTinh: d.donViTinh ?? '',
             hienTrang: d.hienTrang ?? 0,
             soLuong: d.soLuong ?? 0,
-            ghiChu: d.moTa ?? '',
+            ghiChu: d.ghiChu ?? '',
             kyHieu: d.kyHieu ?? '',
             soKyHieu: d.soKyHieu ?? '',
             namSanXuat: d.namSanXuat ?? '',
             ngayTao: d.ngayTao ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
             ngayCapNhat: d.ngayCapNhat ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
             nguoiTao: d.nguoiTao ?? '',
+            moTa: d.moTa ?? '',
             nguoiCapNhat: d.nguoiCapNhat ?? '',
             isActive: d.isActive ?? true,
           );
@@ -309,16 +327,23 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   titleAlignment: TextAlign.center,
                   isEditable: true,
                   width: 50,
-                  // O(1) lookup từ cache thay vì O(n) firstWhere
+                  // Tìm từ items để đảm bảo cùng reference với dropdown items
                   getValue: (item) => 
-                      (_hienTrangCache[item.hienTrang.toString()] ?? _defaultHienTrang).tenHTKT,
+                      _findHienTrangFromItems(item.hienTrang) ?? 
+                      (hienTrangItems.isNotEmpty && hienTrangItems.first.value is CurrentStatus
+                          ? hienTrangItems.first.value as CurrentStatus
+                          : _defaultHienTrang),
                   setValue: (item, value) {
                     if (value is! CurrentStatus) return;
+                    log('message test: setValue $value');
                     item.hienTrang = value.id ?? 0;
                   },
-                  // O(1) lookup từ cache
+                  // Tìm từ items để đảm bảo cùng reference
                   getValueWithIndex: (item, rowIndex) =>
-                      _hienTrangCache[item.hienTrang.toString()] ?? _defaultHienTrang,
+                      _findHienTrangFromItems(item.hienTrang) ?? 
+                      (hienTrangItems.isNotEmpty && hienTrangItems.first.value is CurrentStatus
+                          ? hienTrangItems.first.value as CurrentStatus
+                          : _defaultHienTrang),
                   sortValueGetter: (item) =>
                       (_hienTrangCache[item.hienTrang.toString()] ?? _defaultHienTrang).tenHTKT,
                   editor: EditableCellEditor.dropdown,

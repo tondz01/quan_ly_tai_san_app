@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/capital_source_by_asset_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
@@ -46,7 +47,7 @@ class _AssetDetailState extends State<AssetDetail> {
   bool isEditing = false;
   bool valueKhoiTaoDonVi = false;
 
-  HienTrang? hienTrang;
+  CurrentStatus? hienTrang;
   ReasonIncrease? lyDoTang;
   Country? country;
 

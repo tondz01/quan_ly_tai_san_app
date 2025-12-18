@@ -7,6 +7,7 @@ class ChiTietDieuDongRequest {
   final String kyHieu;
   final String soKyHieu;
   final String namSanXuat;
+  final String moTa;
   final String hienTrang;
   final String ngayTao;
   final String ngayCapNhat;
@@ -23,6 +24,7 @@ class ChiTietDieuDongRequest {
     required this.kyHieu,
     required this.soKyHieu,
     required this.namSanXuat,
+    required this.moTa,
     required this.hienTrang,
     required this.ngayTao,
     required this.ngayCapNhat,
@@ -53,6 +55,7 @@ class ChiTietDieuDongRequest {
       kyHieu: json['kyHieu'] ?? '',
       soKyHieu: json['soKyHieu'] ?? '',
       namSanXuat: json['namSanXuat'] ?? '',
+      moTa: json['moTa'] ?? '',
       hienTrang: json['hienTrang'] ?? '',
       ngayTao: json['ngayTao'] ?? '',
       ngayCapNhat: json['ngayCapNhat'] ?? '',
@@ -72,6 +75,7 @@ class ChiTietDieuDongRequest {
       'kyHieu': kyHieu,
       'soKyHieu': soKyHieu,
       'namSanXuat': namSanXuat,
+      'moTa': moTa,
       'hienTrang': hienTrang,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
@@ -90,6 +94,7 @@ class ChiTietDieuDongRequest {
     String? kyHieu,
     String? soKyHieu,
     String? namSanXuat,
+    String? moTa,
     String? hienTrang,
     String? ngayTao,
     String? ngayCapNhat,
@@ -106,6 +111,7 @@ class ChiTietDieuDongRequest {
       kyHieu: kyHieu ?? this.kyHieu,
       soKyHieu: soKyHieu ?? this.soKyHieu,
       namSanXuat: namSanXuat ?? this.namSanXuat,
+      moTa: moTa ?? this.moTa,
       hienTrang: hienTrang ?? this.hienTrang,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,

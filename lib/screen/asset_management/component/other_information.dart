@@ -7,8 +7,8 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dar
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
@@ -44,7 +44,7 @@ Widget buildOtherInformation(
   Function(PhongBan)? onChangeCurrentUnit,
   Function(DuAn)? onDuAnChanged,
   Function(ReasonIncrease)? onLyDoTangChanged,
-  Function(HienTrang)? onHienTrangChanged,
+  Function(CurrentStatus)? onHienTrangChanged,
   Function(NguonKinhPhi)? onNguonKinhPhiChanged,
   Function(bool)? onKhoiTaoDonViChanged,
   Function(UnitDto)? onUnitChanged,
@@ -59,7 +59,7 @@ Widget buildOtherInformation(
   Function(double)? onTotalCapitalChanged,
   required AssetManagementProvider provider,
   DuAn? duAn,
-  HienTrang? hienTrang,
+  CurrentStatus? hienTrang,
   Country? country,
   PhongBan? phongBanBanDau,
   PhongBan? phongBanHienThoi,
@@ -223,7 +223,7 @@ Widget buildOtherInformation(
         },
       ),
 
-      CmFormDropdownObject<HienTrang>(
+      CmFormDropdownObject<CurrentStatus>(
         label: 'Hiện trạng',
         controller: ctrlHienTrang,
         isEditing: isEditing,

@@ -12,6 +12,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_trans
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class TabBarTableAsset extends riverpod.ConsumerStatefulWidget {
   final AssetHandoverProvider provider;
@@ -32,8 +34,9 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
   Timer? _debounceTimer;
 
   // Cache constants để tránh lookup nhiều lần
-  static const int _assetTransferType = FunctionType.ASSET_HANDOVER;
+  static const int _assetHandoverType = FunctionType.ASSET_HANDOVER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
+  static const int _assetTransferType = FunctionType.ASSET_TRANSFER;
 
   // Cache message timestamp để tránh xử lý duplicate
   int? _lastProcessedMessageTime;
@@ -99,28 +102,53 @@ class _TabBarTableAssetState extends riverpod.ConsumerState<TabBarTableAsset> {
 
     // Listen Firebase realtime messages với early return tối ưu
     _messageSub = ref.listenManual(messageLatestJsonProvider, (previous, next) {
+      // Log raw message để debug
+      SGLog.info(
+        'TAB_BAR_ASSET',
+        'TAB_BAR_ASSET realtime raw message: $next',
+      );
+
       // Early return: kiểm tra null/empty trước
-      if (next == null || next.isEmpty || !mounted) return;
+      if (next == null || next.isEmpty || !mounted) {
+        SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET skip: null/empty or not mounted');
+        return;
+      }
 
       // Early return: lấy typeFunc và check ngay, tránh parse không cần thiết
       final typeFunc = next['type_func'];
-      if (typeFunc is! int) return;
+      SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET type_func: $typeFunc');
+      if (typeFunc is! int) {
+        SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET skip: type_func is not int');
+        return;
+      }
 
       // Fast comparison với cached constants
-      if (typeFunc != _assetTransferType && typeFunc != _allFunctionType) {
+      if (typeFunc != _assetHandoverType && typeFunc != _assetTransferType && typeFunc != _allFunctionType) {
+        SGLog.info(
+          'TAB_BAR_ASSET',
+          'TAB_BAR_ASSET skip: type_func not match (typeFunc=$typeFunc, expected: $_assetHandoverType or $_assetTransferType or $_allFunctionType)',
+        );
         return; // Không phải message cần xử lý
       }
 
+      SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET type_func matched, proceeding to process message');
+
       // Tránh xử lý duplicate message: check timestamp
       final messageTime = next['time'];
-      if (messageTime is int && _lastProcessedMessageTime != null) {
-        if (messageTime <= _lastProcessedMessageTime!) {
+      if (messageTime is int) {
+        if (_lastProcessedMessageTime != null && messageTime <= _lastProcessedMessageTime!) {
+          SGLog.info(
+            'TAB_BAR_ASSET',
+            'TAB_BAR_ASSET skip duplicate message, time=$messageTime, last=$_lastProcessedMessageTime',
+          );
           return; // Message cũ hơn hoặc bằng message đã xử lý
         }
         _lastProcessedMessageTime = messageTime;
-      } else if (messageTime is int) {
-        _lastProcessedMessageTime = messageTime;
+      } else {
+        SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET message has no valid timestamp, time=$messageTime');
       }
+
+      SGLog.info('TAB_BAR_ASSET', 'TAB_BAR_ASSET trigger debounce load count');
 
       // Chỉ debounce khi thực sự cần refresh
       _debouncedLoadCount();

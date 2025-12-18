@@ -11,6 +11,7 @@ class ChiTietDieuDongTaiSan {
   int hienTrang;
   int soLuong;
   String ghiChu;
+  String moTa;
   String kyHieu;
   String soKyHieu;
   String namSanXuat;
@@ -31,6 +32,7 @@ class ChiTietDieuDongTaiSan {
     required this.hienTrang,
     required this.soLuong,
     required this.ghiChu,
+    required this.moTa,
     required this.kyHieu,
     required this.soKyHieu,
     required this.namSanXuat,
@@ -67,6 +69,7 @@ class ChiTietDieuDongTaiSan {
       hienTrang: parseInt(json['hienTrang']),
       soLuong: parseInt(json['soLuong']),
       ghiChu: parseString(json['ghiChu']),
+      moTa: parseString(json['moTa']),
       kyHieu: parseString(json['kyHieu']),
       soKyHieu: parseString(json['soKyHieu']),
       namSanXuat: parseString(json['namSanXuat']),
@@ -98,6 +101,7 @@ class ChiTietDieuDongTaiSan {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'moTa': moTa,
     };
   }
 
@@ -113,6 +117,7 @@ class ChiTietDieuDongTaiSan {
       hienTrang: 0,
       soLuong: 0,
       ghiChu: '',
+      moTa: '',
       kyHieu: '',
       soKyHieu: '',
       namSanXuat: '',

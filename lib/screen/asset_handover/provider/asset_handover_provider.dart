@@ -582,7 +582,15 @@ class AssetHandoverProvider with ChangeNotifier {
                 tenTaiSan: e.tenTaiSan,
                 donViTinh: e.donViTinh,
                 hienTrang: e.hienTrang,
-                soLuong: 0,
+                ghiChu: e.ghiChu,
+                moTa: e.moTa,
+                kyHieu: e.kyHieu,
+                soKyHieu: e.soKyHieu,
+                ngayTao: e.ngayTao,
+                ngayCapNhat: e.ngayCapNhat,
+                nguoiTao: e.nguoiTao,
+                nguoiCapNhat: e.nguoiCapNhat,
+                soLuong: e.soLuong,
               ),
             )
             .toList();

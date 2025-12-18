@@ -281,6 +281,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             hienTrang: d.hienTrang,
             soLuong: d.soLuong,
             ghiChu: d.ghiChu,
+            moTa: d.moTa,
             kyHieu: d.kyHieu,
             soKyHieu: d.soKyHieu,
             namSanXuat: d.namSanXuat,
@@ -859,6 +860,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 hienTrang: e.hienTrang ?? 0,
                                 soLuong: e.soLuong ?? 0,
                                 ghiChu: e.ghiChu ?? '',
+                                moTa: e.moTa ?? '',
                                 kyHieu: e.kyHieu ?? '',
                                 soKyHieu: e.soKyHieu ?? '',
                                 namSanXuat: e.namSanXuat?.toString() ?? '',
@@ -1018,6 +1020,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             idTaiSan: e.idTaiSan,
             soLuong: e.soLuong,
             ghiChu: e.ghiChu,
+            moTa: e.moTa,
             kyHieu: e.kyHieu,
             soKyHieu: e.soKyHieu,
             namSanXuat: e.namSanXuat,
@@ -1059,13 +1062,21 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
       return;
     }
+    if(state.listNewDetails.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng cập nhập lại chi tiết bàn giao tài sản'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     widget.provider.loadingMessage = 'Đang lưu dữ liệu...';
     widget.provider.isLoading = true;
     if (state.item == null) {
       final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       final listSignatory = _createListSignatory();
-      log('message test: onInit  _handleSave request ${jsonEncode(request)}');
 
       widget.provider.saveAssetTransfer(
         context,
