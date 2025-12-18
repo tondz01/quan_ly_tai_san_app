@@ -519,7 +519,13 @@ class _ToolAndSuppliesHandoverTransferListState
                             tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
                             iconPath: AppIconSvgPath.iconNextDocument,
                             color: ColorValue.mediumGreen,
-                            block: (item) => (item.detailToolAndMaterialTransfers?.length ?? 0) <= 0,
+                            block:
+                                (item) =>
+                                    (item
+                                            .detailToolAndMaterialTransfers
+                                            ?.length ??
+                                        0) <=
+                                    0,
                             blockTooltip: 'Đã bàn giao hết',
                             onPressed: (item) {
                               DateTime now = DateTime.now();
@@ -586,16 +592,15 @@ class _ToolAndSuppliesHandoverTransferListState
         ),
         riverpod.Consumer(
           builder: (context, ref, _) {
-            final isLoading = ref.watch(
+            ref.watch(tableToolAndSuppliesHandoverTransferProvider);
+            final isLoading = ref.read(
               tableToolAndSuppliesHandoverTransferProvider.select(
                 (s) => s.isLoading,
               ),
             );
             final totals =
                 ref
-                    .watch(
-                      tableToolAndSuppliesHandoverTransferProvider.notifier,
-                    )
+                    .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
                     .getTotals();
             return FindByTypeToolAndSupplies(
               isCapPhat: isCapPhat,

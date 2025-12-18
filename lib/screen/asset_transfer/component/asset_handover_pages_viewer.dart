@@ -18,7 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:path/path.dart' as path;
 
-class ToolAndSuppliesHandoverPagesViewer {
+class AssetHandoverPagesViewer {
   // Kích thước A4: 800 x 1131.43 (tỷ lệ 210:297)
   static const double _a4Width = 800.0;
   static const double _a4Height = 800.0 * (297 / 210); // ~1131.43

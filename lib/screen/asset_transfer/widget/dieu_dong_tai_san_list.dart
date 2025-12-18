@@ -15,7 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/tool_and_supplies_handover_pages_viewer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_handover_pages_viewer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/tabel_asset_transfer_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -468,7 +468,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                 blockTooltip: 'Không có phiếu bàn giao',
                                 onPressed: (item) async {
                                   // Hiển thị popup với danh sách biên bản bàn giao theo dạng page
-                                  ToolAndSuppliesHandoverPagesViewer.showPopup(
+                                  AssetHandoverPagesViewer.showPopup(
                                     context,
                                     item.id ?? '',
                                   );

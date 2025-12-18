@@ -119,7 +119,8 @@ class _AssetTransferListByHandoverState
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
-    _currentUsername = userInfo?.tenDangNhap ??
+    _currentUsername =
+        userInfo?.tenDangNhap ??
         AccountHelper.instance.getUserInfo()?.tenDangNhap ??
         '';
     dataAssetTransfer = widget.data;
@@ -128,23 +129,29 @@ class _AssetTransferListByHandoverState
     _initializeTableConfig();
 
     // Listen Firebase realtime để tự động reload table
-    _messageSub =
-        ref.listenManual<Map<String, dynamic>?>(messageLatestJsonProvider,
-            (previous, next) {
+    _messageSub = ref.listenManual<
+      Map<String, dynamic>?
+    >(messageLatestJsonProvider, (previous, next) {
       // Log raw message để kiểm tra realtime
-      SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER realtime raw message: $next');
+      SGLog.info(
+        'ASSET_HANDOVER',
+        'ASSET_HANDOVER realtime raw message: $next',
+      );
 
       // Early return: kiểm tra null/empty trước
       if (next == null || next.isEmpty || !mounted) return;
 
       // Lấy typeFunc và check nhanh
       final typeFunc = next['type_func'];
-      SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER type_func: $typeFunc');
+      SGLog.info('ASSET_HANDOVER', 'ASSET_HANDOVER type_func: $typeFunc');
       if (typeFunc is! int) return;
 
       // Chỉ xử lý message liên quan đến bàn giao tài sản hoặc all
       if (typeFunc != _assetHandoverType && typeFunc != _allFunctionType) {
-        SGLog.info( 'ASSET_HANDOVER','ASSET_HANDOVER skip: type_func not match');
+        SGLog.info(
+          'ASSET_HANDOVER',
+          'ASSET_HANDOVER skip: type_func not match',
+        );
         return;
       }
 
@@ -460,9 +467,10 @@ class _AssetTransferListByHandoverState
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   // Giảm nhẹ để tránh tràn do margin/padding xung quanh
-                  final tableMaxHeight = (constraints.maxHeight - 65)
-                      .clamp(0.0, constraints.maxHeight)
-                      .toDouble();
+                  final tableMaxHeight =
+                      (constraints.maxHeight - 65)
+                          .clamp(0.0, constraints.maxHeight)
+                          .toDouble();
 
                   return riverpod.Consumer(
                     builder: (context, ref, child) {
@@ -496,7 +504,11 @@ class _AssetTransferListByHandoverState
                             tooltip: 'Tạo biên bản bàn giao tài sản',
                             iconPath: AppIconSvgPath.iconNextDocument,
                             color: ColorValue.mediumGreen,
-                            block: (item) => (item.chiTietDieuDongTaiSans?.length ?? 0) <= 0,
+                            block:
+                                (item) =>
+                                    (item.chiTietDieuDongTaiSans?.length ??
+                                        0) <=
+                                    0,
                             blockTooltip: 'Đã hoàn thành bàn giao tài sản',
                             onPressed: (item) {
                               DateTime now = DateTime.now();
@@ -563,12 +575,13 @@ class _AssetTransferListByHandoverState
         ),
         riverpod.Consumer(
           builder: (context, ref, _) {
-            final isLoading = ref.watch(
+            ref.watch(tableAssetTransferByHandoverProvider);
+            final isLoading = ref.read(
               tableAssetTransferByHandoverProvider.select((s) => s.isLoading),
             );
             final totals =
                 ref
-                    .watch(tableAssetTransferByHandoverProvider.notifier)
+                    .read(tableAssetTransferByHandoverProvider.notifier)
                     .getTotals();
             return FindByType(
               isCapPhat: isCapPhat,

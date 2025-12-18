@@ -44,10 +44,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<DetailAssetDto> listDetailAsset;
   late List<OwnershipUnitDetailDto> listDetailOwnershipUnit;
   late List<ItemDropdownDetailCcdc> listItemDropdownDetailAsset;
-  int _tableKeyValue = 0; // Key để force rebuild table khi movementDetails thay đổi
+  int _tableKeyValue =
+      0; // Key để force rebuild table khi movementDetails thay đổi
 
   bool _isInitialized = false;
-  
+
   // Cache để tối ưu hiệu năng
   Map<String, ToolsAndSuppliesDto>? _assetCache;
   Map<String, ItemDropdownDetailCcdc>? _dropdownItemCache;
@@ -91,10 +92,8 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     if (_unitNameCache!.containsKey(idDonVi)) {
       return _unitNameCache![idDonVi]!;
     }
-    final unitName = AccountHelper.instance
-            .getUnitById(idDonVi)
-            ?.tenDonVi ??
-        '';
+    final unitName =
+        AccountHelper.instance.getUnitById(idDonVi)?.tenDonVi ?? '';
     _unitNameCache![idDonVi] = unitName;
     return unitName;
   }
@@ -102,7 +101,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   void _syncDetailAssets() {
     // Build asset cache trước
     _buildAssetCache();
-    
+
     // Build dropdown source list from movement details + master CCDC list
     listItemDropdownDetailAsset = getAssetsByChildAssets(
       widget.allAssets,
@@ -111,7 +110,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
     // Build dropdown item cache để tối ưu lookup
     _dropdownItemCache = {
-      for (final item in listItemDropdownDetailAsset) item.id: item
+      for (final item in listItemDropdownDetailAsset) item.id: item,
     };
 
     // KHÔNG cập nhật listAsset ở đây nữa
@@ -132,7 +131,6 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
 
-
     // Gọi onDataChanged tự động khi component được khởi tạo
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isInitialized = true;
@@ -143,7 +141,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   @override
   void didUpdateWidget(DetailCcdcTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     bool needsSync = false;
     bool needsRebuild = false;
     bool invalidateCaches = false;
@@ -169,16 +167,17 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     }
 
     // Ưu tiên dữ liệu từ initialDetailsSuppliesHandover nếu có
-    final handoverChanged = oldWidget.initialDetailsSuppliesHandover !=
+    final handoverChanged =
+        oldWidget.initialDetailsSuppliesHandover !=
         widget.initialDetailsSuppliesHandover;
-    
+
     // Invalidate caches trước khi sync
     if (invalidateCaches) {
       _assetCache = null;
       _dropdownItemCache = null;
       _unitNameCache = null;
     }
-    
+
     // Đảm bảo listItemDropdownDetailAsset được cập nhật trước khi map dữ liệu
     if (needsSync) {
       _syncDetailAssets();
@@ -205,7 +204,9 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
         );
       } else {
         // Không có handover data, dùng movementDetails
-        listAsset = List.from(getAssetsByChildAssets(widget.allAssets, movementDetails));
+        listAsset = List.from(
+          getAssetsByChildAssets(widget.allAssets, movementDetails),
+        );
       }
       // needsRebuild đã được set ở trên
     } else if (needsSync && widget.initialDetailsSuppliesHandover.isNotEmpty) {
@@ -218,7 +219,9 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       // KHÔNG rebuild table để tránh mất focus
     } else if (needsSync && widget.movementDetails.isNotEmpty) {
       // Khi chỉ có needsSync và không có handover data, cập nhật từ movementDetails
-      listAsset = List.from(getAssetsByChildAssets(widget.allAssets, movementDetails));
+      listAsset = List.from(
+        getAssetsByChildAssets(widget.allAssets, movementDetails),
+      );
       // KHÔNG rebuild table để tránh mất focus
     }
 
@@ -243,7 +246,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     // Sử dụng cache nếu có, nếu không thì build từ allAssets
     final idToAsset = _assetCache ?? {for (final a in allAssets) a.id: a};
     final nullAsset = _getNullAsset();
-    
+
     // Sử dụng List.generate để tối ưu và tránh null elements
     return List.generate(
       chiTietDieuDong.length,
@@ -251,15 +254,15 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
         final c = chiTietDieuDong[i];
         final asset = idToAsset[c.idCCDCVatTu] ?? nullAsset;
 
-        final ten = (c.tenCCDCVatTu?.isNotEmpty ?? false) 
-            ? c.tenCCDCVatTu! 
-            : asset.ten;
+        final ten =
+            (c.tenCCDCVatTu?.isNotEmpty ?? false) ? c.tenCCDCVatTu! : asset.ten;
         final namSX = c.namSanXuat ?? asset.namSanXuat;
         final donViTinh = c.donViTinh ?? asset.donViTinh;
 
-        final tenDetail = ten.isNotEmpty 
-            ? '$ten - (${c.idChiTietCCDCVatTu}) - $namSX' 
-            : c.idChiTietCCDCVatTu;
+        final tenDetail =
+            ten.isNotEmpty
+                ? '$ten - (${c.idChiTietCCDCVatTu}) - $namSX'
+                : c.idChiTietCCDCVatTu;
 
         return ItemDropdownDetailCcdc(
           id: c.id,
@@ -293,46 +296,47 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     if (kDebugMode) {
       log('getAssetsByHandoverDetails: mapping ${details.length} items');
     }
-    
+
     final result = <ItemDropdownDetailCcdc>[];
-    
+
     for (final d in details) {
       // Tìm chi tiết điều động tương ứng
       final detail = chiTietDieuDong.firstWhere(
         (element) => element.id == d.idChiTietDieuDong,
         orElse: () => DetailToolAndMaterialTransferDto.empty(),
       );
-      
+
       // Tính toán số lượng dựa trên chế độ editing
-      final soLuong = widget.isEditing 
-          ? (detail.soLuongConLai ?? 0)
-          : detail.soLuongXuat;
-      
+      final soLuong =
+          widget.isEditing ? (detail.soLuongConLai ?? 0) : detail.soLuongXuat;
+
       // Số lượng bàn giao từ dữ liệu handover (luôn lấy từ d.soLuong)
       final soluongBG = d.soLuong;
-      
+
       // Ghi chú: luôn ưu tiên từ d.ghiChu (kể cả khi rỗng), fallback về asset.ghiChu nếu d.ghiChu là null
       final ghiChuFromHandover = d.ghiChu ?? '';
-      
+
       // Tìm item trong dropdown list sử dụng cache
       ItemDropdownDetailCcdc? dropdownItem;
       dropdownItem = _dropdownItemCache?[d.iddieudongccdcvattu];
-      
+
       if (dropdownItem == null) {
         // Nếu không tìm thấy trong dropdown, tạo item mới từ dữ liệu gốc
         final asset = getAssetByID(d.idCCDCVatTu);
-        final fallbackGhiChu = ghiChuFromHandover.isNotEmpty 
-            ? ghiChuFromHandover 
-            : (asset.ghiChu.isNotEmpty ? asset.ghiChu : '');
-        
+        final fallbackGhiChu =
+            ghiChuFromHandover.isNotEmpty
+                ? ghiChuFromHandover
+                : (asset.ghiChu.isNotEmpty ? asset.ghiChu : '');
+
         dropdownItem = ItemDropdownDetailCcdc(
           id: d.id,
           idCCDCVatTu: d.idCCDCVatTu,
           tenCCDCVatTu: asset.ten.isNotEmpty ? asset.ten : (d.tenVatTu ?? ''),
           idDetaiAsset: d.idChiTietCCDCVatTu,
-          tenDetailAsset: asset.ten.isNotEmpty
-              ? '${asset.ten} - (${d.idChiTietCCDCVatTu}) - ${detail.namSanXuat ?? asset.namSanXuat}'
-              : d.idChiTietCCDCVatTu,
+          tenDetailAsset:
+              asset.ten.isNotEmpty
+                  ? '${asset.ten} - (${d.idChiTietCCDCVatTu}) - ${detail.namSanXuat ?? asset.namSanXuat}'
+                  : d.idChiTietCCDCVatTu,
           idDonVi: asset.idDonVi,
           donViTinh: d.donViTinh ?? detail.donViTinh ?? asset.donViTinh,
           namSanXuat: detail.namSanXuat ?? asset.namSanXuat,
@@ -346,30 +350,33 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           chiTietDieuDongCCDCVatTuDTO: detail,
         );
       }
-      
+
       // Tạo item cuối cùng với dữ liệu từ handover
       // Lưu ý: copyWith sử dụng ?? operator, nên nếu ghiChu là '', nó sẽ không được cập nhật
       // Do đó, nếu d.ghiChu là null hoặc rỗng, ta giữ nguyên giá trị từ dropdownItem
-      final mapped = ghiChuFromHandover.isNotEmpty
-          ? dropdownItem.copyWith(
-              soLuong: soLuong,
-              donViTinh: d.donViTinh ?? detail.donViTinh ?? dropdownItem.donViTinh,
-              soLuongXuat: soluongBG,
-              ghiChu: ghiChuFromHandover,
-            )
-          : dropdownItem.copyWith(
-              soLuong: soLuong,
-              donViTinh: d.donViTinh ?? detail.donViTinh ?? dropdownItem.donViTinh,
-              soLuongXuat: soluongBG,
-            );
-      
+      final mapped =
+          ghiChuFromHandover.isNotEmpty
+              ? dropdownItem.copyWith(
+                soLuong: soLuong,
+                donViTinh:
+                    d.donViTinh ?? detail.donViTinh ?? dropdownItem.donViTinh,
+                soLuongXuat: soluongBG,
+                ghiChu: ghiChuFromHandover,
+              )
+              : dropdownItem.copyWith(
+                soLuong: soLuong,
+                donViTinh:
+                    d.donViTinh ?? detail.donViTinh ?? dropdownItem.donViTinh,
+                soLuongXuat: soluongBG,
+              );
+
       result.add(mapped);
     }
-    
+
     if (kDebugMode) {
       log('getAssetsByHandoverDetails: mapped ${result.length} items');
     }
-    
+
     return result;
   }
 
@@ -470,13 +477,18 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.searchableDropdown,
                 searchableDropdownOptions: listItemDropdownDetailAsset,
-                displayStringForOption: (option) => (option as ItemDropdownDetailCcdc).tenDetailAsset,
+                displayStringForOption:
+                    (option) =>
+                        (option as ItemDropdownDetailCcdc).tenDetailAsset,
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
                   final selectedItem = newValue as ItemDropdownDetailCcdc;
                   updateRow('don_vi_tinh', selectedItem.donViTinh);
                   updateRow('so_luong', selectedItem.soLuong);
                   updateRow('ghi_chu', selectedItem.ghiChu);
-                  updateRow('so_luong_xuat', selectedItem.soLuongXuat.toString());
+                  updateRow(
+                    'so_luong_xuat',
+                    selectedItem.soLuongXuat.toString(),
+                  );
 
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
@@ -508,9 +520,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 title: 'Số lượng bàn giao',
                 titleAlignment: TextAlign.center,
                 width: 100,
-                getValue:
-                    (item) =>
-                        item.soLuongXuat,
+                getValue: (item) => item.soLuongXuat,
                 inputType: TextInputType.number,
                 onValueChanged: (item, rowIndex, value, updateRow) {
                   if (value == null || value == '') {
@@ -552,7 +562,13 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 setValue: (item, value) => item.ghiChu = value,
                 sortValueGetter: (item) => item.ghiChu,
                 isEditable: widget.isEditing,
-                isCellEditableDecider: (item, rowIndex) => true,
+                onValueChanged: (item, rowIndex, value, updateRow) {
+                  item.ghiChu = value;
+                  updateRow('ghi_chu', item.ghiChu);
+                  log('Ghi chú updated: ${item.ghiChu}');
+                  // Nếu muốn cập nhật ngay ra ngoài, gọi callback nếu cần
+                  Future.microtask(() => _forceNotifyDataChanged());
+                },
               ),
             ],
           ),

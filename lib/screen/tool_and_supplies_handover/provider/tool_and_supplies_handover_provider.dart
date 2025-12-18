@@ -485,7 +485,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       // Load dữ liệu song song khi có thể
       await Future.wait([
         _ensureCcdcLoaded(),
-        _ensureAssetTransferLoaded(isFindNew),
+        ensureAssetTransferLoaded(isFindNew),
         if (item != null) getListOwnership(item.idDonViGiao ?? ''),
       ]);
 
@@ -520,7 +520,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   }
 
   /// Helper: Đảm bảo dữ liệu AssetTransfer đã được load
-  Future<void> _ensureAssetTransferLoaded([bool isFindNew = false]) async {
+  Future<void> ensureAssetTransferLoaded([bool isFindNew = false]) async {
     Map<String, dynamic> result;
     if(isFindNew) {
       result = await ToolAndMaterialTransferRepository().getDataPageByBanGiao(0, 999999, -1, '', '');

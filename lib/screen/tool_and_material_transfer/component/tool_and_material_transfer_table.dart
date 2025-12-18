@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -344,11 +342,6 @@ class _DetailToolAndMaterialTransferTableState
                     item.soLuongXuat = item.soLuong;
                     updateRow('so_luong_xuat', item.soLuongXuat);
                   }
-                  log('-----value: $value');
-                  log('-----item: $item');
-                  log('-----rowIndex: $rowIndex');
-                  log('-----item.soLuong: ${item.soLuong}');
-                  log('-----item.soLuongXuat: ${item.soLuongXuat}');
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
                 setValue: (item, value) {
