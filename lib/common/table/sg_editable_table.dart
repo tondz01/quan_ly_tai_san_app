@@ -16,6 +16,55 @@ class _NoDataOption {
   const _NoDataOption();
 }
 
+// Add controller pool for memory management
+class ControllerPool {
+  final Map<String, TextEditingController> _availableControllers = {};
+  final Map<String, TextEditingController> _usedControllers = {};
+
+  TextEditingController getController(String key, String initialValue) {
+    if (_usedControllers.containsKey(key)) {
+      final controller = _usedControllers[key]!;
+      if (controller.text != initialValue) {
+        controller.text = initialValue;
+      }
+      return controller;
+    }
+
+    TextEditingController controller;
+
+    if (_availableControllers.isNotEmpty) {
+      controller =
+          _availableControllers.remove(_availableControllers.keys.first)!;
+      controller.text = initialValue;
+    } else {
+      controller = TextEditingController(text: initialValue);
+    }
+
+    _usedControllers[key] = controller;
+    return controller;
+  }
+
+  void releaseController(String key) {
+    final controller = _usedControllers.remove(key);
+    if (controller != null) {
+      controller.clear();
+      _availableControllers['pool_${_availableControllers.length}'] =
+          controller;
+    }
+  }
+
+  void dispose() {
+    for (final controller in _usedControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _availableControllers.values) {
+      controller.dispose();
+    }
+    _usedControllers.clear();
+    _availableControllers.clear();
+  }
+}
+
 // Add editor type enum for editable cells
 enum EditableCellEditor { text, dropdown, searchableDropdown }
 
@@ -89,6 +138,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   // NEW: track per-row editable flags
   Map<int, bool> _rowEditableFlags = {};
 
+  late ControllerPool _controllerPool;
+
   // Add sorting state variables
   int? _sortColumnIndex;
   SortDirection _sortDirection = SortDirection.none;
@@ -96,6 +147,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   @override
   void initState() {
     super.initState();
+    _controllerPool = ControllerPool();
     _tableData = List.from(widget.initialData);
     _initControllers();
   }
@@ -165,6 +217,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   @override
   void dispose() {
+    _controllerPool.dispose();
     // Dispose all text controllers and focus nodes
     for (var rowControllers in _controllers.values) {
       for (var controller in rowControllers.values) {
@@ -200,14 +253,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   void _removeRow(int index) {
-    // Dispose controllers for the row being removed
-    final rowControllers = _controllers[index];
-    if (rowControllers != null) {
-      for (var controller in rowControllers.values) {
-        controller.dispose();
+    // Release controllers for editable columns in this row
+    for (var column in widget.columns) {
+      if (column.isEditable) {
+        final key = _getControllerKey(index, column.field);
+        _controllerPool.releaseController(key);
       }
     }
-
     setState(() {
       _tableData.removeAt(index);
 
@@ -268,18 +320,23 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     final column = widget.columns.firstWhere((c) => c.field == field);
     column.setValue(_tableData[rowIndex], value);
     // Sync controller if exists - get the display value from getValue/getValueWithIndex
-    final controller = _controllers[rowIndex]?[field];
-    if (controller != null) {
-      final item = _tableData[rowIndex];
-      final displayValue =
-          column.getValueWithIndex?.call(item, rowIndex) ??
-          column.getValue(item);
-      final textValue = displayValue?.toString() ?? '';
-      if (controller.text != textValue) {
-        controller.text = textValue;
-      }
+    final key = _getControllerKey(rowIndex, field);
+    final controller = _controllerPool.getController(
+      key,
+      value?.toString() ?? '',
+    );
+    if (controller.text != (value?.toString() ?? '')) {
+      controller.text = value?.toString() ?? '';
     }
-    setState(() {});
+    final item = _tableData[rowIndex];
+    final displayValue =
+        column.getValueWithIndex?.call(item, rowIndex) ??
+        column.getValue(item);
+    final textValue = displayValue?.toString() ?? '';
+    if (controller.text != textValue) {
+      controller.text = textValue;
+    }
+      setState(() {});
     _notifyDataChanged();
   }
 
@@ -556,9 +613,18 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     return byRow && byColumn;
   }
 
+  String _getControllerKey(int rowIndex, String field) {
+    return 'row_${rowIndex}_$field';
+  }
+
   Widget _buildEditableCell(T item, int rowIndex, SgEditableColumn<T> column) {
-    final controller =
-        _controllers[rowIndex]?[column.field] ?? TextEditingController();
+    final value =
+        column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+    final key = _getControllerKey(rowIndex, column.field);
+    final controller = _controllerPool.getController(
+      key,
+      value?.toString() ?? '',
+    );
 
     if (column.editor == EditableCellEditor.dropdown) {
       final dropdownValue =
@@ -894,7 +960,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             setState(() {
               controller.text = value;
               _updateCellValue(rowIndex, column.field, value);
-              
+
               // cascade updates
               final updater = column.onValueChanged;
               if (updater != null) {

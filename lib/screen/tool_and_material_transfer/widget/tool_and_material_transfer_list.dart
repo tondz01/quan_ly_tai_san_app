@@ -10,6 +10,7 @@ import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/ccdc_handover_pages_viewer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/table_tool_and_material_transfer_provider.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
@@ -454,6 +455,20 @@ class _ToolAndMaterialTransferListState
                                       ),
                               showActionsColumn: _showActionsColumn,
                               customActions: [
+                                CustomAction(
+                                tooltip: 'Xem',
+                                iconPath: 'assets/icons/building.svg',
+                                color: Colors.blue,
+                                block: (item) => item.coPhieuBanGiao == false,
+                                blockTooltip: 'Không có phiếu bàn giao',
+                                onPressed: (item) async {
+                                  // Hiển thị popup với danh sách biên bản bàn giao theo dạng page
+                                  CcdcHandoverPagesViewer.showPopup(
+                                    context,
+                                    item,
+                                  );
+                                },
+                              ),
                                 CustomAction(
                                   tooltip: 'Xem',
                                   iconPath: AppIconSvgPath.iconEye,

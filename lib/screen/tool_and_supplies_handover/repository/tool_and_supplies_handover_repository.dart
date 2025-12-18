@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.da
 // import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -193,8 +194,8 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> getListDetailAssetMobilization(String id) async {
-    List<ChiTietDieuDongTaiSan> list = [];
+  Future<Map<String, dynamic>> getListDetailCCDCMobilization(String id) async {
+    List<DetailToolAndMaterialTransferDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -772,6 +773,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     int size,
     String search,
     int trangThai,
+    [bool isByUserId = true]
   ) async {
     Map<String, dynamic> result = {
       'data': <ToolAndSuppliesHandoverDto>[],
@@ -791,7 +793,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       final userid = userInfo?.tenDangNhap ?? 'admin';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
+        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/paged?idcongty=ct001&page=$page&size=$size&search=$search${isByUserId ? "&userid=$userid" : ""}&trangThai=${trangThai == -1 ? '' : trangThai}',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -877,5 +879,4 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     }
     return {'data': count, 'status_code': Numeral.STATUS_CODE_SUCCESS};
   }
-
 }

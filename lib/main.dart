@@ -27,7 +27,7 @@ class Config {
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
-    defaultValue: '4',
+    defaultValue: '5',
   );
 
   static String get baseUrl {

@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -93,7 +90,6 @@ class _ToolAndSuppliesHandoverListState
   }
 
   void _initializeTableConfig() {
-    log('userInfo: ${jsonEncode(userInfo)}');
     _definitions = TableToolAndSuppliesHandoverConfig.getColumns(
       userInfo ?? UserInfoDTO.empty(),
     );
