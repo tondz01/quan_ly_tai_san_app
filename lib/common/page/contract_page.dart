@@ -1154,7 +1154,7 @@ class _AvoidPageBreakState extends State<AvoidPageBreak> {
       // Force push to next page
       if (spaceRemainingOnCurrentPage < widgetHeight) {
         setState(() {
-          _paddingTop = spaceRemainingOnCurrentPage + 10;
+          _paddingTop = spaceRemainingOnCurrentPage + 100;
         });
       }
     }
