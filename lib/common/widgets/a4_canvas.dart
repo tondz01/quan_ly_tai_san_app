@@ -18,6 +18,7 @@ class A4Canvas extends StatelessWidget {
   final double maxHeight;
 
   final double scale;
+  final bool isInfiniteHeight;
 
   const A4Canvas({
     super.key,
@@ -28,6 +29,7 @@ class A4Canvas extends StatelessWidget {
     required this.child,
     required this.maxWidth,
     required this.maxHeight,
+    this.isInfiniteHeight = false,
   });
 
   @override
@@ -35,32 +37,47 @@ class A4Canvas extends StatelessWidget {
     final aspectRatio = pageWidthMm / pageHeightMm;
     double w = maxWidth;
     double h = maxHeight;
+    double? finalHeight;
 
-    Size pageSize;
-    if (w / h > aspectRatio) {
-      // Fix theo chiều cao
-      h = math.min(h, maxHeight) * scale;
-      w = h * aspectRatio;
-      pageSize = Size(w, h);
-    } else {
-      // Fix theo chiều rộng
+    if (isInfiniteHeight) {
       w = math.min(w, maxWidth) * scale;
-      h = w / aspectRatio;
-      pageSize = Size(w, h);
+      finalHeight = null;
+    } else {
+      if (w / h > aspectRatio) {
+        // Fix theo chiều cao
+        h = math.min(h, maxHeight) * scale;
+        w = h * aspectRatio;
+      } else {
+        // Fix theo chiều rộng
+        w = math.min(w, maxWidth) * scale;
+        h = w / aspectRatio;
+      }
+      finalHeight = h;
     }
+
+    final double pixelsPerMm = w / pageWidthMm;
+
     return Container(
-      width: pageSize.width,
-      height: pageSize.height,
+      width: w,
+      height: finalHeight,
+      constraints:
+          isInfiniteHeight ? BoxConstraints(minHeight: w / aspectRatio) : null,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.grey.shade400, width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(2, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(2, 2),
+          ),
+        ],
       ),
       padding: EdgeInsets.fromLTRB(
-        marginsMm.left * pageSize.width / pageWidthMm,
-        marginsMm.top * pageSize.height / pageHeightMm,
-        marginsMm.right * pageSize.width / pageWidthMm,
-        marginsMm.bottom * pageSize.height / pageHeightMm,
+        marginsMm.left * pixelsPerMm,
+        marginsMm.top * pixelsPerMm,
+        marginsMm.right * pixelsPerMm,
+        marginsMm.bottom * pixelsPerMm,
       ),
       child: child,
     );

@@ -1121,13 +1121,6 @@ class _AvoidPageBreakState extends State<AvoidPageBreak> {
   double _paddingTop = 0;
   final GlobalKey _key = GlobalKey();
 
-  // A4 dimensions at 72 DPI (standard PDF point)
-  // Width: 595 points
-  // Height: 842 points
-  // The app uses REFERENCE_WIDTH = 800.
-  // So REFERENCE_HEIGHT = 800 * (842 / 595) approx 1132.
-  static const double REFERENCE_HEIGHT = 1131.0;
-
   @override
   void initState() {
     super.initState();
@@ -1147,26 +1140,25 @@ class _AvoidPageBreakState extends State<AvoidPageBreak> {
     final revealedOffset = viewport.getOffsetToReveal(box, 0.0);
     final double offsetInViewport = revealedOffset.offset;
 
-    // Check if the widget starts near the bottom of a page
-    final double pageHeight = REFERENCE_HEIGHT;
+    // Use the passed limitHeight or default to A4 height (Reference)
+    final double pageHeight = widget.limitHeight;
     final double topPosition = offsetInViewport;
     final double widgetHeight = box.size.height;
 
-    // We add a small buffer to ensure we don't accidentally split if it's very close
-    final double bottomPosition = topPosition + widgetHeight;
-
     final int startPage = (topPosition / pageHeight).floor();
+    final double bottomPosition = topPosition + widgetHeight;
     final int endPage = (bottomPosition / pageHeight).floor();
 
     if (startPage != endPage) {
       // Widget crosses page boundary
+      // Calculate how much space is left on the current page
       final double spaceRemainingOnCurrentPage =
           (startPage + 1) * pageHeight - topPosition;
 
+      // Force push to next page
       if (spaceRemainingOnCurrentPage < widgetHeight) {
         setState(() {
-          _paddingTop =
-              spaceRemainingOnCurrentPage + 20; // Push to next page + margin
+          _paddingTop = spaceRemainingOnCurrentPage + 10;
         });
       }
     }

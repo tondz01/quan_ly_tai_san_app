@@ -545,8 +545,16 @@ class _CommonContractState extends State<CommonContract> {
           }
         }
 
-        if (totalPages == 1) {
-          // Chỉ 1 trang: scale vừa A4
+        // Calculate standard A4 height in pixels for comparison
+        final standardA4HeightPx = REFERENCE_HEIGHT * pixelRatio;
+
+        // Check if we should treat this as a single page or slice it
+        // If it's 1 page but significantly taller than A4 (e.g. > 5% tolerance), we slice it.
+        bool shouldSlice =
+            totalPages > 1 || imageHeight > standardA4HeightPx * 1.05;
+
+        if (!shouldSlice) {
+          // Chỉ 1 trang và vừa kích thước: scale vừa A4
           final imageAspectRatio = imageWidth / imageHeight;
           final pageFormat =
               imageAspectRatio > 1.0
@@ -567,10 +575,21 @@ class _CommonContractState extends State<CommonContract> {
             ),
           );
         } else {
-          // Nhiều trang: cắt theo chiều cao thực tế của mỗi trang
+          // Nhiều trang hoặc 1 trang dài: cắt theo chiều cao chuẩn A4
+          // Nếu totalPages == 1 nhưng dài quá, ta dùng REFERENCE_HEIGHT làm chuẩn cắt
+          if (totalPages == 1) {
+            actualPageHeight = REFERENCE_HEIGHT;
+          }
+
           final pageHeightInPixels = actualPageHeight * pixelRatio;
 
-          for (int i = 0; i < totalPages; i++) {
+          // Calculate estimated pages if slicing a single long image
+          final int sliceCount =
+              totalPages > 1
+                  ? totalPages
+                  : (imageHeight / pageHeightInPixels).ceil();
+
+          for (int i = 0; i < sliceCount; i++) {
             final srcY = (i * pageHeightInPixels).round();
             final srcHeight = pageHeightInPixels.round();
             final actualSrcHeight = srcHeight.clamp(
@@ -613,11 +632,8 @@ class _CommonContractState extends State<CommonContract> {
             await _waitForFrames(2);
 
             // Tính tỷ lệ của ảnh đã cắt
-            final croppedAspectRatio = imageWidth / actualSrcHeight;
-            final pageFormat =
-                croppedAspectRatio > 1.0
-                    ? PdfPageFormat.a4.landscape
-                    : PdfPageFormat.a4.portrait;
+            // Luôn dùng Portrait cho các slice cắt từ A4 dọc
+            final pageFormat = PdfPageFormat.a4.portrait;
 
             pdf.addPage(
               pw.Page(
@@ -1223,9 +1239,7 @@ class _CommonContractState extends State<CommonContract> {
           if (name.isEmpty || name == "null") {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Bạn chưa có chữ ký nháy'),
-                ),
+                const SnackBar(content: Text('Bạn chưa có chữ ký nháy')),
               );
             }
             return;
@@ -2098,7 +2112,8 @@ class _DraggableImageState extends State<DraggableImage> {
                 alignment: Alignment.center, // Zoom từ giữa ảnh
                 child: Image.memory(
                   widget.bytes,
-                  width: imageWidth, // Sử dụng width từ dữ liệu đã lưu hoặc default
+                  width:
+                      imageWidth, // Sử dụng width từ dữ liệu đã lưu hoặc default
                   fit: BoxFit.contain, // Không crop ảnh, giữ tỷ lệ
                 ),
               ),

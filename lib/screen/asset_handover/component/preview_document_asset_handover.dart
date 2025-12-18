@@ -204,6 +204,7 @@ previewDocumentHandover({
               scale: 1.0,
               maxWidth: 800,
               maxHeight: 800 * (297 / 210),
+              isInfiniteHeight: true,
               child: ContractPage.assetHandoverPageV2(
                 item,
                 itemsDetail,
