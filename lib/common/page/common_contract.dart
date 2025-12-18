@@ -640,7 +640,8 @@ class _CommonContractState extends State<CommonContract> {
                 pageFormat: pageFormat,
                 margin: pw.EdgeInsets.zero,
                 build:
-                    (context) => pw.Center(
+                    (context) => pw.Align(
+                      alignment: pw.Alignment.topCenter,
                       child: pw.FittedBox(
                         fit: pw.BoxFit.contain,
                         child: pw.Image(pw.MemoryImage(croppedPngBytes)),
