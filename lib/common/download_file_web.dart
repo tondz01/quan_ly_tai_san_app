@@ -46,11 +46,7 @@ Future<void> downloadForWeb(
     anchor.click();
     anchor.remove();
 
-    _showNotification(
-      context,
-      '✅ Đang tải file:  $fileName',
-      true,
-    );
+    _showNotification(context, '✅ Đang tải file:  $fileName', true);
     // }
     // Tạo anchor element để download file trực tiếp
   } catch (e) {
@@ -66,8 +62,15 @@ Future<void> downloadBytesForWeb(
   try {
     final blob = html.Blob([bytes]);
     final url = html.Url.createObjectUrlFromBlob(blob);
+
+    // Create anchor element to trigger download
+    html.AnchorElement(href: url)
+      ..setAttribute("download", fileName)
+      ..click();
+
+    // Cleanup
     html.Url.revokeObjectUrl(url);
-    
+
     _showNotification(context, '✅ Đã tải xuống: $fileName', true);
   } catch (e) {
     _showNotification(context, '❌ Lỗi download: $e', false);
