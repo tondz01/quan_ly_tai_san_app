@@ -27,7 +27,9 @@ class TableAssetHandoverConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id ?? ''));
+          return TableCellData(
+            widget: Text(item.id ?? '', textAlign: TextAlign.center),
+          );
         },
       ),
       ColumnDefinition(
@@ -39,7 +41,9 @@ class TableAssetHandoverConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.lenhDieuDong ?? ''));
+          return TableCellData(
+            widget: Text(item.lenhDieuDong ?? '', textAlign: TextAlign.center),
+          );
         },
       ),
       ColumnDefinition(
@@ -57,6 +61,7 @@ class TableAssetHandoverConfig {
                       ?.tenPhongBan ??
                   item.tenDonViGiao ??
                   '',
+              textAlign: TextAlign.center,
             ),
           );
         },
@@ -76,6 +81,7 @@ class TableAssetHandoverConfig {
                       ?.tenPhongBan ??
                   item.tenDonViNhan ??
                   '',
+              textAlign: TextAlign.center,
             ),
           );
         },
@@ -88,7 +94,9 @@ class TableAssetHandoverConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.ngayBanGiao ?? ''));
+          return TableCellData(
+            widget: Text(item.ngayBanGiao ?? '', textAlign: TextAlign.center),
+          );
         },
       ),
       ColumnDefinition(
@@ -99,7 +107,9 @@ class TableAssetHandoverConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.ngayTaoChungTu ?? ''));
+          return TableCellData(
+            widget: Text(item.ngayTaoChungTu ?? '', textAlign: TextAlign.center),
+          );
         },
       ),
       ColumnDefinition(
@@ -116,6 +126,7 @@ class TableAssetHandoverConfig {
                       .getNhanVienById(item.nguoiTao ?? '')
                       ?.hoTen ??
                   '',
+              textAlign: TextAlign.center,
             ),
           );
         },
@@ -135,7 +146,7 @@ class TableAssetHandoverConfig {
                       name: item.tenFile!,
                       url: item.duongDanFile ?? '',
                     )
-                    : Text('Không có tài liệu'),
+                    : Text('Không có tài liệu', textAlign: TextAlign.center),
           );
         },
       ),

@@ -3,11 +3,11 @@ import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/signers_table.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
@@ -89,6 +89,18 @@ class ContractPage {
     AssetHandoverDto assetHandoverDto,
     List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
   ) {
+    List<CurrentStatus>? listHienTrang =
+        AccountHelper.instance.getCurrentStatus();
+    if (listHienTrang?.isEmpty ?? true) {
+      AuthRepository().loadCurrentStatus('ct001');
+      listHienTrang = AccountHelper.instance.getCurrentStatus();
+    }
+
+    String getHienTrang(int id) {
+      return listHienTrang?.firstWhere((element) => element.id == id).tenHTKT ??
+          '';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -180,7 +192,7 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].hienTrang.toString(),
+                    getHienTrang(listDetailAssetMobilization[i].hienTrang),
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -201,6 +213,18 @@ class ContractPage {
     ToolAndSuppliesHandoverDto toolAndSuppliesHandoverDto,
     List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
   ) {
+    List<CurrentStatus>? listHienTrang =
+        AccountHelper.instance.getCurrentStatus();
+    if (listHienTrang?.isEmpty ?? true) {
+      AuthRepository().loadCurrentStatus('ct001');
+      listHienTrang = AccountHelper.instance.getCurrentStatus();
+    }
+
+    String getHienTrang(int id) {
+      return listHienTrang?.firstWhere((element) => element.id == id).tenHTKT ??
+          '';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -292,7 +316,7 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].hienTrang.toString(),
+                    getHienTrang(listDetailAssetMobilization[i].hienTrang),
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -313,6 +337,19 @@ class ContractPage {
     if (AccountHelper.instance.getAllUnit().isEmpty) {
       AuthRepository().loadUnit('ct001');
     }
+
+    List<CurrentStatus>? listHienTrang =
+        AccountHelper.instance.getCurrentStatus();
+    if (listHienTrang?.isEmpty ?? true) {
+      AuthRepository().loadCurrentStatus('ct001');
+      listHienTrang = AccountHelper.instance.getCurrentStatus();
+    }
+
+    String getHienTrang(int id) {
+      return listHienTrang?.firstWhere((element) => element.id == id).tenHTKT ??
+          '';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -393,7 +430,9 @@ class ContractPage {
                                     .donViTinh,
                               )
                               ?.tenDonVi ??
-                          '',
+                          dieuDongTaiSanDto
+                              .chiTietDieuDongTaiSans![i]
+                              .donViTinh,
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
@@ -404,9 +443,9 @@ class ContractPage {
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      AppUtility.getHienTrang(
+                      getHienTrang(
                         dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].hienTrang,
-                      ).name,
+                      ),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
@@ -523,7 +562,7 @@ class ContractPage {
                                     '',
                               )
                               ?.tenDonVi ??
-                          '',
+                          '${toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].donViTinh}',
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
@@ -741,7 +780,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    '',
+                    listDetailAssetMobilization[i].moTa ?? '',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -751,7 +790,7 @@ class ContractPage {
                               listDetailAssetMobilization[i].donViTinh ?? '',
                             )
                             ?.tenDonVi ??
-                        '',
+                        '${listDetailAssetMobilization[i].donViTinh}',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -764,7 +803,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].moTa ?? '',
+                    listDetailAssetMobilization[i].ghiChu ?? '',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -1006,7 +1045,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    '',
+                    listDetailAssetMobilization[i].nuocSanXuat.toString(),
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -1019,7 +1058,7 @@ class ContractPage {
                                   '',
                             )
                             ?.tenDonVi ??
-                        '',
+                        '${listDetailAssetMobilization[i].chiTietDieuDongCCDCVatTuDTO?.donViTinh}',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),

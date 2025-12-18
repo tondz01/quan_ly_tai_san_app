@@ -95,6 +95,7 @@ class _AssetTransferListByHandoverState
 
   // Cache constants
   static const int _assetHandoverType = FunctionType.ASSET_HANDOVER;
+  static const int _assetTransferType = FunctionType.ASSET_TRANSFER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
 
   // Cache timestamp để tránh xử lý trùng message
@@ -147,32 +148,23 @@ class _AssetTransferListByHandoverState
       if (typeFunc is! int) return;
 
       // Chỉ xử lý message liên quan đến bàn giao tài sản hoặc all
-      if (typeFunc != _assetHandoverType && typeFunc != _allFunctionType) {
+      if (typeFunc != _assetHandoverType && typeFunc != _assetTransferType && typeFunc != _allFunctionType) {
         SGLog.info(
           'ASSET_HANDOVER',
-          'ASSET_HANDOVER skip: type_func not match',
+          'ASSET_HANDOVER skip: type_func not match (typeFunc=$typeFunc, expected: $_assetHandoverType or $_assetTransferType or $_allFunctionType)',
         );
         return;
       }
 
-      // Nếu message có danh sách id_need_to_do thì chỉ reload
-      // khi user hiện tại nằm trong danh sách cần xử lý
-      final idNeedToDo = next['id_need_to_do'];
-      if (_currentUsername.isNotEmpty && idNeedToDo is String) {
-        final inList = AppUtility.userInList(_currentUsername, idNeedToDo);
-        SGLog.info(
-          'ASSET_HANDOVER',
-          'ASSET_HANDOVER check id_need_to_do, user=$_currentUsername, inList=$inList',
-        );
-        if (!inList) {
-          return;
-        }
-      }
+      SGLog.info(
+        'ASSET_HANDOVER',
+        'ASSET_HANDOVER type_func matched, proceeding to process message',
+      );
 
       // Tránh xử lý duplicate message theo timestamp
       final messageTime = next['time'];
-      if (messageTime is int && _lastProcessedMessageTime != null) {
-        if (messageTime <= _lastProcessedMessageTime!) {
+      if (messageTime is int) {
+        if (_lastProcessedMessageTime != null && messageTime <= _lastProcessedMessageTime!) {
           SGLog.info(
             'ASSET_HANDOVER',
             'ASSET_HANDOVER skip duplicate message, time=$messageTime, last=$_lastProcessedMessageTime',
@@ -180,8 +172,11 @@ class _AssetTransferListByHandoverState
           return;
         }
         _lastProcessedMessageTime = messageTime;
-      } else if (messageTime is int) {
-        _lastProcessedMessageTime = messageTime;
+      } else {
+        SGLog.info(
+          'ASSET_HANDOVER',
+          'ASSET_HANDOVER message has no valid timestamp, time=$messageTime',
+        );
       }
 
       SGLog.info(

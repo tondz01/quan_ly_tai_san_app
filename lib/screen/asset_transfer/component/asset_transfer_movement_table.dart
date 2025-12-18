@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/current_status/model/current_status.dart';
@@ -88,6 +88,20 @@ class _AssetTransferMovementTableState
         [];
   }
 
+  /// Tìm CurrentStatus từ dropdown items để đảm bảo cùng reference
+  CurrentStatus? _findHienTrangFromItems(int? id) {
+    if (id == null) return null;
+    for (final item in hienTrangItems) {
+      if (item.value is CurrentStatus) {
+        final status = item.value as CurrentStatus;
+        if (status.id == id) {
+          return status;
+        }
+      }
+    }
+    return null;
+  }
+
   @override
   void didUpdateWidget(AssetTransferMovementTable oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -158,7 +172,7 @@ class _AssetTransferMovementTableState
               setState(() {
                 listAsset = List.from(data);
               });
-
+              log("call onDataChanged ${jsonEncode(listAsset)}");
               // Thông báo thay đổi lên parent
               widget.onDataChanged?.call(data);
             },
@@ -178,6 +192,7 @@ class _AssetTransferMovementTableState
                     item.hienTrang = value.hienTrang;
                     item.ghiChu = value.ghiChu ?? '';
                     item.idDonViHienThoi = value.idDonViHienThoi;
+                    item.moTa = value.nuocSanXuat;
                   }
                   log('setValue: ${item.tenTaiSan}');
                 },
@@ -207,7 +222,9 @@ class _AssetTransferMovementTableState
                     // Cập nhật các cột khác
                     updateRow('don_vi_tinh', newValue.donViTinh);
                     updateRow('so_luong', newValue.soLuong);
-                    updateRow('tinh_trang', newValue.hienTrang);
+                    // Chuyển đổi int ID thành CurrentStatus object từ cache
+                    final hienTrangObj = _hienTrangCache[newValue.hienTrang] ?? _defaultHienTrang;
+                    updateRow('condition', hienTrangObj);
                     updateRow('ghi_chu', newValue.ghiChu ?? '');
 
                     // Force rebuild để hiển thị đúng item đã chọn
@@ -246,16 +263,22 @@ class _AssetTransferMovementTableState
                   titleAlignment: TextAlign.center,
                   isEditable: true,
                   width: 50,
-                  // O(1) lookup từ cache thay vì O(n) firstWhere
+                  // Tìm từ items để đảm bảo cùng reference với dropdown items
                   getValue: (item) => 
-                      (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).tenHTKT,
+                      _findHienTrangFromItems(item.hienTrang) ?? 
+                      (hienTrangItems.isNotEmpty && hienTrangItems.first.value is CurrentStatus
+                          ? hienTrangItems.first.value as CurrentStatus
+                          : _defaultHienTrang),
                   setValue: (item, value) {
-                    if (value is! HienTrang) return;
-                    item.hienTrang = value.id;
+                    if (value is! CurrentStatus) return;
+                    item.hienTrang = value.id ?? 0;
                   },
-                  // O(1) lookup từ cache
+                  // Tìm từ items để đảm bảo cùng reference
                   getValueWithIndex: (item, rowIndex) =>
-                      _hienTrangCache[item.hienTrang] ?? _defaultHienTrang,
+                      _findHienTrangFromItems(item.hienTrang) ?? 
+                      (hienTrangItems.isNotEmpty && hienTrangItems.first.value is CurrentStatus
+                          ? hienTrangItems.first.value as CurrentStatus
+                          : _defaultHienTrang),
                   sortValueGetter: (item) =>
                       (_hienTrangCache[item.hienTrang] ?? _defaultHienTrang).tenHTKT,
                   editor: EditableCellEditor.dropdown,

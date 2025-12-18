@@ -9,14 +9,14 @@ class DetailAssetHandoverDto {
   final String? kyHieu;
   final String? soKyHieu;
   final int? hienTrang;
-  final String? moTa;
+  final String? ghiChu;
   final int? soLuong;
   final String? ngayTao;
   final String? ngayCapNhat;
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
-  final String? namSanXuat;
+  final String? moTa;
 
   DetailAssetHandoverDto({
     this.id,
@@ -29,14 +29,14 @@ class DetailAssetHandoverDto {
     this.kyHieu,
     this.soKyHieu,
     this.hienTrang,
-    this.moTa,
+    this.ghiChu,
     this.soLuong,
     this.ngayTao,
     this.ngayCapNhat,
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
-    this.namSanXuat,
+    this.moTa,
   });
 
   factory DetailAssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -53,7 +53,7 @@ class DetailAssetHandoverDto {
       hienTrang: json['hienTrang'] is int
           ? json['hienTrang'] as int?
           : int.tryParse(json['hienTrang']?.toString() ?? ''),
-      moTa: json['moTa'] as String?,
+      ghiChu: json['ghiChu'] as String?,
       soLuong: json['soLuong'] is int
           ? json['soLuong'] as int?
           : int.tryParse(json['soLuong']?.toString() ?? ''),
@@ -62,7 +62,7 @@ class DetailAssetHandoverDto {
       nguoiTao: json['nguoiTao'] as String?,
       nguoiCapNhat: json['nguoiCapNhat'] as String?,
       isActive: json['isActive'] as bool?,
-      namSanXuat: json['namSanXuat'] as String?,
+      moTa: json['moTa'] as String?,
     );
   }
 
@@ -78,14 +78,14 @@ class DetailAssetHandoverDto {
       'kyHieu': kyHieu,
       'soKyHieu': soKyHieu,
       'hienTrang': hienTrang,
-      'moTa': moTa,
+      'ghiChu': ghiChu,
       'soLuong': soLuong,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
-      'namSanXuat': namSanXuat,
+      'moTa': moTa,
     };
   }
 
@@ -100,14 +100,14 @@ class DetailAssetHandoverDto {
     String? kyHieu,
     String? soKyHieu,
     int? hienTrang,
-    String? moTa,
+    String? ghiChu,
     int? soLuong,
     String? ngayTao,
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
     bool? isActive,
-    String? namSanXuat,
+    String? moTa,
   }) {
     return DetailAssetHandoverDto(
       id: id ?? this.id,
@@ -120,20 +120,20 @@ class DetailAssetHandoverDto {
       kyHieu: kyHieu ?? this.kyHieu,
       soKyHieu: soKyHieu ?? this.soKyHieu,
       hienTrang: hienTrang ?? this.hienTrang,
-      moTa: moTa ?? this.moTa,
+      ghiChu: ghiChu ?? this.ghiChu,
       soLuong: soLuong ?? this.soLuong,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
-      namSanXuat: namSanXuat ?? this.namSanXuat,
+      moTa: moTa ?? this.moTa,
     );
   }
 
   @override
   String toString() {
-    return 'DetailAssetHandoverDto(id: $id, idBanGiaoTaiSan: $idBanGiaoTaiSan, banGiaoTaiSan: $banGiaoTaiSan, quyetDinhDieuDongSo: $quyetDinhDieuDongSo, idTaiSan: $idTaiSan, tenTaiSan: $tenTaiSan, donViTinh: $donViTinh, kyHieu: $kyHieu, soKyHieu: $soKyHieu, hienTrang: $hienTrang, moTa: $moTa, soLuong: $soLuong, ngayTao: $ngayTao, ngayCapNhat: $ngayCapNhat, nguoiTao: $nguoiTao, nguoiCapNhat: $nguoiCapNhat, isActive: $isActive)';
+    return 'DetailAssetHandoverDto(id: $id, idBanGiaoTaiSan: $idBanGiaoTaiSan, banGiaoTaiSan: $banGiaoTaiSan, quyetDinhDieuDongSo: $quyetDinhDieuDongSo, idTaiSan: $idTaiSan, tenTaiSan: $tenTaiSan, donViTinh: $donViTinh, kyHieu: $kyHieu, soKyHieu: $soKyHieu, hienTrang: $hienTrang, ghiChu: $ghiChu, soLuong: $soLuong, ngayTao: $ngayTao, ngayCapNhat: $ngayCapNhat, nguoiTao: $nguoiTao, nguoiCapNhat: $nguoiCapNhat, isActive: $isActive)';
   }
 
   @override
@@ -150,14 +150,14 @@ class DetailAssetHandoverDto {
         other.kyHieu == kyHieu &&
         other.soKyHieu == soKyHieu &&
         other.hienTrang == hienTrang &&
-        other.moTa == moTa &&
+        other.ghiChu == ghiChu &&
         other.soLuong == soLuong &&
         other.ngayTao == ngayTao &&
         other.ngayCapNhat == ngayCapNhat &&
         other.nguoiTao == nguoiTao &&
         other.nguoiCapNhat == nguoiCapNhat &&
         other.isActive == isActive &&
-        other.namSanXuat == namSanXuat;
+        other.moTa == moTa;
   }
 
   @override
@@ -172,13 +172,13 @@ class DetailAssetHandoverDto {
         kyHieu.hashCode ^
         soKyHieu.hashCode ^
         hienTrang.hashCode ^
-        moTa.hashCode ^
+        ghiChu.hashCode ^
         soLuong.hashCode ^
         ngayTao.hashCode ^
         ngayCapNhat.hashCode ^
         nguoiTao.hashCode ^
         nguoiCapNhat.hashCode ^
         isActive.hashCode ^
-        namSanXuat.hashCode;
+        moTa.hashCode;
   }
 }

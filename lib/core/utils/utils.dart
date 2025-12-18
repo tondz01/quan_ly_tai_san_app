@@ -53,6 +53,7 @@ class RoleDto {
 }
 
 abstract class AppUtility {
+  static const String DATE_NULL = "Không xác định";
   static List<LyDoTang> get listLyDoTang => [
     LyDoTang(id: 1, name: 'Dự án'),
     LyDoTang(id: 2, name: 'Tăng xây dựng'),

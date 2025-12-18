@@ -25,7 +25,7 @@ class TabelAssetTransferConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenPhieu ?? ''));
+          return TableCellData(widget: Text(item.tenPhieu ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -37,7 +37,7 @@ class TabelAssetTransferConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.trichYeu ?? ''));
+          return TableCellData(widget: Text(item.trichYeu ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -48,7 +48,7 @@ class TabelAssetTransferConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tggnTuNgay ?? ''));
+          return TableCellData(widget: Text(item.tggnTuNgay ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -59,7 +59,7 @@ class TabelAssetTransferConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenTrinhDuyetGiamDoc ?? ''));
+          return TableCellData(widget: Text(item.tenTrinhDuyetGiamDoc ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -87,7 +87,7 @@ class TabelAssetTransferConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id ?? ''));
+          return TableCellData(widget: Text(item.id ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -98,7 +98,7 @@ class TabelAssetTransferConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tggnTuNgay ?? ''));
+          return TableCellData(widget: Text(item.tggnTuNgay ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -109,7 +109,7 @@ class TabelAssetTransferConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tggnDenNgay ?? ''));
+          return TableCellData(widget: Text(item.tggnDenNgay ?? '', textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -125,7 +125,7 @@ class TabelAssetTransferConfig {
                   .getDepartmentById(item.idDonViGiao ?? '')
                   ?.tenPhongBan ??
               '';
-          return TableCellData(widget: Text(tenDonViGiao));
+          return TableCellData(widget: Text(tenDonViGiao, textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(
@@ -141,7 +141,7 @@ class TabelAssetTransferConfig {
                   .getDepartmentById(item.idDonViNhan ?? '')
                   ?.tenPhongBan ??
               '';
-          return TableCellData(widget: Text(tenDonViNhan));
+          return TableCellData(widget: Text(tenDonViNhan, textAlign: TextAlign.center));
         },
       ),
       ColumnDefinition(

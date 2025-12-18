@@ -171,14 +171,8 @@ class _ToolAndMaterialTransferDetailState
       newValidationErrors['effectiveDateTo'] = true;
     }
 
-    // if (controllerRequester.text.isEmpty) {
-    //   newValidationErrors['requester'] = true;
-    // }
-
-    // If it's a new item, document is required
-    if ((_selectedFileName ?? '').isEmpty ||
-        (_selectedFilePath ?? '').isEmpty) {
-      newValidationErrors['document'] = true;
+    if (controllerEffectiveDate.text.isEmpty) {
+      newValidationErrors['effectiveDate'] = true;
     }
 
     if (nguoiKyGiamDoc == null || controllerApprover.text.isEmpty) {
@@ -350,8 +344,9 @@ class _ToolAndMaterialTransferDetailState
         // Gọi getListOwnership sau khi frame đầu tiên build xong
         // để tránh lỗi "setState()/notifyListeners called during build"
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final value =
-              await widget.provider.getListOwnership(item?.idDonViGiao ?? '');
+          final value = await widget.provider.getListOwnership(
+            item?.idDonViGiao ?? '',
+          );
           if (!mounted) return;
           setState(() {
             listOwnershipUnit = value;
@@ -425,9 +420,7 @@ class _ToolAndMaterialTransferDetailState
                 .toList() ??
             [];
 
-          itemPreview = _createToolAndMaterialTransPreview(
-            widget.type,
-          );
+        itemPreview = _createToolAndMaterialTransPreview(widget.type);
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
         controllerSoChungTu.text = widget.provider.genID();
@@ -906,6 +899,7 @@ class _ToolAndMaterialTransferDetailState
                           label: 'at.effective_date'.tr,
                           controller: controllerEffectiveDate,
                           isEditing: isEditing,
+                          fieldName: 'effectiveDate',
                           onChanged: (value) {},
                           value:
                               controllerEffectiveDate.text.isNotEmpty
@@ -919,6 +913,7 @@ class _ToolAndMaterialTransferDetailState
                           label: 'at.effective_date_to'.tr,
                           controller: controllerEffectiveDateTo,
                           isEditing: isEditing,
+                          fieldName: 'effectiveDateTo',
                           onChanged: (value) {},
                           value:
                               controllerEffectiveDateTo.text.isNotEmpty
@@ -1142,71 +1137,69 @@ class _ToolAndMaterialTransferDetailState
                 listOwnershipUnit: widget.provider.listOwnershipUnit,
                 onDataChanged: (data) {
                   // Defer setState to avoid calling during build
-                
-                    setState(() {
-                      String keyOf(
-                        String idCCDCVatTu,
-                        String idChiTietCCDCVatTu,
-                      ) => '$idCCDCVatTu|$idChiTietCCDCVatTu';
-                      final initialByKey = {
-                        for (final d in _initialDetails)
-                          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
-                      };
 
-                      listNewDetails =
-                          data.map((e) {
-                            final idCCDC = e.asset?.id ?? '';
-                            final idChiTiet = e.idDetaiAsset;
-                            final key = keyOf(idCCDC, idChiTiet);
-                            final preservedId = initialByKey[key]?.id;
-                            return DetailToolAndMaterialTransferDto(
-                              id:
-                                  (preservedId != null &&
-                                          preservedId.isNotEmpty)
-                                      ? preservedId
-                                      : UUIDGenerator.generateWithFormat(
-                                        'CTDD-****',
-                                      ),
-                              idDieuDongCCDCVatTu: controllerSoChungTu.text,
-                              soQuyetDinh: item?.soQuyetDinh ?? '',
-                              tenPhieu: controllerDocumentName.text,
-                              tenCCDCVatTu: e.asset?.ten ?? '',
-                              congSuat: e.asset?.congSuat ?? '0',
-                              nuocSanXuat: e.asset?.nuocSanXuat ?? '',
-                              soKyHieu: e.asset?.soKyHieu ?? '',
-                              kyHieu: e.asset?.kyHieu ?? '',
-                              namSanXuat: e.namSanXuat,
-                              idCCDCVatTu: idCCDC,
-                              idChiTietCCDCVatTu: idChiTiet,
-                              donViTinh: e.donViTinh,
-                              soLuong: e.soLuong,
-                              ghiChu: e.ghiChu,
-                              ngayTao: AppUtility.formatDateString(
-                                DateTime.now(),
-                              ),
-                              ngayCapNhat: AppUtility.formatDateString(
-                                DateTime.now(),
-                              ),
-                              nguoiTao: widget.provider.userInfo?.id ?? '',
-                              nguoiCapNhat: widget.provider.userInfo?.id ?? '',
-                              active: true,
-                              soLuongXuat: e.soLuongXuat,
-                              soLuongDaBanGiao: 0,
-                              soLuongCon: e.soLuong,
-                            );
-                          }).toList();
+                  setState(() {
+                    String keyOf(
+                      String idCCDCVatTu,
+                      String idChiTietCCDCVatTu,
+                    ) => '$idCCDCVatTu|$idChiTietCCDCVatTu';
+                    final initialByKey = {
+                      for (final d in _initialDetails)
+                        keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+                    };
 
-                      if (listNewDetails.isNotEmpty) {
-                        isShowPreview = true;
-                      } else {
-                        isShowPreview = false;
-                      }
-                    
-                      itemPreview = _createToolAndMaterialTransPreview(
-                        typeTransfer,
-                      );
-                    });
-                 
+                    listNewDetails =
+                        data.map((e) {
+                          final idCCDC = e.asset?.id ?? '';
+                          final idChiTiet = e.idDetaiAsset;
+                          final key = keyOf(idCCDC, idChiTiet);
+                          final preservedId = initialByKey[key]?.id;
+                          return DetailToolAndMaterialTransferDto(
+                            id:
+                                (preservedId != null && preservedId.isNotEmpty)
+                                    ? preservedId
+                                    : UUIDGenerator.generateWithFormat(
+                                      'CTDD-****',
+                                    ),
+                            idDieuDongCCDCVatTu: controllerSoChungTu.text,
+                            soQuyetDinh: item?.soQuyetDinh ?? '',
+                            tenPhieu: controllerDocumentName.text,
+                            tenCCDCVatTu: e.asset?.ten ?? '',
+                            congSuat: e.asset?.congSuat ?? '0',
+                            nuocSanXuat: e.asset?.nuocSanXuat ?? '',
+                            soKyHieu: e.asset?.soKyHieu ?? '',
+                            kyHieu: e.asset?.kyHieu ?? '',
+                            namSanXuat: e.namSanXuat,
+                            idCCDCVatTu: idCCDC,
+                            idChiTietCCDCVatTu: idChiTiet,
+                            donViTinh: e.donViTinh,
+                            soLuong: e.soLuong,
+                            ghiChu: e.ghiChu,
+                            ngayTao: AppUtility.formatDateString(
+                              DateTime.now(),
+                            ),
+                            ngayCapNhat: AppUtility.formatDateString(
+                              DateTime.now(),
+                            ),
+                            nguoiTao: widget.provider.userInfo?.id ?? '',
+                            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+                            active: true,
+                            soLuongXuat: e.soLuongXuat,
+                            soLuongDaBanGiao: 0,
+                            soLuongCon: e.soLuong,
+                          );
+                        }).toList();
+
+                    if (listNewDetails.isNotEmpty) {
+                      isShowPreview = true;
+                    } else {
+                      isShowPreview = false;
+                    }
+
+                    itemPreview = _createToolAndMaterialTransPreview(
+                      typeTransfer,
+                    );
+                  });
                 },
               ),
 
