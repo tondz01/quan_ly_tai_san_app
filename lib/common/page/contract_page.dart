@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/signers_table.dart';
@@ -517,8 +518,8 @@ class ContractPage {
                       AccountHelper.instance
                               .getUnitById(
                                 toolAndMaterialTransferDto
-                                    .detailToolAndMaterialTransfers![i]
-                                    .donViTinh ??
+                                        .detailToolAndMaterialTransfers![i]
+                                        .donViTinh ??
                                     '',
                               )
                               ?.tenDonVi ??
@@ -527,22 +528,33 @@ class ContractPage {
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuong.toString(),
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .soLuong
+                          .toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongXuat.toString(),
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .soLuongXuat
+                          .toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuongDaBanGiao.toString(),
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .soLuongDaBanGiao
+                          .toString(),
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].ghiChu,
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .ghiChu,
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
@@ -585,11 +597,7 @@ class ContractPage {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    Container(
-                      width: 70,
-                      color: Colors.black,
-                      height: 1,
-                    )
+                    Container(width: 70, color: Colors.black, height: 1),
                   ],
                 ),
               ),
@@ -632,7 +640,10 @@ class ContractPage {
 
         SGText(
           text: "Chúng tôi gồm:",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
+          style: SettingPage.textStyle.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
           textAlign: TextAlign.start,
         ),
         SizedBox(height: 2 * SettingPage.scale),
@@ -672,7 +683,11 @@ class ContractPage {
           children: [
             TableRow(
               children: [
-                tableHeader("STT", 1, SettingPage.textStyle.copyWith(fontSize: 12)),
+                tableHeader(
+                  "STT",
+                  1,
+                  SettingPage.textStyle.copyWith(fontSize: 12),
+                ),
                 tableHeader(
                   "TÊN TÀI SẢN",
                   1,
@@ -721,8 +736,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].kyHieu ??
-                        '',
+                    listDetailAssetMobilization[i].kyHieu ?? '',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -758,55 +772,61 @@ class ContractPage {
               ),
           ],
         ),
-        SGText(text: "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.", style: SettingPage.textStyle.copyWith(fontSize: 12),),
+        SGText(
+          text:
+              "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
+        ),
         SizedBox(height: 10 * SettingPage.scale),
-        IntrinsicHeight(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...listSigneInfo!.map(
-                (e) => Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        height: 50 * SettingPage.scale,
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          child: SGText(
-                            text: e.donVi,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            style: SettingPage.textStyle.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+        AvoidPageBreak(
+          child: IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...listSigneInfo!.map(
+                  (e) => Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 50 * SettingPage.scale,
+                          child: Container(
+                            alignment: Alignment.topCenter,
+                            child: SGText(
+                              text: e.donVi,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: SettingPage.textStyle.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 90 * SettingPage.scale),
-                      SizedBox(
-                        height: 40 * SettingPage.scale,
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          child: SGText(
-                            text: e.hoTen,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            style: SettingPage.textStyle.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                        SizedBox(height: 90 * SettingPage.scale),
+                        SizedBox(
+                          height: 40 * SettingPage.scale,
+                          child: Container(
+                            alignment: Alignment.topCenter,
+                            child: SGText(
+                              text: e.hoTen,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: SettingPage.textStyle.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -844,11 +864,7 @@ class ContractPage {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    Container(
-                      width: 70,
-                      color: Colors.black,
-                      height: 1,
-                    )
+                    Container(width: 70, color: Colors.black, height: 1),
                   ],
                 ),
               ),
@@ -890,7 +906,10 @@ class ContractPage {
         ),
         SGText(
           text: "Chúng tôi gồm:",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12),
+          style: SettingPage.textStyle.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
           textAlign: TextAlign.start,
         ),
         SizedBox(height: 2 * SettingPage.scale),
@@ -982,8 +1001,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].kyHieu ??
-                        '',
+                    listDetailAssetMobilization[i].kyHieu ?? '',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
@@ -1023,58 +1041,143 @@ class ContractPage {
               ),
           ],
         ),
-        SGText(text: "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.", style: SettingPage.textStyle.copyWith(fontSize: 12),),
+        SGText(
+          text:
+              "Sau khi hai bên kiểm tra kỹ lưỡng tình trạng và thống nhất ký tên vào biên bản.",
+          style: SettingPage.textStyle.copyWith(fontSize: 12),
+        ),
         SizedBox(height: 10 * SettingPage.scale),
-        IntrinsicHeight(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...listSigneInfo!.map(
-                (e) => Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        height: 50 * SettingPage.scale,
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          child: SGText(
-                            text: e.isBGD ? e.chucVu : e.donVi,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            style: SettingPage.textStyle.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+        AvoidPageBreak(
+          child: IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...listSigneInfo!.map(
+                  (e) => Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 50 * SettingPage.scale,
+                          child: Container(
+                            alignment: Alignment.topCenter,
+                            child: SGText(
+                              text: e.isBGD ? e.chucVu : e.donVi,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: SettingPage.textStyle.copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 90 * SettingPage.scale),
-                      SizedBox(
-                        height: 40 * SettingPage.scale,
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          child: SGText(
-                            text: e.hoTen,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            style: SettingPage.textStyle.copyWith(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                        SizedBox(height: 90 * SettingPage.scale),
+                        SizedBox(
+                          height: 40 * SettingPage.scale,
+                          child: Container(
+                            alignment: Alignment.topCenter,
+                            child: SGText(
+                              text: e.hoTen,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              style: SettingPage.textStyle.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class AvoidPageBreak extends StatefulWidget {
+  final Widget child;
+  final double limitHeight;
+
+  const AvoidPageBreak({
+    super.key,
+    required this.child,
+    this.limitHeight = 1131,
+  });
+
+  @override
+  State<AvoidPageBreak> createState() => _AvoidPageBreakState();
+}
+
+class _AvoidPageBreakState extends State<AvoidPageBreak> {
+  double _paddingTop = 0;
+  final GlobalKey _key = GlobalKey();
+
+  // A4 dimensions at 72 DPI (standard PDF point)
+  // Width: 595 points
+  // Height: 842 points
+  // The app uses REFERENCE_WIDTH = 800.
+  // So REFERENCE_HEIGHT = 800 * (842 / 595) approx 1132.
+  static const double REFERENCE_HEIGHT = 1131.0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPosition());
+  }
+
+  void _checkPosition() {
+    if (!mounted) return;
+
+    final RenderBox? box =
+        _key.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final viewport = RenderAbstractViewport.of(box);
+    if (viewport == null) return;
+
+    final revealedOffset = viewport.getOffsetToReveal(box, 0.0);
+    final double offsetInViewport = revealedOffset.offset;
+
+    // Check if the widget starts near the bottom of a page
+    final double pageHeight = REFERENCE_HEIGHT;
+    final double topPosition = offsetInViewport;
+    final double widgetHeight = box.size.height;
+
+    // We add a small buffer to ensure we don't accidentally split if it's very close
+    final double bottomPosition = topPosition + widgetHeight;
+
+    final int startPage = (topPosition / pageHeight).floor();
+    final int endPage = (bottomPosition / pageHeight).floor();
+
+    if (startPage != endPage) {
+      // Widget crosses page boundary
+      final double spaceRemainingOnCurrentPage =
+          (startPage + 1) * pageHeight - topPosition;
+
+      if (spaceRemainingOnCurrentPage < widgetHeight) {
+        setState(() {
+          _paddingTop =
+              spaceRemainingOnCurrentPage + 20; // Push to next page + margin
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: _key,
+      mainAxisSize: MainAxisSize.min,
+      children: [SizedBox(height: _paddingTop), widget.child],
     );
   }
 }
