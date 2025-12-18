@@ -9,6 +9,7 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
+import 'package:quan_ly_tai_san_app/core/utils/handover_status.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/message/message_providers.dart';
@@ -96,6 +97,8 @@ class _ToolAndSuppliesHandoverTransferListState
   static const int _toolAndSuppliesHandoverType =
       FunctionType.TOOL_AND_SUPPLIES_HANDOVER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
+  static const int _transFerFunctionType =
+      FunctionType.TOOL_AND_MATERIAL_TRANSFER;
 
   // Cache timestamp để tránh xử lý trùng message
   int? _lastProcessedMessageTime;
@@ -143,7 +146,8 @@ class _ToolAndSuppliesHandoverTransferListState
 
       // Chỉ xử lý message liên quan đến bàn giao CCDC-vật tư hoặc all
       if (typeFunc != _toolAndSuppliesHandoverType &&
-          typeFunc != _allFunctionType) {
+          typeFunc != _allFunctionType &&
+          typeFunc != _transFerFunctionType) {
         SGLog.info('TOOL_HANDOVER', 'TOOL_HANDOVER skip: type_func not match');
         return;
       }
@@ -521,11 +525,8 @@ class _ToolAndSuppliesHandoverTransferListState
                             color: ColorValue.mediumGreen,
                             block:
                                 (item) =>
-                                    (item
-                                            .detailToolAndMaterialTransfers
-                                            ?.length ??
-                                        0) <=
-                                    0,
+                                    item.trangThaiPhieuDieuDong ==
+                                    HandoverStatus.daBanGiaoHet,
                             blockTooltip: 'Đã bàn giao hết',
                             onPressed: (item) {
                               DateTime now = DateTime.now();
