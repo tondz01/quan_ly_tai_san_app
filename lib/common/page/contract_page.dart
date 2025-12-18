@@ -1029,11 +1029,7 @@ class ContractPage {
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i]
-                            .chiTietDieuDongCCDCVatTuDTO
-                            ?.ghiChu
-                            .toString() ??
-                        '',
+                    listDetailAssetMobilization[i].ghiChu ?? '',
                     1,
                     SettingPage.textStyle.copyWith(fontSize: 12),
                   ),

@@ -477,6 +477,16 @@ class _ToolAndSuppliesHandoverDetailState
       //   newValidationErrors['leader'] = true;
       // }
 
+      if (controllerDecisionNumber.text.isEmpty) {
+        newValidationErrors['decisionNumber'] = true;
+      }
+      if (controllerDecisionLocation.text.isEmpty) {
+        newValidationErrors['decisionLocation'] = true;
+      }
+      if (controllerDecisionDate.text.isEmpty) {
+        newValidationErrors['decisionDate'] = true;
+      }
+
       if (controllerDelivererRepresentative.text.isEmpty) {
         newValidationErrors['delivererRepresentative'] = true;
       }
@@ -495,7 +505,7 @@ class _ToolAndSuppliesHandoverDetailState
           controllerReceiverRepresentative.text.isEmpty) {
         newValidationErrors['receiverRepresentative'] = true;
       }
-      if (item == null && _selectedFileName == null) {
+      if (_selectedFileName == null || _selectedFileName?.isEmpty == true) {
         newValidationErrors['document'] = true;
       }
       bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
@@ -743,6 +753,7 @@ class _ToolAndSuppliesHandoverDetailState
       );
       return;
     }
+    // return;
 
     _saveToolAndSuppliesHandover();
   }
@@ -990,49 +1001,70 @@ class _ToolAndSuppliesHandoverDetailState
                             onDataChanged: (data) {
                               // Cập nhật listDetailSubppliesHandover mà không setState để tránh reset table
                               // Chỉ map những item hợp lệ (có idCCDCVatTu và idDetaiAsset)
-                              
+                              log(
+                                'Received updated data from DetailCcdcTransferTable: ${jsonEncode(data)}',
+                              );
                               setState(() {
-                                // log('Data changed in DetailCcdcTransferTable: \\${jsonEncode(data)}');
-                                listDetailSubppliesHandover = data
-                                    .where((e) => e.idCCDCVatTu.isNotEmpty && e.idDetaiAsset.isNotEmpty)
-                                    .map((e) {
-                                  // Giữ lại id cũ nếu có, chỉ tạo mới nếu là dòng mới
-                                  final old = listDetailSubppliesHandover.firstWhere(
-                                    (x) => x.idCCDCVatTu == e.idCCDCVatTu && x.idChiTietCCDCVatTu == e.idDetaiAsset,
-                                    orElse: () => DetailSubppliesHandoverDto.empty(),
-                                  );
-                                  final isNew = old.id.isEmpty;
-                                  // Cập nhật ghiChu cho cả chiTietDieuDongCCDCVatTuDTO nếu có
-                                  final updatedChiTiet = e.chiTietDieuDongCCDCVatTuDTO?.copyWith(ghiChu: e.ghiChu);
-                                  return DetailSubppliesHandoverDto(
-                                    id: isNew ? UUIDGenerator.generateWithFormat("CTBGCCDC-******") : old.id,
-                                    idBanGiaoCCDCVatTu: controllerHandoverNumber.text,
-                                    idCCDCVatTu: e.idCCDCVatTu,
-                                    soLuong: e.soLuongXuat,
-                                    idChiTietCCDCVatTu: e.idDetaiAsset,
-                                    iddieudongccdcvattu: e.id,
-                                    soKyHieu: e.soKyHieu,
-                                    kyHieu: e.kyHieu,
-                                    ghiChu: e.ghiChu,
-                                    ngayTao: isNew ? AppUtility.formatDateString(DateTime.now()) : old.ngayTao,
-                                    ngayTaoChungTu: isNew ? AppUtility.formatDateString(DateTime.now()) : old.ngayTaoChungTu,
-                                    ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
-                                    nguoiTao: currentUser!.tenDangNhap,
-                                    nguoiCapNhat: '',
-                                    isActive: true,
-                                    chiTietDieuDongCCDCVatTuDTO: updatedChiTiet,
-                                  );
-                                }).toList();
+                                listDetailSubppliesHandover =
+                                    data.where((e) => e.idCCDCVatTu.isNotEmpty).map((
+                                      e,
+                                    ) {
+                                      // Giữ lại id cũ nếu có, chỉ tạo mới nếu là dòng mới
+                                      final old = listDetailSubppliesHandover
+                                          .firstWhere(
+                                            (x) =>
+                                                x.idCCDCVatTu ==
+                                                    e.idCCDCVatTu &&
+                                                x.idChiTietCCDCVatTu ==
+                                                    e.idDetaiAsset,
+                                            orElse:
+                                                () =>
+                                                    DetailSubppliesHandoverDto.empty(),
+                                          );
+                                      final isNew = old.id.isEmpty;
+                                      return DetailSubppliesHandoverDto(
+                                        id:
+                                            isNew
+                                                ? UUIDGenerator.generateWithFormat(
+                                                  "CTBGCCDC-******",
+                                                )
+                                                : old.id,
+                                        idBanGiaoCCDCVatTu:
+                                            controllerHandoverNumber.text,
+                                        idCCDCVatTu: e.idCCDCVatTu,
+                                        soLuong: e.soLuongXuat,
+                                        idChiTietCCDCVatTu: e.idDetaiAsset,
+                                        iddieudongccdcvattu: e.id,
+                                        soKyHieu: e.soKyHieu,
+                                        kyHieu: e.kyHieu,
+                                        ghiChu: e.ghiChu,
+                                        ngayTao:
+                                            isNew
+                                                ? AppUtility.formatDateString(
+                                                  DateTime.now(),
+                                                )
+                                                : old.ngayTao,
+                                        ngayTaoChungTu:
+                                            isNew
+                                                ? AppUtility.formatDateString(
+                                                  DateTime.now(),
+                                                )
+                                                : old.ngayTaoChungTu,
+                                        ngayCapNhat:
+                                            AppUtility.formatDateString(
+                                              DateTime.now(),
+                                            ),
+                                        nguoiTao: currentUser!.tenDangNhap,
+                                        nguoiCapNhat: '',
+                                        isActive: true,
+                                        chiTietDieuDongCCDCVatTuDTO:
+                                            e.chiTietDieuDongCCDCVatTuDTO,
+                                      );
+                                    }).toList();
 
-                                // log('listDetailSubppliesHandover: \\${jsonEncode(listDetailSubppliesHandover)}');
-
-                                // Defer setState để tránh rebuild trong build phase và mất focus
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) {
-                                    getToolAndSuppliesHandoverPreview();
-                                    setState(() {});
-                                  }
-                                });
+                                log(
+                                  'listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}',
+                                );
                               });
                             },
                           )
@@ -1042,7 +1074,9 @@ class _ToolAndSuppliesHandoverDetailState
               previewDocumentCcdcHandover(
                 context: context,
                 item: dieuDongCcdc,
-                dieuDongCcdc: getToolAndSuppliesHandoverPreview(),
+                dieuDongCcdc: getToolAndSuppliesHandoverPreview(
+                  details: listDetailSubppliesHandover,
+                ),
                 provider: widget.provider,
                 isShowKy: false,
               ),
@@ -1460,7 +1494,10 @@ class _ToolAndSuppliesHandoverDetailState
     );
   }
 
-  ToolAndSuppliesHandoverDto? getToolAndSuppliesHandoverPreview() {
+  ToolAndSuppliesHandoverDto? getToolAndSuppliesHandoverPreview({
+    List<DetailSubppliesHandoverDto>? details,
+  }) {
+    final detailList = details ?? listDetailSubppliesHandover;
     return ToolAndSuppliesHandoverDto(
       id: item?.id ?? '',
       banGiaoCCDCVatTu: controllerDocumentName.text,
@@ -1509,7 +1546,7 @@ class _ToolAndSuppliesHandoverDetailState
                 ),
               )
               .toList(),
-      listDetailSubppliesHandover: listDetailSubppliesHandover,
+      listDetailSubppliesHandover: detailList,
     );
   }
 

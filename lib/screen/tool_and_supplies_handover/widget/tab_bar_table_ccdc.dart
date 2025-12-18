@@ -18,43 +18,58 @@ class TabBarTableCcdc extends riverpod.ConsumerStatefulWidget {
   const TabBarTableCcdc({super.key, required this.provider});
 
   @override
-  riverpod.ConsumerState<TabBarTableCcdc> createState() => _TabBarTableCcdcState();
+  riverpod.ConsumerState<TabBarTableCcdc> createState() =>
+      _TabBarTableCcdcState();
 }
 
 class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
   int quyetDinhCount = 0;
   riverpod.ProviderSubscription<Map<String, dynamic>?>? _messageSub;
-  
-  final ToolAndMaterialTransferRepository _repository = ToolAndMaterialTransferRepository();
+
+  final ToolAndMaterialTransferRepository _repository =
+      ToolAndMaterialTransferRepository();
   Timer? _debounceTimer;
-  
+
   // Cache constants để tránh lookup nhiều lần
-  static const int _toolAndSuppliesHandoverType = FunctionType.TOOL_AND_SUPPLIES_HANDOVER;
+  static const int _toolAndSuppliesHandoverType =
+      FunctionType.TOOL_AND_SUPPLIES_HANDOVER;
   static const int _allFunctionType = FunctionType.ALL_FUNCTION;
-  
+  static const int _transFerFunctionType =
+      FunctionType.TOOL_AND_MATERIAL_TRANSFER;
+
   // Cache message timestamp để tránh xử lý duplicate
   int? _lastProcessedMessageTime;
   bool _isLoadingCount = false;
 
   Future<void> _loadCount() async {
+    log('[REALTIME] _loadCount called');
     // Lấy idDonViGiao từ NhanVien (phòng ban của user)
-    final userInfo = widget.provider.userInfo ?? AccountHelper.instance.getUserInfo();
-    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(userInfo?.tenDangNhap ?? '');
+    final userInfo = AccountHelper.instance.getUserInfo();
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(
+      userInfo?.tenDangNhap ?? '',
+    );
     final idDonViGiao = nhanVien?.phongBanId ?? '';
-    
+
     if (idDonViGiao.isEmpty || _isLoadingCount) return;
-    
     _isLoadingCount = true;
     try {
       // Gọi API getCountByDvGiao để lấy count
-      final newCount = await _repository.getDataPageByBanGiao(0, 999999, -1, '', idDonViGiao);
-      if (!mounted) return;
+      final newCount = await _repository.getDataPageByBanGiao(
+        0,
+        999999,
+        -1,
+        '',
+        idDonViGiao,
+      );
       setState(() {
         quyetDinhCount = newCount['totalItems'] ?? 0;
       });
     } catch (e) {
       log('Error at _loadCount: $e');
+    } finally {
+      log('[REALTIME] Updated quyetDinhCount: $quyetDinhCount');
+      _isLoadingCount = false;
     }
   }
 
@@ -70,40 +85,47 @@ class _TabBarTableCcdcState extends riverpod.ConsumerState<TabBarTableCcdc> {
   @override
   void initState() {
     super.initState();
-    
+
     // Load count ngay lập tức khi vào màn hình
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadCount();
       }
     });
-    
-    // Listen Firebase realtime messages với early return tối ưu
+
+    // Listen Firebase realtime messages với log chi tiết
     _messageSub = ref.listenManual(messageLatestJsonProvider, (previous, next) {
       // Early return: kiểm tra null/empty trước
-      if (next == null || next.isEmpty || !mounted) return;
-      
+      if (next == null || next.isEmpty || !mounted) {
+        log('[REALTIME] Message is null/empty or widget not mounted');
+        return;
+      }
+
       // Early return: lấy typeFunc và check ngay, tránh parse không cần thiết
       final typeFunc = next['type_func'];
-      if (typeFunc is! int) return;
-      
+      if (typeFunc is! int) {
+        return;
+      }
       // Fast comparison với cached constants
-      if (typeFunc != _toolAndSuppliesHandoverType && 
+      if (typeFunc != _toolAndSuppliesHandoverType &&
+          typeFunc != _transFerFunctionType &&
           typeFunc != _allFunctionType) {
+        log('[REALTIME] type_func not matched, skip');
         return; // Không phải message cần xử lý
       }
-      
+
       // Tránh xử lý duplicate message: check timestamp
       final messageTime = next['time'];
       if (messageTime is int && _lastProcessedMessageTime != null) {
         if (messageTime <= _lastProcessedMessageTime!) {
+          log('[REALTIME] Duplicate/old message, skip');
           return; // Message cũ hơn hoặc bằng message đã xử lý
         }
         _lastProcessedMessageTime = messageTime;
       } else if (messageTime is int) {
         _lastProcessedMessageTime = messageTime;
       }
-      
+
       // Chỉ debounce khi thực sự cần refresh
       _debouncedLoadCount();
     });
