@@ -10039,7 +10039,7 @@ d_v(a){$.aND().cr(0,a,new A.b1M(a,null,null))},
 d_u(a,b){var s="flutterfire-"+a+"-"+b,r=self
 if(r.window.sessionStorage.getItem(s)==null){r.window.sessionStorage.setItem(s,b)
 r=r.firebase_core
-r.registerVersion(a,b,null)}},
+r.registerVersion(a,b,"flutter-firebase")}},
 cP2(a,b){if(B.d.t(J.K(a),"of undefined"))throw A.h(A.deY())
 A.Oz(a,b)},
 cQI(a,b){var s,r,q,p,o
@@ -80265,7 +80265,7 @@ k=$.aND()
 l=A.v(k).i("bC<2>")
 s=3
 return A.f(A.jJ(A.hK(new A.bC(k,l),new A.b1F(p,m,n),l.i("q.E"),t.uz),!1,t.H),$async$QM)
-case 3:$.czZ.k(0,"flutter-fire-core","4.3.0")
+case 3:$.czZ.k(0,"flutter-fire-core","4.2.1")
 $.czZ.ar(0,A.dfN())
 case 1:return A.k(q,r)}})
 return A.l($async$QM,r)},
@@ -154130,7 +154130,7 @@ A.bJq.prototype={
 $1(a){return this.a.aSq(0)},
 $S:5}
 A.bJp.prototype={
-$0(){this.a.d=this.b+10},
+$0(){this.a.d=this.b+100},
 $S:0}
 A.a5o.prototype={
 G(a){var s,r,q,p,o,n,m,l,k,j,i,h,g=null,f=this.c
@@ -216730,7 +216730,7 @@ n=new A.b1D()
 m.k(0,n,o)
 A.fS(n,o,!0)
 $.d_y=n
-$.czZ.k(0,"flutter-fire-rtdb","12.1.1")
+$.czZ.k(0,"flutter-fire-rtdb","12.1.0")
 A.d_v("database")
 n=A.cHY(null,null)
 A.fS(n,$.cxP(),!0)
