@@ -199,26 +199,32 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
         listDetailAssetMobilization = list;
       });
 
-      // Notify parent immediately after syncing detail assets so
-      // the parent can update its state (onDataChanged expects the
-      // current list of ChiTietDieuDongTaiSan).
-      try {
-        widget.onDataChanged?.call(List<ChiTietDieuDongTaiSan>.from(listDetailAssetMobilization));
-      } catch (e, st) {
-        log('Error calling onDataChanged after sync (detail): $e\n$st');
-      }
+      // Notify parent after the build phase completes to avoid setState during build
+      // Use addPostFrameCallback to defer the callback until after the current build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          widget.onDataChanged?.call(List<ChiTietDieuDongTaiSan>.from(listDetailAssetMobilization));
+        } catch (e, st) {
+          log('Error calling onDataChanged after sync (detail): $e\n$st');
+        }
+      });
     } else {
       // Chế độ editing: sử dụng trực tiếp listDetailAssetMobilization
       setState(() {
         listDetailAssetMobilization = widget.listDetailAssetMobilization ?? [];
       });
 
-      // Notify parent immediately after syncing editable assets.
-      try {
-        widget.onDataChanged?.call(List<ChiTietDieuDongTaiSan>.from(listDetailAssetMobilization));
-      } catch (e, st) {
-        log('Error calling onDataChanged after sync (edit): $e\n$st');
-      }
+      // Notify parent after the build phase completes to avoid setState during build
+      // Use addPostFrameCallback to defer the callback until after the current build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          widget.onDataChanged?.call(List<ChiTietDieuDongTaiSan>.from(listDetailAssetMobilization));
+        } catch (e, st) {
+          log('Error calling onDataChanged after sync (edit): $e\n$st');
+        }
+      });
     }
   }
 

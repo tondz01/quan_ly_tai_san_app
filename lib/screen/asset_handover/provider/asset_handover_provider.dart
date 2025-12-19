@@ -482,6 +482,7 @@ class AssetHandoverProvider with ChangeNotifier {
     _isFindNew = isFindNew;
     isShowInput = true;
     isShowCollapse = true;
+    // _isLoading = false;
     notifyListeners();
 
     if (kDebugMode) {
