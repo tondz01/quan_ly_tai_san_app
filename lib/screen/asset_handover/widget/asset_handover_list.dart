@@ -558,7 +558,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           child: LayoutBuilder(
                             builder: (context, constraints) {
                               // Giảm nhẹ để tránh tràn do margin/padding xung quanh
-                              final tableMaxHeight = (constraints.maxHeight - 65)
+                              // Increased buffer to 120 to prevent overflow (was 65, overflow was 49px)
+                              final tableMaxHeight = (constraints.maxHeight - 120)
                                   .clamp(0.0, constraints.maxHeight)
                                   .toDouble();
 

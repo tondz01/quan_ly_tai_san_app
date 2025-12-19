@@ -183,7 +183,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
             ghiChu: d.ghiChu ?? '',
             kyHieu: d.kyHieu ?? '',
             soKyHieu: d.soKyHieu ?? '',
-            namSanXuat: d.namSanXuat ?? '',
+            namSanXuat: '', // DetailAssetHandoverDto doesn't have namSanXuat property
             ngayTao: d.ngayTao ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
             ngayCapNhat: d.ngayCapNhat ?? AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
             nguoiTao: d.nguoiTao ?? '',
