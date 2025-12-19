@@ -1,6 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
 
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -192,7 +191,6 @@ previewDocumentHandover({
     // SigneInfo(
   ];
 
-  log('Detail Asset Handover: ${jsonEncode(itemsDetail)}');
   return showDialog(
     context: context,
     barrierDismissible: true,
