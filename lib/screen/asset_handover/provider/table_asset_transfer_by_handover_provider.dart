@@ -70,13 +70,30 @@ class TableAssetTransferByHandoverProvider
   }
 
   /// Safe state update - chỉ update nếu chưa dispose và delay nếu đang build
-  void _safeUpdateState(GenericTableState<DieuDongTaiSanDto> newState) {
+  /// Safe state update - chỉ update nếu chưa dispose và delay nếu đang build
+  ///
+  /// Accepts either a `GenericTableState` snapshot OR an updater function
+  /// `GenericTableState Function(GenericTableState)` which will be applied
+  /// to the current `state` inside the microtask. Using an updater avoids
+  /// the bug where a previously-captured snapshot overwrites newer state.
+  void _safeUpdateState(dynamic newStateOrUpdater) {
     if (_isDisposed) return;
-    
+
     // Delay update để tránh lỗi "modify provider while widget tree is building"
     Future.microtask(() {
-      if (!_isDisposed) {
-        state = newState;
+      if (_isDisposed) return;
+
+      if (newStateOrUpdater is Function) {
+        try {
+          state = newStateOrUpdater(state);
+        } catch (e) {
+          // If updater fails, don't crash provider - log and skip
+          log('Error applying state updater in _safeUpdateState: $e');
+        }
+      } else if (newStateOrUpdater is GenericTableState<DieuDongTaiSanDto>) {
+        state = newStateOrUpdater;
+      } else {
+        log('Unsupported argument passed to _safeUpdateState');
       }
     });
   }
@@ -165,9 +182,9 @@ class TableAssetTransferByHandoverProvider
 
     // Set loading cho API call
     if (isRefresh) {
-      _safeUpdateState(state.copyWith(isLoading: true, errorMessage: null));
+      _safeUpdateState((s) => s.copyWith(isLoading: true, errorMessage: null));
     } else {
-      _safeUpdateState(state.copyWith(errorMessage: null));
+      _safeUpdateState((s) => s.copyWith(errorMessage: null));
     }
 
     try {
@@ -188,26 +205,46 @@ class TableAssetTransferByHandoverProvider
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<DieuDongTaiSanDto>.from(data);
 
-      setApiData(
-        data,
-        totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int?,
-        totalItems: response['totalItems'] as int?,
-      );
+      // Nếu API trả về null/empty -> đảm bảo xóa dữ liệu cũ
+      if (data.isEmpty) {
+        log('loadDataFromApi AssetTransfer: API returned empty data - clearing currentPageData');
+
+        // Cập nhật pagination info nhưng clear current page data
+        data.clear();
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+
+        // Force clear currentPageData synchronously so UI won't show stale rows
+        state = state.copyWith(
+          currentPageData: <DieuDongTaiSanDto>[],
+          isLoading: false,
+          errorMessage: null,
+        );
+        log("loadDataFromApi AssetTransfer empty : ${data.isEmpty}");
+      } else {
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+      }
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
       totalCP = response['totalCP'] as int? ?? 0;
       totalDC = response['totalDC'] as int? ?? 0;
       totalTH = response['totalTH'] as int? ?? 0;
-      final total = getTotals();
-      print('getDataPageByBanGiao Totals fetched: $total');
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
         _reapplyOfflineFilters();
       } else {
         // Nếu không có filter thì tắt loading luôn
-        _safeUpdateState(state.copyWith(isLoading: false));
+        _safeUpdateState((s) => s.copyWith(isLoading: false));
       }
     } catch (error) {
       if (_isDisposed) return;
@@ -299,16 +336,14 @@ class TableAssetTransferByHandoverProvider
   void clearAllFilters() {
     if (_isDisposed) return;
 
-    _safeUpdateState(state.copyWith(filterState: const TableFilterState()));
+    _safeUpdateState((s) => s.copyWith(filterState: const TableFilterState()));
 
     if (state.paginationState.useApiPagination) {
       // Clear hết: trả về dữ liệu gốc của page hiện tại
-      _safeUpdateState(
-        state.copyWith(
-          currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
-          isLoading: false,
-        ),
-      );
+      _safeUpdateState((s) => s.copyWith(
+            currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
+            isLoading: false,
+          ));
     } else {
       super.clearAllFilters();
     }
@@ -320,12 +355,10 @@ class TableAssetTransferByHandoverProvider
 
     final filters = state.filterState.columnFilters;
     if (filters.isEmpty) {
-      _safeUpdateState(
-        state.copyWith(
-          currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
-          isLoading: false,
-        ),
-      );
+      _safeUpdateState((s) => s.copyWith(
+            currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
+            isLoading: false,
+          ));
       return;
     }
     _applyOfflineFilters(filters);
@@ -336,12 +369,10 @@ class TableAssetTransferByHandoverProvider
     if (_isDisposed) return;
 
     if (_localValueGetter == null) {
-      _safeUpdateState(
-        state.copyWith(
-          currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
-          isLoading: false,
-        ),
-      );
+      _safeUpdateState((s) => s.copyWith(
+            currentPageData: List<DieuDongTaiSanDto>.from(_rawPageData),
+            isLoading: false,
+          ));
       return;
     }
 
@@ -353,13 +384,11 @@ class TableAssetTransferByHandoverProvider
       filtered = _filterDataByColumn(filtered, filter);
     }
 
-    _safeUpdateState(
-      state.copyWith(
-        currentPageData: filtered,
-        // isLoading = false vì đây là filter offline
-        isLoading: false,
-      ),
-    );
+    _safeUpdateState((s) => s.copyWith(
+          currentPageData: filtered,
+          // isLoading = false vì đây là filter offline
+          isLoading: false,
+        ));
   }
 
   List<DieuDongTaiSanDto> _filterDataByColumn(

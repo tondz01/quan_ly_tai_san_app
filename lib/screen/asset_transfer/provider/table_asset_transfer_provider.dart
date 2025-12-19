@@ -150,12 +150,33 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<DieuDongTaiSanDto>.from(data);
 
-      setApiData(
-        data,
-        totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int?,
-        totalItems: response['totalItems'] as int?,
-      );
+      // Nếu API trả về rỗng -> cập nhật meta nhưng clear dữ liệu cũ trên UI
+      if (data.isEmpty) {
+        log('TableAssetTransferProvider: API returned EMPTY data');
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+
+        _rawPageData = <DieuDongTaiSanDto>[];
+        Future.microtask(() {
+          state = state.copyWith(
+            currentPageData: <DieuDongTaiSanDto>[],
+            isLoading: false,
+            errorMessage: null,
+          );
+          log('Cleared currentPageData after empty response (AssetTransfer)');
+        });
+      } else {
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+      }
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;
