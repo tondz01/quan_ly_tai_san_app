@@ -122,13 +122,38 @@ class TableToolAndSuppliesHandoverTransferProvider
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<ToolAndMaterialTransferDto>.from(data);
 
-      // Cập nhật data và pagination info
-      setApiData(
-        data,
-        totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int?,
-        totalItems: response['totalItems'] as int?,
-      );
+      // Nếu API trả về rỗng, vẫn cập nhật pagination meta nhưng đảm bảo
+      // xóa dữ liệu cũ trên UI để tránh hiển thị stale rows.
+      if (data.isEmpty) {
+        log('ToolAndSuppliesHandoverTransfer: API returned EMPTY data');
+
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+
+        // Clear raw page data explicitly
+        _rawPageData = <ToolAndMaterialTransferDto>[];
+
+        Future.microtask(() {
+          state = state.copyWith(
+            currentPageData: <ToolAndMaterialTransferDto>[],
+            isLoading: false,
+            errorMessage: null,
+          );
+          log('Cleared currentPageData after empty response');
+        });
+      } else {
+        // Cập nhật data và pagination info
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int?,
+          totalItems: response['totalItems'] as int?,
+        );
+      }
 
       totalItems = response['totalItems'] as int? ?? 0;
       totalAll = response['totalAll'] as int? ?? 0;

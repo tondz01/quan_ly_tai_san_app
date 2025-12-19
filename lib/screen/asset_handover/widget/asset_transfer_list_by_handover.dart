@@ -102,7 +102,6 @@ class _AssetTransferListByHandoverState
   int? _lastProcessedMessageTime;
 
   // Cache username hiện tại để tối ưu so khớp id_need_to_do
-  String _currentUsername = '';
 
   // RiverpodTable configuration
   late List<ColumnDefinition> _definitions;
@@ -120,10 +119,6 @@ class _AssetTransferListByHandoverState
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
-    _currentUsername =
-        userInfo?.tenDangNhap ??
-        AccountHelper.instance.getUserInfo()?.tenDangNhap ??
-        '';
     dataAssetTransfer = widget.data;
     dataAssetTransferFilter =
         dataAssetTransfer.where((item) => item.daBanGiao == false).toList();

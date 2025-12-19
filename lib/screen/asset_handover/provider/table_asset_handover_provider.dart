@@ -156,12 +156,34 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       // Có thể notifier đã bị dispose trong lúc chờ API
       if (!mounted) return;
 
-      setApiData(
-        data,
-        totalPages: response['totalPages'] as int?,
-        currentPage: response['currentPage'] as int? ,
-        totalItems: response['totalItems'] as int?,
-      );
+      // Nếu API trả về rỗng -> vẫn cập nhật pagination meta nhưng clear dữ liệu cũ
+      if (data.isEmpty) {
+        log('TableAssetHandoverProvider: API returned EMPTY data');
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int? ,
+          totalItems: response['totalItems'] as int?,
+        );
+
+        _rawPageData = <AssetHandoverDto>[];
+        Future.microtask(() {
+          if (!mounted) return;
+          state = state.copyWith(
+            currentPageData: <AssetHandoverDto>[],
+            isLoading: false,
+            errorMessage: null,
+          );
+          log('Cleared currentPageData after empty response (AssetHandover)');
+        });
+      } else {
+        setApiData(
+          data,
+          totalPages: response['totalPages'] as int?,
+          currentPage: response['currentPage'] as int? ,
+          totalItems: response['totalItems'] as int?,
+        );
+      }
 
       log('currentPage: ${response['currentPage']}');
 
