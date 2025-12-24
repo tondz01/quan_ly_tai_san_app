@@ -441,17 +441,19 @@ class _ToolAndSuppliesHandoverListState
                           },
                         ),
                       ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(8.0),
-                          bottomRight: Radius.circular(8.0),
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
-                            final tableMaxHeight = (constraints.maxHeight - 65)
-                                .clamp(0.0, constraints.maxHeight)
-                                .toDouble();
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(8.0),
+                            bottomRight: Radius.circular(8.0),
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Giảm nhẹ để tránh tràn do padding/margin quanh bảng
+                              // Increased buffer to 120 to prevent overflow
+                              final tableMaxHeight = (constraints.maxHeight - 70)
+                                  .clamp(0.0, constraints.maxHeight)
+                                  .toDouble();
 
                             return riverpod.Consumer(
                               builder: (context, ref, child) {
@@ -546,6 +548,7 @@ class _ToolAndSuppliesHandoverListState
                             );
                           },
                         ),
+                      ),
                       ),
                     ],
                   ),
