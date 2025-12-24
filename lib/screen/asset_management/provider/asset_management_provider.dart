@@ -796,6 +796,8 @@ class AssetManagementProvider with ChangeNotifier {
       for (var element in listLyDoTang)
         DropdownMenuItem<LyDoTang>(value: element, child: Text(element.name)),
     ];
+    
+    listHienTrang = AccountHelper.instance.getCurrentStatus() ?? [];
 
     //Item dropdown hien trang
     _itemsHienTrang = [
