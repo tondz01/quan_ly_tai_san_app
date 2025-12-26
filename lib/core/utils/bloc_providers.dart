@@ -21,6 +21,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/chatbot/bloc/chatbot_bloc.dart';
 
 import '../../screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import '../../screen/category_manager/department_manager/bloc/department_bloc.dart';
@@ -60,5 +61,6 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<UnitBloc>(create: (_) => UnitBloc()),
     BlocProvider<ReasonIncreaseBloc>(create: (_) => ReasonIncreaseBloc()),
     BlocProvider<CurrentStatusBloc>(create: (_) => CurrentStatusBloc()),
+    BlocProvider<ChatbotBloc>(create: (_) => ChatbotBloc()),
   ];
 }
