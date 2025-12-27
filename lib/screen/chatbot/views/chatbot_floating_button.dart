@@ -14,8 +14,17 @@ class _ChatbotFloatingButtonState extends State<ChatbotFloatingButton>
     with SingleTickerProviderStateMixin {
   bool _isPopupOpen = false;
   bool _isFullScreen = false;
+  bool _isDragging = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+
+  // Vị trí của button (mặc định góc trên bên phải, cách lề 100)
+  double? _buttonX;
+  double? _buttonY;
+
+  // Kích thước button
+  static const double _buttonSize = 56.0;
+  static const double _edgeMargin = 100.0;
 
   @override
   void initState() {
@@ -39,6 +48,14 @@ class _ChatbotFloatingButtonState extends State<ChatbotFloatingButton>
     super.dispose();
   }
 
+  void _initPosition(Size screenSize) {
+    if (_buttonX == null || _buttonY == null) {
+      // Vị trí mặc định: góc trên bên phải, cách lề 100
+      _buttonX = screenSize.width - _buttonSize - _edgeMargin;
+      _buttonY = _edgeMargin;
+    }
+  }
+
   void _togglePopup() {
     setState(() {
       _isPopupOpen = !_isPopupOpen;
@@ -54,16 +71,40 @@ class _ChatbotFloatingButtonState extends State<ChatbotFloatingButton>
     });
   }
 
+  void _onDragUpdate(DragUpdateDetails details, Size screenSize) {
+    setState(() {
+      _isDragging = true;
+      _buttonX = (_buttonX! + details.delta.dx).clamp(
+        _edgeMargin,
+        screenSize.width - _buttonSize - _edgeMargin,
+      );
+      _buttonY = (_buttonY! + details.delta.dy).clamp(
+        _edgeMargin,
+        screenSize.height - _buttonSize - _edgeMargin,
+      );
+    });
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    setState(() {
+      _isDragging = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    _initPosition(screenSize);
+
     return Stack(
       children: [
+        // Popup
         if (_isPopupOpen)
           Positioned(
-            top: _isFullScreen ? 0 : 80,
-            right: _isFullScreen ? 0 : 24,
+            top: _isFullScreen ? 0 : _buttonY! + _buttonSize + 10,
+            right: _isFullScreen ? 0 : null,
+            left: _isFullScreen ? 0 : _getPopupLeftPosition(screenSize),
             bottom: _isFullScreen ? 0 : null,
-            left: _isFullScreen ? 0 : null,
             child: BlocProvider(
               create: (_) => ChatbotBloc(),
               child: ChatbotPopup(
@@ -73,13 +114,33 @@ class _ChatbotFloatingButtonState extends State<ChatbotFloatingButton>
               ),
             ),
           ),
+        // Draggable floating button
         Positioned(
-          top: 80,
-          right: 24,
-          child: _buildFloatingButton(),
+          left: _buttonX,
+          top: _buttonY,
+          child: GestureDetector(
+            onPanUpdate: (details) => _onDragUpdate(details, screenSize),
+            onPanEnd: _onDragEnd,
+            onTap: _togglePopup,
+            child: _buildFloatingButton(),
+          ),
         ),
       ],
     );
+  }
+
+  double _getPopupLeftPosition(Size screenSize) {
+    const popupWidth = 450.0;
+    // Tính vị trí để popup nằm gần button
+    double left = _buttonX! - popupWidth + _buttonSize;
+    // Đảm bảo popup không ra ngoài màn hình
+    if (left < 10) {
+      left = 10;
+    }
+    if (left + popupWidth > screenSize.width - 10) {
+      left = screenSize.width - popupWidth - 10;
+    }
+    return left;
   }
 
   Widget _buildFloatingButton() {
@@ -87,42 +148,56 @@ class _ChatbotFloatingButtonState extends State<ChatbotFloatingButton>
       animation: _pulseAnimation,
       builder: (context, child) {
         return Transform.scale(
-          scale: _isPopupOpen ? 1.0 : _pulseAnimation.value,
+          scale: _isPopupOpen ? 1.0 : (_isDragging ? 1.1 : _pulseAnimation.value),
           child: child,
         );
       },
-      child: GestureDetector(
-        onTap: _togglePopup,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF009E60), Color(0xFF026E42)],
+      child: MouseRegion(
+        cursor: _isDragging ? SystemMouseCursors.grabbing : SystemMouseCursors.grab,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: _buttonSize,
+          height: _buttonSize,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _isDragging
+                  ? [const Color(0xFF00C978), const Color(0xFF028A52)]
+                  : [const Color(0xFF009E60), const Color(0xFF026E42)],
+            ),
+            borderRadius: BorderRadius.circular(_buttonSize / 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF009E60).withValues(alpha: _isDragging ? 0.6 : 0.4),
+                blurRadius: _isDragging ? 16 : 12,
+                offset: const Offset(0, 4),
               ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF009E60).withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  _isPopupOpen ? Icons.close : Icons.smart_toy,
+                  key: ValueKey(_isPopupOpen),
+                  color: Colors.white,
+                  size: 28,
                 ),
-              ],
-            ),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                _isPopupOpen ? Icons.close : Icons.smart_toy,
-                key: ValueKey(_isPopupOpen),
-                color: Colors.white,
-                size: 28,
               ),
-            ),
+              // Drag indicator
+              if (!_isPopupOpen)
+                Positioned(
+                  bottom: 4,
+                  child: Icon(
+                    Icons.drag_indicator,
+                    size: 12,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
