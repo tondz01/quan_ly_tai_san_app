@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +32,8 @@ extension TableToolAndSuppliesHandoverTotals
 class TableToolAndSuppliesHandoverProvider
     extends TableNotifier<ToolAndSuppliesHandoverDto> {
   final ToolAndSuppliesHandoverRepository repository;
+
+  static const int ALL = -1;
 
   // Tổng theo API
   int totalItems = 0;
@@ -153,13 +157,15 @@ class TableToolAndSuppliesHandoverProvider
             : int.tryParse(response['totalItems']?.toString() ?? '0'),
       );
 
-      totalItems = response['totalItems'] as int? ?? 0;
-      totalAll = response['totalAll'] as int? ?? 0;
-      totalDraft = response['totalDraft'] as int? ?? 0;
-      totalApprove = response['totalApprove'] as int? ?? 0;
-      totalCancel = response['totalCancel'] as int? ?? 0;
-      totalComplete = response['totalComplete'] as int? ?? 0;
-
+      if (trangThai == ALL) {
+        log('ToolAndSuppliesHandover: Updating totals for ALL trangThai');
+        totalItems = response['totalItems'] as int? ?? 0;
+        totalAll = response['totalAll'] as int? ?? 0;
+        totalDraft = response['totalDraft'] as int? ?? 0;
+        totalApprove = response['totalApprove'] as int? ?? 0;
+        totalCancel = response['totalCancel'] as int? ?? 0;
+        totalComplete = response['totalComplete'] as int? ?? 0;
+      }
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
         _reapplyOfflineFilters();

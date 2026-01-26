@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
@@ -17,7 +19,8 @@ final tableToolAndMaterialTransferProvider = StateNotifierProvider.autoDispose<
 
 /// Helper class để lấy các giá trị total
 /// Sử dụng: ref.read(tableAssetTransferProvider.notifier).getTotals()
-extension TableToolAndMaterialTransferTotals on TableToolAndMaterialTransferProvider {
+extension TableToolAndMaterialTransferTotals
+    on TableToolAndMaterialTransferProvider {
   /// Lấy tất cả các totals dưới dạng Map
   Map<String, int> getTotals() {
     return {
@@ -46,6 +49,7 @@ class TableToolAndMaterialTransferProvider
   String _currentSearchTerm = '';
   int _currentType = 1; // lưu type hiện tại
   int _currentTrangThai = -1; // lưu trạng thái hiện tại
+  static const int ALL = -1;
 
   // Lưu dữ liệu gốc của page hiện tại (chưa filter offline)
   List<ToolAndMaterialTransferDto> _rawPageData = [];
@@ -117,7 +121,9 @@ class TableToolAndMaterialTransferProvider
     if (_lastApiCallTime != null) {
       final diff = now.difference(_lastApiCallTime!).inMilliseconds;
       if (diff < _apiDebounceMs) {
-        log('loadDataFromApi ToolAndMaterialTransfer: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)');
+        log(
+          'loadDataFromApi ToolAndMaterialTransfer: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)',
+        );
         return;
       }
     }
@@ -146,7 +152,8 @@ class TableToolAndMaterialTransferProvider
       );
 
       final data =
-          (response['data'] as List<dynamic>).cast<ToolAndMaterialTransferDto>();
+          (response['data'] as List<dynamic>)
+              .cast<ToolAndMaterialTransferDto>();
 
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<ToolAndMaterialTransferDto>.from(data);
@@ -168,7 +175,9 @@ class TableToolAndMaterialTransferProvider
             isLoading: false,
             errorMessage: null,
           );
-          log('Cleared currentPageData after empty response (ToolAndMaterialTransfer)');
+          log(
+            'Cleared currentPageData after empty response (ToolAndMaterialTransfer)',
+          );
         });
       } else {
         // Cập nhật data và pagination info
@@ -179,13 +188,14 @@ class TableToolAndMaterialTransferProvider
           totalItems: response['totalItems'] as int?,
         );
       }
-
-      totalItems = response['totalItems'] as int? ?? 0;
-      totalAll = response['totalAll'] as int? ?? 0;
-      totalDraft = response['totalDraft'] as int? ?? 0;
-      totalApprove = response['totalApprove'] as int? ?? 0;
-      totalCancel = response['totalCancel'] as int? ?? 0;
-      totalComplete = response['totalComplete'] as int? ?? 0;
+      if (trangThai == ALL) {
+        totalItems = response['totalItems'] as int? ?? 0;
+        totalAll = response['totalAll'] as int? ?? 0;
+        totalDraft = response['totalDraft'] as int? ?? 0;
+        totalApprove = response['totalApprove'] as int? ?? 0;
+        totalCancel = response['totalCancel'] as int? ?? 0;
+        totalComplete = response['totalComplete'] as int? ?? 0;
+      }
 
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (state.filterState.hasActiveFilters) {
@@ -195,8 +205,7 @@ class TableToolAndMaterialTransferProvider
         state = state.copyWith(isLoading: false);
       }
     } catch (error) {
-      print('Error loading ToolAndMaterialTransfer data: $error');
-
+      log('Lỗi khi tải dữ liệu ToolAndMaterialTransfer từ API: $error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Lỗi tải dữ liệu: $error',

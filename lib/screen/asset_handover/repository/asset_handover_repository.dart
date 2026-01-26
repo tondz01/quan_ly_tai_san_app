@@ -696,14 +696,14 @@ class AssetHandoverRepository extends ApiBase {
       }
       result['totalPages'] = response.data['totalPages'] ?? 0;
       // Xử lý an toàn currentPage để tránh crash khi null hoặc không phải int
-      final rawPage = response.data['currentPage'];
+      final rawPage = response.data['page'];
       int safePage = 0;
       if (rawPage is int) {
         safePage = rawPage;
       } else if (rawPage != null) {
         safePage = int.tryParse(rawPage.toString()) ?? 0;
       }
-      result['currentPage'] = safePage + 1;
+      result['currentPage'] = safePage;
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety
@@ -718,7 +718,7 @@ class AssetHandoverRepository extends ApiBase {
           return int.tryParse(value.toString()) ?? 0;
         }
 
-        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalAll'] = result['totalItems'] ?? 0;
         result['totalDraft'] = parseGroupCount('0', 'draft');
         result['totalApprove'] = parseGroupCount('1', 'approve');
         result['totalCancel'] = parseGroupCount('2', 'cancel');

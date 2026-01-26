@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +34,8 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
 
   TableAssetHandoverProvider(this.repository);
 
+  static const int ALL = -1;
+
   // Tổng theo API
   int totalItems = 0;
   int totalAll = 0;
@@ -51,7 +55,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
   dynamic Function(AssetHandoverDto item, int columnIndex)? _localValueGetter;
 
   bool _isInitialized = false;
-  
+
   // === CHỐNG GỌI API LIÊN TỤC ===
   bool _isApiLoading = false; // Flag đang gọi API
   DateTime? _lastApiCallTime; // Thời gian gọi API lần cuối
@@ -61,12 +65,11 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
   void initialize({
     required Map<String, double> columnWidths,
     required dynamic Function(AssetHandoverDto item, int columnIndex)
-        valueGetter,
+    valueGetter,
     int itemsPerPage = 20,
   }) {
     // Tránh gọi initialize nhiều lần
     if (_isInitialized) {
-      log('TableAssetHandoverProvider: Already initialized, skipping');
       return;
     }
 
@@ -112,17 +115,19 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       log('loadDataFromApi AssetHandover: SKIPPED - API đang loading');
       return;
     }
-    
+
     // Debounce: bỏ qua nếu gọi quá nhanh (< 300ms)
     final now = DateTime.now();
     if (_lastApiCallTime != null) {
       final diff = now.difference(_lastApiCallTime!).inMilliseconds;
       if (diff < _apiDebounceMs) {
-        log('loadDataFromApi AssetHandover: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)');
+        log(
+          'loadDataFromApi AssetHandover: SKIPPED - debounce ($diff ms < $_apiDebounceMs ms)',
+        );
         return;
       }
     }
-    
+
     _isApiLoading = true;
     _lastApiCallTime = now;
     _currentTrangThai = trangThai;
@@ -138,7 +143,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       // Sửa: page đã là 1-based từ initialize, không cần trừ 1 nữa
       // Nếu backend yêu cầu 0-based, thì đổi lại thành page - 1
       final response = await repository.getDataWithPagination(
-        page - 1, // Backend dùng 0-based index
+        page, // Backend dùng 0-based index
         state.paginationState.itemsPerPage,
         _currentSearchTerm,
         _currentTrangThai,
@@ -147,8 +152,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       // Có thể notifier đã bị dispose trong lúc chờ API
       if (!mounted) return;
 
-      final data =
-          (response['data'] as List<dynamic>).cast<AssetHandoverDto>();
+      final data = (response['data'] as List<dynamic>).cast<AssetHandoverDto>();
 
       // Lưu dữ liệu gốc của page này để filter offline
       _rawPageData = List<AssetHandoverDto>.from(data);
@@ -162,7 +166,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
         setApiData(
           data,
           totalPages: response['totalPages'] as int?,
-          currentPage: response['currentPage'] as int? ,
+          currentPage: response['currentPage'] as int?,
           totalItems: response['totalItems'] as int?,
         );
 
@@ -180,20 +184,20 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
         setApiData(
           data,
           totalPages: response['totalPages'] as int?,
-          currentPage: response['currentPage'] as int? ,
+          currentPage: response['currentPage'] as int?,
           totalItems: response['totalItems'] as int?,
         );
       }
 
       log('currentPage: ${response['currentPage']}');
-
-      totalItems = response['totalItems'] as int? ?? 0;
-      totalAll = response['totalAll'] as int? ?? 0;
-      totalDraft = response['totalDraft'] as int? ?? 0;
-      totalApprove = response['totalApprove'] as int? ?? 0;
-      totalCancel = response['totalCancel'] as int? ?? 0;
-      totalComplete = response['totalComplete'] as int? ?? 0;
-
+      if (trangThai == ALL) {
+        totalItems = response['totalItems'] as int? ?? 0;
+        totalAll = response['totalAll'] as int? ?? 0;
+        totalDraft = response['totalDraft'] as int? ?? 0;
+        totalApprove = response['totalApprove'] as int? ?? 0;
+        totalCancel = response['totalCancel'] as int? ?? 0;
+        totalComplete = response['totalComplete'] as int? ?? 0;
+      }
       // Nếu đang có filter offline active → áp lại trên dữ liệu mới
       if (!mounted) return;
 
@@ -329,8 +333,7 @@ class TableAssetHandoverProvider extends TableNotifier<AssetHandoverDto> {
       return;
     }
 
-    List<AssetHandoverDto> filtered =
-        List<AssetHandoverDto>.from(_rawPageData);
+    List<AssetHandoverDto> filtered = List<AssetHandoverDto>.from(_rawPageData);
 
     for (final filter in filters.values) {
       filtered = _filterDataByColumn(filtered, filter);

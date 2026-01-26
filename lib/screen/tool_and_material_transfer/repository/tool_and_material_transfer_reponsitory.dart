@@ -605,7 +605,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         result['data'] = <ToolAndMaterialTransferDto>[];
       }
       result['totalPages'] = response.data['totalPages'] ?? 0;
-      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['currentPage'] = response.data['page'] ?? 0;
       result['totalItems'] = response.data['totalItems'] ?? 0;
 
       // Xử lý groupCounts với null-safety
@@ -620,7 +620,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
           return int.tryParse(value.toString()) ?? 0;
         }
 
-        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalAll'] = response.data['totalItems'] ?? 0;
         result['totalDraft'] = parseGroupCount('0', 'draft');
         result['totalApprove'] = parseGroupCount('1', 'approve');
         result['totalCancel'] = parseGroupCount('2', 'cancel');
@@ -684,9 +684,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         result['data'] = <ToolAndMaterialTransferDto>[];
       }
       result['totalPages'] = response.data['totalPages'] ?? 0;
-      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['currentPage'] = response.data['page'] ?? 0;
       result['totalItems'] = response.data['totalItems'] ?? 0;
-
       // Xử lý groupCounts với null-safety
       final groupCounts = response.data['loaiCounts'];
       if (groupCounts is Map<String, dynamic>) {
@@ -699,7 +698,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
           return int.tryParse(value.toString()) ?? 0;
         }
 
-        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalAll'] = response.data['totalItems'] ?? 0;
         result['totalCP'] = parseGroupCount('1', 'capPhat');
         result['totalDC'] = parseGroupCount('2', 'dieuChuyen');
         result['totalTH'] = parseGroupCount('3', 'thuHoi');
