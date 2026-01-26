@@ -25,6 +25,7 @@ import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
+import 'package:quan_ly_tai_san_app/screen/chatbot/views/chatbot_floating_button.dart';
 import 'models/menu_data.dart';
 import 'scroll_controller.dart';
 
@@ -410,6 +411,8 @@ class _HomeState extends State<Home> {
                               child: Container(color: Colors.transparent),
                             ),
                           ),
+                        // Chatbot floating button
+                        const ChatbotFloatingButton(),
                       ],
                     ),
                   ),
